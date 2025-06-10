@@ -1,0 +1,87 @@
+.board-list-section {
+    padding: 48px 24px;
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #fafafa;
+}
+
+.board-list-title {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 32px;
+}
+
+.board-list-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    font-size: 15px;
+}
+
+.board-list-table thead th {
+    background-color: #f0f0f5;
+    padding: 14px 12px;
+    font-weight: 600;
+    color: #444;
+    border-bottom: 1px solid #ddd;
+}
+
+.board-list-table tbody td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    text-align: center;
+}
+
+.board-list-table tbody tr:hover {
+    background-color: #f9f9ff;
+}
+
+.board-list-table tbody td a {
+    color: #0072c6;
+    font-weight: 500;
+    text-decoration: none;
+}
+.board-list-table tbody td a:hover {
+    text-decoration: underline;
+}
+
+.board-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 32px;
+}
+
+.page-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: white;
+    color: #444;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-btn:hover {
+    background-color: #f2f2f2;
+    color: #000;
+    border-color: #bbb;
+}
+
+.page-btn.active {
+    background-color: #0072c6;
+    color: #fff;
+    border-color: #0072c6;
+    font-weight: 600;
+}

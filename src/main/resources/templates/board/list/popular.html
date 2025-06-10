@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" th:href="@{/css/listStyle.css}" />
+</head>
+<body>
+<div class="board-container">
+  <h2 class="board-title">인기 게시판</h2>
+
+  <table class="board-table">
+    <thead>
+    <tr>
+      <th>No</th>
+      <th>제목</th>
+      <th>상호명</th>
+      <th>리뷰 수</th>
+      <th>평점</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="dto: ${popularList.dtoList}">
+      <th>
+        <a th:href="@{/board/read(id = ${dto.id}, page = ${popularList.page})}">[[${dto.id}]]</a>
+      </th>
+      <td>
+        [[${dto.title}]]
+      </td>
+      <td>
+        [[${dto.name}]]
+      </td>
+      <td>
+        [[${dto.reviewCnt}]]
+      </td>
+      <td>
+        [[${dto.avg}]]
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    <a th:if="${popularList.prev}"
+       th:href="@{/board/popular(page=${popularList.start - 1})}"
+       class="page-btn">&lt;</a>
+
+    <!-- 페이지 번호 -->
+    <a th:each="page : ${popularList.pageList}"
+       th:href="@{/board/popular(page=${page})}"
+       th:text="${page}"
+       th:classappend="${page == popularList.page ? 'active' : ''}"
+       class="page-btn"></a>
+
+    <!-- 다음 페이지 -->
+    <a th:if="${popularList.next}"
+       th:href="@{/board/popular(page=${popularList.end + 1})}"
+       class="page-btn">다음</a>
+  </div>
+</div>
+</body>
+</html>

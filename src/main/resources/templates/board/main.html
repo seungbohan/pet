@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>게시판 메인</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+
+<!-- 상단 바 -->
+<div class="top-bar">
+    <button class="btn">로그인</button>
+</div>
+
+<!-- 검색바 -->
+<div class="search-bar">
+    <input type="text" placeholder="검색어를 입력해주세요.">
+    <button class="search-btn">🔍</button>
+    <div class="auth-btns">
+        <button class="btn">회원가입</button>
+        <button class="btn">로그인</button>
+    </div>
+</div>
+
+<!-- 배너 이미지 슬라이드 -->
+<div class="banner">
+    <button class="slide-btn">◀</button>
+    <div class="banner-text">배너 이미지</div>
+    <button class="slide-btn">▶</button>
+    <div class="dots">
+        <span>●</span><span>●</span><span>●</span>
+    </div>
+</div>
+
+<!-- 게시판 목록 -->
+<div class="board-section">
+    <!-- 전체 게시판 -->
+    <div class="board-box">
+        <div class="board-header">
+            <span class="board-title">전체 게시판</span>
+        </div>
+        <table class="board-table">
+            <thead>
+            <tr>
+                <th>No</th>
+                <th>항목명</th>
+                <th>상호명</th>
+                <th>리뷰 수</th>
+                <th>평점</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="dto : ${recentList}">
+                <th>[[${dto.id}]]</th>
+                <td>[[${dto.title}]]</td>
+                <td>[[${dto.name}]]</td>
+                <td>[[${dto.reviewCnt}]]</td>
+                <td>[[${dto.avg}]]</td>
+            </tr>
+            </tbody>
+        </table>
+        <a th:href="@{/board/list/all}"><button class="more-btn" >더보기</button></a>
+    </div>
+
+    <!-- 인기 게시판 -->
+    <div class="board-box">
+        <div class="board-header">
+            <span class="board-title">인기 게시판</span>
+        </div>
+        <table class="board-table">
+            <thead>
+            <tr>
+                <th>No</th>
+                <th>항목명</th>
+                <th>상호명</th>
+                <th>리뷰 수</th>
+                <th>평점</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="dto : ${popularList}">
+                <th>[[${dto.id}]]</th>
+                <td>[[${dto.title}]]</td>
+                <td>[[${dto.name}]]</td>
+                <td>[[${dto.reviewCnt}]]</td>
+                <td>[[${dto.avg}]]</td>
+            </tr>
+            </tbody>
+        </table>
+        <a th:href="@{/board/list/popular}"><button class="more-btn">더보기</button></a>
+    </div>
+</div>
+
+</body>
+</html>

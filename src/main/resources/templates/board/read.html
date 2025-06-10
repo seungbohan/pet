@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시판</title>
+    <!-- Head 안에 넣기 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script  src="http://code.jquery.com/jquery-latest.min.js"></script>
+
+    <script th:src="@{/js/starrr.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/starrr.css}" />
+</head>
+<body>
+<div class="board-detail-section">
+    <h2 class="board-title">게시글</h2>
+
+    <!-- 이미지 슬라이더 -->
+    <div class="image-slider">
+        <div class="image-box">이미지</div>
+        <div class="image-box">이미지</div>
+        <button class="image-next">&gt;</button>
+    </div>
+
+    <!-- 정보 입력 -->
+    <div class="info-input-grid">
+        <div>
+            <label>상호명</label>
+            <input type="text" name="title" th:value="${board.title}" readOnly>
+        </div>
+        <div>
+            <label>전화번호</label>
+            <input type="text" name="phoneNumber" th:value="${board.phoneNumber}" readOnly>
+        </div>
+        <div>
+            <label>평점</label>
+            <input type="text" name="avg" th:value="${board.avg}" readOnly>
+        </div>
+        <div>
+            <label>위치</label>
+            <input type="text" name="location" th:value="${board.location}" readOnly>
+        </div>
+    </div>
+
+    <!-- 리뷰 테이블 -->
+    <h3 class="review-title">리뷰</h3>
+    <table class="review-table">
+        <thead>
+        <tr>
+            <th>No</th>
+            <th>내용</th>
+            <th>작성자</th>
+            <th>평점</th>
+        </tr>
+        </thead>
+        <tbody id="review-body">
+        <!-- JS로 리뷰가 들어올 자리 -->
+        </tbody>
+    </table>
+
+    <!-- 리뷰 작성 -->
+    <div class="review-input">
+        <div class="starrr"></div>
+
+        <input class="inputReview" type="text" placeholder="리뷰를 남겨주세요">
+        <button class="submit-btn">등록</button>
+    </div>
+
+    <!-- 페이지네이션 -->
+
+    <div id="review-pagination" class="pagination"></div>
+
+
+</div>
+
+<script th:inline="javascript">
+    let boardId = [[${board.id}]];
+
+    $(document).ready(function () {
+        let rating = 0;
+
+        $('.starrr').starrr({
+            rating: rating,
+            change: function (e, value) {
+                rating = value;
+                }
+            });
+
+        function loadReviewPage(page = 1) {
+            $.get(`/review/${boardId}/all?page=${page}`, function (data) {
+                const list = data.dtoList;
+                const html = list.map((r, i) =>
+                    `<tr>
+                        <td>${(page - 1) * data.size + i + 1}</td>
+                        <td>${r.content}</td>
+                        <td>${r.writer}</td>
+                        <td>${r.rating}</td>
+                    </tr>`
+                ).join('');
+                $('#review-body').html(html);
+
+                let pagination = '';
+                if (data.prev) {
+                    pagination += `<a href="#" onclick="loadReviewPage(${data.start - 1})" class="page-btn">&lt;</a>`;
+                }
+                data.pageList.forEach(p => {
+                    pagination += `<a href="#" onclick="loadReviewPage(${p})"
+                                     class="page-btn ${p === data.page ? 'active' : ''}">${p}</a>`;
+                });
+                if (data.next) {
+                    pagination += `<a href="#" onclick="loadReviewPage(${data.end + 1})" class="page-btn">&gt;</a>`;
+                }
+                $('#review-pagination').html(pagination);
+            });
+        }
+
+        loadReviewPage(); // 첫 로딩
+
+
+    $('.submit-btn').click(function () {
+
+        let data = {boardId: boardId, rating: rating, content: $('.inputReview').val()};
+
+        $.ajax({
+        url: '/review/' + boardId,
+        type: 'POST',
+        data: JSON.stringify(data),
+        contentType: 'application/json; charset=UTF-8',
+        dataType: 'text',
+        success: function (result) {
+            self.location.reload();
+            }
+        });
+    })
+    });
+</script>
+
+</body>
+</html>

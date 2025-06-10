@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/listStyle.css}" />
+</head>
+<body>
+<div class="board-container">
+  <h2 class="board-title">전체 게시판</h2>
+
+  <table class="board-table">
+    <thead>
+    <tr>
+      <th>No</th>
+      <th>제목</th>
+      <th>상호명</th>
+      <th>리뷰 수</th>
+      <th>평점</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="dto: ${list.dtoList}">
+      <th>
+        <a th:href="@{/board/read(id = ${dto.id}, page = ${list.page})}">[[${dto.id}]]</a>
+      </th>
+      <td>
+        [[${dto.title}]]
+      </td>
+      <td>
+        [[${dto.name}]]
+      </td>
+      <td>
+        [[${dto.reviewCnt}]]
+      </td>
+      <td>
+        [[${dto.avg}]]
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination">
+        <a th:if="${list.prev}"
+           th:href="@{/board/list(page=${list.start - 1})}"
+           class="page-btn">&lt;</a>
+
+        <a th:each="page : ${list.pageList}"
+           th:href="@{/board/list(page=${page})}"
+           th:text="${page}"
+           th:classappend="${page == list.page ? 'active' : ''}"
+           class="page-btn"></a>
+
+        <a th:if="${list.next}"
+           th:href="@{/board/list(page=${list.end + 1})}"
+           class="page-btn">다음</a>
+  </div>
+</div>
+</body>
+</html>
