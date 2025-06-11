@@ -1,12 +1,13 @@
 package org.zerock.portfolio.service;
 
-import org.zerock.portfolio.dto.BoardDTO;
-import org.zerock.portfolio.dto.MainPageResultDTO;
-import org.zerock.portfolio.dto.PageRequestDTO;
-import org.zerock.portfolio.dto.PageResultDTO;
+import org.zerock.portfolio.dto.*;
 import org.zerock.portfolio.entity.BoardEntity;
+import org.zerock.portfolio.entity.ImageEntity;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public interface BoardService {
 
@@ -20,21 +21,41 @@ public interface BoardService {
 
     MainPageResultDTO<BoardDTO, Object[]> getMainRecentList(PageRequestDTO pageRequestDTO);
 
-    default BoardEntity dtoToEntity(BoardDTO boardDTO) {
+    default Map<String ,Object> dtoToEntity(BoardDTO boardDTO) {
+        Map<String ,Object> entityMap = new HashMap<>();
+
         BoardEntity boardEntity = BoardEntity.builder()
                 .id(boardDTO.getId())
-                .title(boardDTO.getTitle())
                 .name(boardDTO.getName())
                 .location(boardDTO.getLocation())
                 .phoneNumber(boardDTO.getPhoneNumber())
                 .build();
-        return boardEntity;
+
+        entityMap.put("board", boardEntity);
+
+        List<ImageDTO> imageDTOList = boardDTO.getImageDTOList();
+
+        if (imageDTOList != null && imageDTOList.size() > 0) {
+            List<ImageEntity> boardImageList = imageDTOList.stream().map(ImageDTO -> {
+
+                ImageEntity imageEntity = ImageEntity.builder()
+                        .folderPath(ImageDTO.getFolderPath())
+                        .fileName(ImageDTO.getFileName())
+                        .uuid(ImageDTO.getUuid())
+                        .board(boardEntity)
+                        .build();
+                return imageEntity;
+            }).collect(Collectors.toList());
+
+            entityMap.put("imageList", boardImageList);
+        }
+
+        return entityMap;
     }
 
     default BoardDTO entityToDto(BoardEntity boardEntity) {
         BoardDTO boardDTO = BoardDTO.builder()
                 .id(boardEntity.getId())
-                .title(boardEntity.getTitle())
                 .name(boardEntity.getName())
                 .location(boardEntity.getLocation())
                 .phoneNumber(boardEntity.getPhoneNumber())
@@ -45,7 +66,6 @@ public interface BoardService {
     default BoardDTO entitiesToDto(BoardEntity boardEntity, Double avg, Long reviewCnt) {
         BoardDTO boardDTO = BoardDTO.builder()
                 .id(boardEntity.getId())
-                .title(boardEntity.getTitle())
                 .name(boardEntity.getName())
                 .location(boardEntity.getLocation())
                 .phoneNumber(boardEntity.getPhoneNumber())

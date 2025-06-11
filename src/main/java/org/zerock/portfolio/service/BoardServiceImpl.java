@@ -7,17 +7,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.zerock.portfolio.dto.BoardDTO;
-import org.zerock.portfolio.dto.MainPageResultDTO;
-import org.zerock.portfolio.dto.PageRequestDTO;
-import org.zerock.portfolio.dto.PageResultDTO;
+import org.springframework.transaction.annotation.Transactional;
+import org.zerock.portfolio.dto.*;
 import org.zerock.portfolio.entity.BoardEntity;
+import org.zerock.portfolio.entity.ImageEntity;
 import org.zerock.portfolio.repository.BoardRepository;
 import org.zerock.portfolio.repository.ImageRepository;
 import org.zerock.portfolio.repository.ReviewRepository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -28,12 +28,21 @@ public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
 
+    private final ImageRepository imageRepository;
+
+    @Transactional
     @Override
     public Long register(BoardDTO boardDTO) {
 
-        BoardEntity boardEntity = dtoToEntity(boardDTO);
+        Map<String ,Object> entityMap = dtoToEntity(boardDTO);
+
+        BoardEntity boardEntity = (BoardEntity) entityMap.get("entity");
+
+        List<ImageEntity> imageList = (List<ImageEntity>) entityMap.get("imageList");
 
         boardRepository.save(boardEntity);
+
+        imageList.forEach(imageEntity -> imageRepository.save(imageEntity));
 
         return boardEntity.getId();
     }

@@ -16,9 +16,9 @@ public class ImageEntity {
     @GeneratedValue
     private long id;
 
-    private String name;
+    private String fileName;
 
-    private String path;
+    private String folderPath;
 
     private String uuid;
 

@@ -54,7 +54,7 @@
             <tbody>
             <tr th:each="dto : ${recentList}">
                 <th>[[${dto.id}]]</th>
-                <td>[[${dto.title}]]</td>
+                <td>[[${dto.name}]]</td>
                 <td>[[${dto.name}]]</td>
                 <td>[[${dto.reviewCnt}]]</td>
                 <td>[[${dto.avg}]]</td>
@@ -83,7 +83,7 @@
             <tbody>
             <tr th:each="dto : ${popularList}">
                 <th>[[${dto.id}]]</th>
-                <td>[[${dto.title}]]</td>
+                <td>[[${dto.name}]]</td>
                 <td>[[${dto.name}]]</td>
                 <td>[[${dto.reviewCnt}]]</td>
                 <td>[[${dto.avg}]]</td>

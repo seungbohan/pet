@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -12,8 +15,6 @@ import lombok.NoArgsConstructor;
 public class BoardDTO {
 
     private Long id;
-
-    private String title;
 
     private String name;
 
@@ -24,4 +25,7 @@ public class BoardDTO {
     private double avg;
 
     private int reviewCnt;
+
+    @Builder.Default
+    private List<ImageDTO> imageDTOList = new ArrayList<>();
 }
