@@ -42,19 +42,19 @@
 
   <div class="pagination">
     <a th:if="${popularList.prev}"
-       th:href="@{/board/popular(page=${popularList.start - 1})}"
+       th:href="@{/board/list/popular(page=${popularList.start - 1})}"
        class="page-btn">&lt;</a>
 
     <!-- 페이지 번호 -->
     <a th:each="page : ${popularList.pageList}"
-       th:href="@{/board/popular(page=${page})}"
+       th:href="@{/board/list/popular(page=${page})}"
        th:text="${page}"
        th:classappend="${page == popularList.page ? 'active' : ''}"
        class="page-btn"></a>
 
     <!-- 다음 페이지 -->
     <a th:if="${popularList.next}"
-       th:href="@{/board/popular(page=${popularList.end + 1})}"
+       th:href="@{/board/list/popular(page=${popularList.end + 1})}"
        class="page-btn">다음</a>
   </div>
 </div>

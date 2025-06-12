@@ -17,7 +17,6 @@ public class BoardServiceTests {
     public void testRegister() {
         IntStream.rangeClosed(1, 100).forEach(i -> {
             BoardDTO boardDTO = BoardDTO.builder()
-                    .title("게시판 제목" + i)
                     .name("장소" + i)
                     .location("주소" + i)
                     .phoneNumber("전화번호" + i)

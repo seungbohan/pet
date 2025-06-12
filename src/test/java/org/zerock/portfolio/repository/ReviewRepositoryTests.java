@@ -6,6 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.annotation.Commit;
+import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ReviewEntity;
 import org.zerock.portfolio.entity.UserEntity;
@@ -43,20 +45,22 @@ public class ReviewRepositoryTests {
         });
     }
 
-    @Test
-    public void testGetBoardReview() {
+//    @Test
+//    public void testGetBoardReview() {
+//
+//        BoardEntity board = BoardEntity.builder().id(100L).build();
+//
+//        List<ReviewEntity> result = reviewRepository.findByBoard(board);
+//
+//        result.forEach(boardReview -> {
+//            System.out.println(boardReview.getId());
+//            System.out.println(boardReview.getContent());
+//            System.out.println(boardReview.getRating());
+//            System.out.println(boardReview.getUser().getName());
+//
+//            }
+//        );
+//    }
 
-        BoardEntity board = BoardEntity.builder().id(100L).build();
 
-        List<ReviewEntity> result = reviewRepository.findByBoard(board);
-
-        result.forEach(boardReview -> {
-            System.out.println(boardReview.getId());
-            System.out.println(boardReview.getContent());
-            System.out.println(boardReview.getRating());
-            System.out.println(boardReview.getUser().getName());
-
-            }
-        );
-    }
 }

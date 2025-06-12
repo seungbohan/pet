@@ -26,21 +26,49 @@
             <label>이미지 파일</label>
             <div class="custom-file">
                 <input type="file" class="custom-file-input" id="customFile" multiple>
-                <button class="uploadBtn">이미지 등록</button>
+                <label class="custom-file-label" data-browse="Browse"></label>
             </div>
         </div>
 
-        <div class="uploadResult">
+        <div class="box">
 
         </div>
 
         <button type="submit" class="btn btn-primary">등록</button>
     </form>
 
-  <input name="uploadFiles" type="file" multiple>
+  <style>
+      .uploadResult {
+          width: 100%;
+          background-color: gray;
+          margin-top: 10px;
+      }
 
+      .uploadResult ul {
+          display: flex;
+          flex-flow: row;
+          justify-content: center;
+          align-items: center;
+          vertical-align: top;
+          overflow: auto;
+      }
 
+      .uploadResult ul li {
+          list-style: none;
+          padding: 10px;
+          margin-left: 2em;
+      }
 
+      .uploadResult ul li img {
+          width: 100px;
+      }
+  </style>
+
+    <div class="uploadResult">
+        <ul>
+
+        </ul>
+    </div>
 
   <script th:inline="javascript">
       $(document).ready(function () {
@@ -62,7 +90,27 @@
               return true;
           }
 
-          $.(".custom-file-input").on("change", function () {
+          function showResult(uploadResultArr) {
+
+              let uploadUL = $(".uploadResult ul");
+
+              let str = "";
+
+              $(uploadResultArr).each(function (i , obj) {
+
+                  str += "<li data-name='" + obj.fileName + "' data-path='" + obj.folderPath + "' data-uuid='" + obj.uuid + "'>";
+                  str += "<div>";
+                  str += "<button type='button' data-file=\'" + obj.imageURL + "\' ";
+                  str += "class='btn-warning btn-sm'>X</button>";
+                  str += "<img src='/display?fileName=" + obj.thumbnailURL+"'>";
+                  str += "</div>";
+                  str += "</li>";
+              });
+
+              uploadUL.append(str);
+          }
+
+          $(".custom-file-input").on("change", function () {
 
               let fileName = $(this).val().split("\\").pop();
               $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
@@ -101,57 +149,53 @@
                   type: 'POST',
                   dataType: 'json',
                   success: function (result) {
-                      showUploadImages(result);
+                      showResult(result);
                   },
                   error: function (jqXHR, textStatus, errorThrown) {
                       console.log(textStatus);
                   }
               });
           });
-
-          // $('.uploadBtn').on('click', function () {
-          //
-          //
-          //     let inputFile = $("input[type='file']");
-          //
-          //     let files = inputFile[0].files;
-          //
-          //     for (let i = 0; i < files.length; i++) {
-          //         formData.append('uploadFiles', files[i]);
-          //     }
-          //
-          //     function showUploadImages(arr) {
-          //
-          //         let divArea = $('.uploadResult');
-          //
-          //         let str = "";
-          //
-          //         for (let i = 0; i < arr.length; i++) {
-          //             str += "<div>";
-          //             str += "<img src='/display?fileName=" + arr[i].thumbnailURL+"'>";
-          //             str += "<button class='removeBtn' data-name='" + arr[i].imageURL + "'>삭제</button>"
-          //             str += "</div>";
-          //         }
-          //         divArea.append(str);
-          //     }
-
-
-          });
+      });
 
 
 
-    $(".uploadResult").on("click", ".removeBtn", function () {
+    $(".uploadResult").on("click", "li button", function (e) {
 
-        let target = $(this);
-        let fileName = target.data("name");
-        let targetDiv = $(this).closest("div");
+        let targetFile = $(this).data("file");
 
-        $.post('/removeFile', {fileName: fileName}, function (result) {
-            if (result === true) {
-                targetDiv.remove();
+        let targetLi = $(this).closest("li");
+
+        $.ajax({
+            url: '/removeFile',
+            data: {fileName: targetFile},
+            type: 'POST',
+            dataType: 'text',
+            success: function (result) {
+                alert(result);
+                targetLi.remove();
             }
         })
     })
+
+      $(".btn-primary").on("click", function (e) {
+          e.preventDefault();
+
+          let str = "";
+
+          $(".uploadResult li").each(function (i, obj) {
+
+              let target = $(obj);
+
+              str += "<input type='hidden' name='imageDTOList[" + i + "].fileName' value='" + target.data("name") + "'>";
+              str += "<input type='hidden' name='imageDTOList[" + i + "].folderPath' value='" + target.data("path") + "'>";
+              str += "<input type='hidden' name='imageDTOList[" + i + "].uuid' value='" + target.data("uuid") + "'>";
+          });
+
+          $(".box").html(str);
+
+          $("form").submit();
+      })
 
   </script>
 </body>

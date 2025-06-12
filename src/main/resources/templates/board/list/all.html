@@ -42,17 +42,17 @@
 
   <div class="pagination">
         <a th:if="${list.prev}"
-           th:href="@{/board/list(page=${list.start - 1})}"
+           th:href="@{/board/list/all(page=${list.start - 1})}"
            class="page-btn">&lt;</a>
 
         <a th:each="page : ${list.pageList}"
-           th:href="@{/board/list(page=${page})}"
+           th:href="@{/board/list/all(page=${page})}"
            th:text="${page}"
            th:classappend="${page == list.page ? 'active' : ''}"
            class="page-btn"></a>
 
         <a th:if="${list.next}"
-           th:href="@{/board/list(page=${list.end + 1})}"
+           th:href="@{/board/list/all(page=${list.end + 1})}"
            class="page-btn">다음</a>
   </div>
 </div>

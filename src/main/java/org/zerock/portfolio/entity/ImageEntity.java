@@ -13,7 +13,7 @@ import lombok.*;
 public class ImageEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     private String fileName;
