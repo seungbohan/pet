@@ -16,9 +16,9 @@
     <h2 class="board-title">게시글</h2>
 
     <!-- 이미지 슬라이더 -->
-    <div class="image-slider">
-        <div class="image-box">이미지</div>
-        <div class="image-box">이미지</div>
+    <div class="image-slider" th:each="image : ${board.imageDTOList}">
+        <div class="image-box"><img th:if="${board.imageDTOList.size() > 0 && board.imageDTOList[0].folderPath != null }"
+        th:src="|/display?fileName=${image.getThumbnailURL()}|"></div>
         <button class="image-next">&gt;</button>
     </div>
 

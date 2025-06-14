@@ -4,6 +4,7 @@ import org.zerock.portfolio.dto.*;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ImageEntity;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ public interface BoardService {
         return boardDTO;
     }
 
-    default BoardDTO entitiesToDto(BoardEntity boardEntity, Double avg, Long reviewCnt) {
+    default BoardDTO entitiesToDto(BoardEntity boardEntity, List<ImageEntity> imageEntities, Double avg, Long reviewCnt) {
         BoardDTO boardDTO = BoardDTO.builder()
                 .id(boardEntity.getId())
                 .name(boardEntity.getName())
@@ -71,6 +72,15 @@ public interface BoardService {
                 .phoneNumber(boardEntity.getPhoneNumber())
                 .build();
 
+        List<ImageDTO> imageDTOList = imageEntities.stream().map(imageEntity -> {
+            return ImageDTO.builder()
+                    .folderPath(imageEntity.getFolderPath())
+                    .fileName(imageEntity.getFileName())
+                    .uuid(imageEntity.getUuid())
+                    .build();
+        }).collect(Collectors.toList());
+
+        boardDTO.setImageDTOList(imageDTOList);
         boardDTO.setAvg(avg);
         boardDTO.setReviewCnt(reviewCnt.intValue());
         return boardDTO;

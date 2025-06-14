@@ -15,10 +15,7 @@ import org.zerock.portfolio.repository.BoardRepository;
 import org.zerock.portfolio.repository.ImageRepository;
 import org.zerock.portfolio.repository.ReviewRepository;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -36,7 +33,7 @@ public class BoardServiceImpl implements BoardService {
 
         Map<String ,Object> entityMap = dtoToEntity(boardDTO);
 
-        BoardEntity boardEntity = (BoardEntity) entityMap.get("entity");
+        BoardEntity boardEntity = (BoardEntity) entityMap.get("board");
 
         List<ImageEntity> imageList = (List<ImageEntity>) entityMap.get("imageList");
 
@@ -52,10 +49,15 @@ public class BoardServiceImpl implements BoardService {
         List<Object[]> result = boardRepository.getBoardWithReview(id);
 
         BoardEntity boardEntity = (BoardEntity) result.get(0)[0];
-        Double avg = (Double) result.get(0)[1];
-        Long reviewCnt = (Long) result.get(0)[2];
+        List<ImageEntity> imageList = new ArrayList<>();
+        result.forEach(arr -> {
+            ImageEntity imageEntity = (ImageEntity) arr[1];
+            imageList.add(imageEntity);
+        });
+        Double avg = (Double) result.get(0)[2];
+        Long reviewCnt = (Long) result.get(0)[3];
 
-        return entitiesToDto(boardEntity, avg, reviewCnt);
+        return entitiesToDto(boardEntity, imageList, avg, reviewCnt);
 
     }
 
@@ -68,8 +70,9 @@ public class BoardServiceImpl implements BoardService {
 
         Function<Object[], BoardDTO> fn = (arr -> entitiesToDto(
                 (BoardEntity) arr[0],
-                (Double) arr[1],
-                (Long) arr[2]
+                (List<ImageEntity>)(Arrays.asList((ImageEntity) arr[1])),
+                (Double) arr[2],
+                (Long) arr[3]
         ));
 
         return new PageResultDTO<>(result, fn);
@@ -84,8 +87,9 @@ public class BoardServiceImpl implements BoardService {
 
         Function<Object[], BoardDTO> fn = (arr -> entitiesToDto(
                 (BoardEntity) arr[0],
-                (Double) arr[1],
-                (Long) arr[2]
+                (List<ImageEntity>)(Arrays.asList((ImageEntity) arr[1])),
+                (Double) arr[2],
+                (Long) arr[3]
         ));
 
         return new PageResultDTO<>(result, fn);
@@ -104,8 +108,9 @@ public class BoardServiceImpl implements BoardService {
 
         Function<Object[], BoardDTO> fn = (arr -> entitiesToDto(
                 (BoardEntity) arr[0],
-                (Double) arr[1],
-                (Long) arr[2]
+                (List<ImageEntity>)(Arrays.asList((ImageEntity) arr[1])),
+                (Double) arr[2],
+                (Long) arr[3]
         ));
 
         return new MainPageResultDTO<>(recent, popular, fn);

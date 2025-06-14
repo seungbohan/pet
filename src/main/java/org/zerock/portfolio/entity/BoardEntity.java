@@ -5,6 +5,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
+import org.zerock.portfolio.dto.ImageDTO;
+
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -24,4 +27,5 @@ public class BoardEntity {
     private String location;
 
     private String phoneNumber;
+
 }
