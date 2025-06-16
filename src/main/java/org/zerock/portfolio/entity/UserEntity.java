@@ -1,10 +1,10 @@
 package org.zerock.portfolio.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -29,5 +29,11 @@ public class UserEntity {
 
     private boolean fromSocial;
 
-    private int role;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<UserRole> roleSet = new HashSet<>();
+
+    public void addUserRole(UserRole role) {
+        roleSet.add(role);
+    }
 }
