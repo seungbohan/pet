@@ -4,95 +4,812 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>게시판 메인</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            max-width: 100vw;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 상단 바 */
+        .top-bar {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .top-bar .btn {
+            padding: 12px 24px;
+            border: none;
+            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
+            text-decoration: none;
+        }
+
+        .top-bar .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);
+        }
+
+        /* 검색바 */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 100vw;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            gap: 20px;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            width: 100%;
+        }
+
+        .search-bar input:focus {
+            border-color: #4169E1;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 10px;
+            background: #007bff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            color: white;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-btn:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .auth-btns {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: 2px solid #007bff;
+            border-radius: 20px;
+            background: white;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #007bff;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
+
+        .btn.primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn.primary:hover {
+            background: #0056b3;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* 배너 */
+        .banner {
+            background: linear-gradient(135deg, #87CEEB 0%, #4169E1 50%, #1E90FF 100%);
+            height: 280px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+
+        .banner-text {
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            z-index: 2;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .slide-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 3;
+        }
+
+        .slide-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .slide-btn:first-of-type {
+            left: 30px;
+        }
+
+        .slide-btn:last-of-type {
+            right: 30px;
+        }
+
+        .dots {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 3;
+        }
+
+        .dots span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .dots span:first-child {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        /* 게시판 섹션 */
+        .board-section {
+            padding: 0 30px 40px;
+        }
+
+        .board-toggle {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .toggle-container {
+            display: inline-flex;
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .toggle-btn {
+            padding: 12px 30px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .toggle-btn:hover:not(.active) {
+            color: #4169E1;
+            transform: translateY(-1px);
+        }
+
+        .board-box {
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .board-box.hidden {
+            display: none;
+        }
+
+        /* 테이블 스타일 */
+        .board-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+
+        .board-table th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px 12px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .board-table td {
+            padding: 15px 12px;
+            text-align: center;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f3f4;
+            transition: background 0.2s ease;
+        }
+
+        .board-table tr:hover td {
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .board-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .board-table tbody tr:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        .board-table th:first-child,
+        .board-table td:first-child {
+            width: 15%;
+        }
+
+        .board-table th:nth-child(2),
+        .board-table td:nth-child(2) {
+            width: 55%;
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .board-table th:nth-child(3),
+        .board-table td:nth-child(3) {
+            width: 20%;
+        }
+
+        .board-table th:nth-child(4),
+        .board-table td:nth-child(4) {
+            width: 10%;
+        }
+
+        /* 더보기 버튼 */
+        .more-btn {
+            width: 100%;
+            padding: 12px 30px;
+            border: none;
+            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .more-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);
+        }
+
+        /* 평점 스타일 */
+        .board-table td:last-child {
+            font-weight: 600;
+            color: #ffc107;
+        }
+
+        /* 리뷰 수 스타일 */
+        .board-table td:nth-child(3) {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .top-bar, .search-bar {
+                padding: 15px 20px;
+            }
+
+            .search-bar {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .search-bar input {
+                margin-right: 0;
+                max-width: 100%;
+            }
+
+            .search-btn {
+                position: absolute;
+                right: 8px;
+            }
+
+            .board-section {
+                padding: 0 20px 40px;
+            }
+
+            .banner {
+                height: 200px;
+            }
+
+            .slide-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .slide-btn:first-of-type {
+                left: 15px;
+            }
+
+            .slide-btn:last-of-type {
+                right: 15px;
+            }
+
+            .board-table {
+                font-size: 12px;
+            }
+
+            .board-table th,
+            .board-table td {
+                padding: 10px 8px;
+            }
+
+            .auth-btns {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* 애니메이션 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 숨김 처리 */
+        .hidden {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
-
-<!-- 상단 바 -->
-<div class="top-bar">
-    <button class="btn">로그인</button>
-</div>
-
-<!-- 검색바 -->
-<div class="search-bar">
-    <input type="text" placeholder="검색어를 입력해주세요.">
-    <button class="search-btn">🔍</button>
-    <div class="auth-btns">
-        <button class="btn">회원가입</button>
-        <button class="btn">로그인</button>
+<div class="main-container">
+    <!-- 상단 바 -->
+    <div class="top-bar">
+        <a th:href="@{/board/main}"><button class="btn">LOGO</button></a>
     </div>
-</div>
 
-<!-- 배너 이미지 슬라이드 -->
-<div class="banner">
-    <button class="slide-btn">◀</button>
-    <div class="banner-text">배너 이미지</div>
-    <button class="slide-btn">▶</button>
-    <div class="dots">
-        <span>●</span><span>●</span><span>●</span>
-    </div>
-</div>
-
-<!-- 게시판 목록 -->
-<div class="board-section">
-    <!-- 전체 게시판 -->
-    <div class="board-box">
-        <div class="board-header">
-            <span class="board-title">전체 게시판</span>
+    <!-- 검색바 -->
+    <div class="search-bar">
+        <div class="search-container">
+            <input type="text" placeholder="검색어를 입력해주세요." id="searchInput">
+            <button class="search-btn" onclick="performSearch()">🔍</button>
         </div>
-        <table class="board-table">
-            <thead>
-            <tr>
-                <th>No</th>
-                <th>항목명</th>
-                <th>상호명</th>
-                <th>리뷰 수</th>
-                <th>평점</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr th:each="dto : ${recentList}">
-                <th>[[${dto.id}]]</th>
-                <td>[[${dto.name}]]</td>
-                <td>[[${dto.name}]]</td>
-                <td>[[${dto.reviewCnt}]]</td>
-                <td>[[${dto.avg}]]</td>
-            </tr>
-            </tbody>
-        </table>
-        <a th:href="@{/board/list/all}"><button class="more-btn" >더보기</button></a>
+        <div class="auth-btns">
+            <a href="/join/signup"><button id="signupBtn" class="btn">회원가입</button></a>
+            <a href="/board/mypage/biz"><button id="bizBtn" class="btn">마이페이지</button></a>
+            <a href="/join/login"><button id="loginBtn" class="btn primary">로그인</button></a>
+            <button id="logoutBtn" onclick="logout()" class="btn hidden">로그아웃</button>
+        </div>
     </div>
 
-    <!-- 인기 게시판 -->
-    <div class="board-box">
-        <div class="board-header">
-            <span class="board-title">인기 게시판</span>
+    <!-- 배너 이미지 슬라이드 -->
+    <div class="banner">
+        <button class="slide-btn">◀</button>
+        <div class="banner-text">배너 이미지</div>
+        <button class="slide-btn">▶</button>
+        <div class="dots">
+            <span></span><span></span><span></span>
         </div>
-        <table class="board-table">
-            <thead>
-            <tr>
-                <th>No</th>
-                <th>항목명</th>
-                <th>상호명</th>
-                <th>리뷰 수</th>
-                <th>평점</th>
-            </tr>
-            </thead>
+    </div>
 
-            <tbody>
-            <tr th:each="dto : ${popularList}">
-                <th>[[${dto.id}]]</th>
-                <td>[[${dto.name}]]</td>
-                <td>[[${dto.name}]]</td>
-                <td>[[${dto.reviewCnt}]]</td>
-                <td>[[${dto.avg}]]</td>
-            </tr>
-            </tbody>
-        </table>
-        <a th:href="@{/board/list/popular}"><button class="more-btn">더보기</button></a>
+    <!-- 게시판 목록 -->
+    <div class="board-section">
+        <!-- 토글 버튼 -->
+        <div class="board-toggle">
+            <div class="toggle-container">
+                <button class="toggle-btn" onclick="showBoard('all')">전체 게시판</button>
+                <button class="toggle-btn active" onclick="showBoard('popular')">인기 게시판</button>
+            </div>
+        </div>
+
+        <!-- 전체 게시판 -->
+        <div class="board-box hidden" id="allBoard">
+            <table class="board-table">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>상호명</th>
+                    <th>리뷰 수</th>
+                    <th>평점</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="dto : ${recentList}" onclick="goToDetail(this)">
+                    <td th:text="${dto.id}">1</td>
+                    <td th:text="${dto.name}">홍길동카페</td>
+                    <td th:text="${dto.reviewCnt}">25</td>
+                    <td th:text="${dto.avg}">★ 4.5</td>
+                </tr>
+                <!-- 데이터가 없을 때 표시할 더미 데이터 -->
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>1</td>
+                    <td>홍길동카페</td>
+                    <td>25</td>
+                    <td>★ 4.5</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>2</td>
+                    <td>김치찌개집</td>
+                    <td>18</td>
+                    <td>★ 4.2</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>3</td>
+                    <td>치킨마루</td>
+                    <td>32</td>
+                    <td>★ 4.8</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>4</td>
+                    <td>피자샵</td>
+                    <td>15</td>
+                    <td>★ 4.0</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>5</td>
+                    <td>버거킹</td>
+                    <td>28</td>
+                    <td>★ 4.6</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>6</td>
+                    <td>돈까스집</td>
+                    <td>22</td>
+                    <td>★ 4.3</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>7</td>
+                    <td>중식당</td>
+                    <td>19</td>
+                    <td>★ 4.1</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>8</td>
+                    <td>일식당</td>
+                    <td>35</td>
+                    <td>★ 4.7</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>9</td>
+                    <td>디저트카페</td>
+                    <td>41</td>
+                    <td>★ 4.4</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentList)}" onclick="goToDetail(this)">
+                    <td>10</td>
+                    <td>베이커리</td>
+                    <td>16</td>
+                    <td>★ 4.2</td>
+                </tr>
+                </tbody>
+            </table>
+            <a th:href="@{/board/list/all}" class="more-btn">더보기</a>
+        </div>
+
+        <!-- 인기 게시판 -->
+        <div class="board-box" id="popularBoard">
+            <table class="board-table">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>상호명</th>
+                    <th>리뷰 수</th>
+                    <th>평점</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="dto : ${popularList}" onclick="goToDetail(this)">
+                    <td th:text="${dto.id}">1</td>
+                    <td th:text="${dto.name}">맛집월드</td>
+                    <td th:text="${dto.reviewCnt}">120</td>
+                    <td th:text="${dto.avg}">★ 4.9</td>
+                </tr>
+                <!-- 데이터가 없을 때 표시할 더미 데이터 -->
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>1</td>
+                    <td>맛집월드</td>
+                    <td>120</td>
+                    <td>★ 4.9</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>2</td>
+                    <td>최고맛집</td>
+                    <td>95</td>
+                    <td>★ 5.0</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>3</td>
+                    <td>착한가격</td>
+                    <td>88</td>
+                    <td>★ 4.7</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>4</td>
+                    <td>신규매장</td>
+                    <td>76</td>
+                    <td>★ 4.6</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>5</td>
+                    <td>고급식당</td>
+                    <td>65</td>
+                    <td>★ 4.8</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>6</td>
+                    <td>핫플레이스</td>
+                    <td>82</td>
+                    <td>★ 4.5</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>7</td>
+                    <td>인기피자</td>
+                    <td>73</td>
+                    <td>★ 4.6</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>8</td>
+                    <td>카페거리</td>
+                    <td>56</td>
+                    <td>★ 4.4</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>9</td>
+                    <td>달콤카페</td>
+                    <td>69</td>
+                    <td>★ 4.7</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(popularList)}" onclick="goToDetail(this)">
+                    <td>10</td>
+                    <td>한정식집</td>
+                    <td>91</td>
+                    <td>★ 4.8</td>
+                </tr>
+                </tbody>
+            </table>
+            <a th:href="@{/board/list/popular}" class="more-btn">더보기</a>
+        </div>
     </div>
 </div>
 
+<script>
+    // 페이지 로드 시 로그인 상태 확인
+    window.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const bizBtn = document.getElementById('bizBtn');
+
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const role = payload.role;
+                console.log(payload);
+
+                loginBtn.classList.add('hidden');
+                signupBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+
+                if (role === 'ROLE_BIZ') {
+                    bizBtn.classList.remove('hidden');
+                } else {
+                    bizBtn.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('토큰 파싱 에러:', error);
+                localStorage.removeItem('token');
+            }
+        } else {
+            loginBtn.classList.remove('hidden');
+            signupBtn.classList.remove('hidden');
+            logoutBtn.classList.add('hidden');
+            bizBtn.classList.add('hidden');
+        }
+    });
+
+    // 로그아웃 함수
+    function logout() {
+        if (confirm('로그아웃 하시겠습니까?')) {
+            localStorage.removeItem('token');
+            alert('로그아웃 되었습니다');
+            window.location.href = '/board/main';
+        }
+    }
+
+    // 게시물 상세 페이지로 이동
+    function goToDetail(row) {
+        const id = row.children[0].textContent;
+        const shopName = row.children[1].textContent;
+        console.log(`게시물 ${id}: ${shopName} 클릭됨`);
+        // 실제로는 상세 페이지로 이동
+        // window.location.href = `/board/detail/${id}`;
+    }
+
+    // 게시판 토글 기능
+    function showBoard(type) {
+        const allBoard = document.getElementById('allBoard');
+        const popularBoard = document.getElementById('popularBoard');
+        const toggleBtns = document.querySelectorAll('.toggle-btn');
+
+        // 모든 토글 버튼 비활성화
+        toggleBtns.forEach(btn => btn.classList.remove('active'));
+
+        if (type === 'all') {
+            allBoard.classList.remove('hidden');
+            popularBoard.classList.add('hidden');
+            toggleBtns[0].classList.add('active');
+        } else {
+            allBoard.classList.add('hidden');
+            popularBoard.classList.remove('hidden');
+            toggleBtns[1].classList.add('active');
+        }
+    }
+
+    // 배너 슬라이더 기능
+    let currentSlide = 0;
+    const slides = ['메인 배너 이미지', '이벤트 안내', '신규 매장 소개'];
+    const dots = document.querySelectorAll('.dots span');
+    const bannerText = document.querySelector('.banner-text');
+    const slideButtons = document.querySelectorAll('.slide-btn');
+
+    function showSlide(index) {
+        dots.forEach((dot, i) => {
+            if (i === index) {
+                dot.style.background = 'white';
+                dot.style.transform = 'scale(1.2)';
+            } else {
+                dot.style.background = 'rgba(255, 255, 255, 0.5)';
+                dot.style.transform = 'scale(1)';
+            }
+        });
+        bannerText.textContent = slides[index];
+        currentSlide = index;
+    }
+
+    // 슬라이드 버튼 이벤트
+    slideButtons[0].addEventListener('click', () => {
+        currentSlide = currentSlide > 0 ? currentSlide - 1 : slides.length - 1;
+        showSlide(currentSlide);
+    });
+
+    slideButtons[1].addEventListener('click', () => {
+        currentSlide = currentSlide < slides.length - 1 ? currentSlide + 1 : 0;
+        showSlide(currentSlide);
+    });
+
+    // 점 클릭 이벤트
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => showSlide(index));
+    });
+
+    // 자동 슬라이드
+    setInterval(() => {
+        currentSlide = currentSlide < slides.length - 1 ? currentSlide + 1 : 0;
+        showSlide(currentSlide);
+    }, 5000);
+
+    // 검색 기능
+    document.querySelector('.search-btn').addEventListener('click', () => {
+        const searchValue = document.querySelector('.search-bar input').value.trim();
+        if (searchValue) {
+            console.log(`검색어: ${searchValue}`);
+            // 실제로는 검색 페이지로 이동
+            // window.location.href = `/board/search?q=${encodeURIComponent(searchValue)}`;
+        } else {
+            alert('검색어를 입력해주세요.');
+        }
+    });
+
+    // 엔터키 검색
+    document.querySelector('.search-bar input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.querySelector('.search-btn').click();
+        }
+    });
+</script>
 </body>
 </html>

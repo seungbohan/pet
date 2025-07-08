@@ -1,5 +1,6 @@
 package org.zerock.portfolio.security.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
@@ -8,6 +9,9 @@ import lombok.extern.log4j.Log4j2;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Log4j2
 public class JWTUtil {
@@ -16,20 +20,23 @@ public class JWTUtil {
 
     private long expire = 60 * 24 * 30;
 
-    public String generateToken(String content) throws Exception {
+    public String generateToken(String content, List<String> roles) throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String rolesJson = objectMapper.writeValueAsString(roles);
 
         return Jwts.builder()
                 .setIssuedAt(new Date())
-             //   .setExpiration(Date.from(ZonedDateTime.now().plusMinutes(expire).toInstant()))
                 .setExpiration(Date.from(ZonedDateTime.now().plusSeconds(expire).toInstant()))
                 .claim("sub", content)
+                .claim("roles", rolesJson)
                 .signWith(SignatureAlgorithm.HS256, secretKey.getBytes("UTF-8"))
                 .compact();
     }
 
-    public String validateAndExtract(String tokenStr) throws Exception {
+    public Map<String ,String > validateAndExtract(String tokenStr) throws Exception {
 
-        String contentValue = null;
+        Map<String ,String > contentValue = new HashMap<>();
 
         try {
             DefaultJws defaultJws = (DefaultJws) Jwts.parser().setSigningKey(secretKey.getBytes("UTF-8"))
@@ -42,7 +49,14 @@ public class JWTUtil {
 
             log.info("--------------------------");
 
-            contentValue = claims.getSubject();
+            String email = claims.get("sub", String.class);
+            String rolesJson = claims.get("roles", String.class);
+
+            contentValue.put("email", email);
+            contentValue.put("roles", rolesJson);
+            log.info("email: " + email);
+            log.info("role: " + rolesJson);
+
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());

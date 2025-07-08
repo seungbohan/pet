@@ -25,7 +25,7 @@ public class ReviewRepositoryTests {
     @Test
     public void insertReview() {
 
-        IntStream.rangeClosed(1,200).forEach(i -> {
+        IntStream.rangeClosed(1,300).forEach(i -> {
 
             //게시판 번호
             Long BoardId = (long) (Math.random() * 100) + 1;

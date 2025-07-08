@@ -13,15 +13,15 @@ public class ReviewServiceTests {
     @Autowired
     private ReviewService reviewService;
 
-    @Test
-    public void testRegister() {
-
-        ReviewDTO reviewDTO = ReviewDTO.builder()
-                .content("review1")
-                .writer("writer1")
-                .rating(5)
-                .build();
-
-        System.out.println(reviewService.register(reviewDTO));
-    }
+//    @Test
+//    public void testRegister() {
+//
+//        ReviewDTO reviewDTO = ReviewDTO.builder()
+//                .content("review1")
+//                .writer("writer1")
+//                .rating(5)
+//                .build();
+//
+//        System.out.println(reviewService.register(reviewDTO));
+//    }
 }

@@ -1,5 +1,6 @@
 package org.zerock.portfolio.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,10 +11,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.zerock.portfolio.security.dto.LoginRequestDTO;
 import org.zerock.portfolio.security.dto.UserAuthDTO;
 import org.zerock.portfolio.security.util.JWTUtil;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Log4j2
 public class ApiLoginFilter extends AbstractAuthenticationProcessingFilter {
@@ -31,11 +36,15 @@ public class ApiLoginFilter extends AbstractAuthenticationProcessingFilter {
         log.info("-------ApiLoginFilter--------");
         log.info("attemptAuthentication");
 
-        String email = request.getParameter("email");
-        String pw = "1111";
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        LoginRequestDTO dto = objectMapper.readValue(request.getInputStream(), LoginRequestDTO.class);
+
+        String email = dto.getEmail();
+        String pw = dto.getPassword();
 
         if (email == null) {
-            throw new BadCredentialsException("email cannot ne null");
+            throw new BadCredentialsException("email cannot be null");
         }
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, pw);
@@ -51,14 +60,24 @@ public class ApiLoginFilter extends AbstractAuthenticationProcessingFilter {
         log.info("successfulAuthentication: " + authResult);
 
         String email = ((UserAuthDTO)authResult.getPrincipal()).getUsername();
+        List<String> roles = authResult.getAuthorities().stream()
+                .map(a -> a.getAuthority().replace("ROLE_", "")).toList();
+
+        log.info("email: " + email);
+        log.info("role: " + roles);
 
         String token = null;
 
         try {
-            token = jwtUtil.generateToken(email);
+            token = jwtUtil.generateToken(email, roles);
 
-            response.setContentType("text/plain");
-            response.getOutputStream().write(token.getBytes());
+            response.setContentType("application/json;charset=utf-8");
+
+            Map<String, String> result = new HashMap<>();
+            result.put("token", token);
+
+            String json = new ObjectMapper().writeValueAsString(result);
+            response.getWriter().write(json);
 
             log.info("token: " + token);
         } catch (Exception e) {

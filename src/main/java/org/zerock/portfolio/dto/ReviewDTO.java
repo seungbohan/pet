@@ -21,6 +21,8 @@ public class ReviewDTO {
 
     private Long boardId;
 
+    private String writerEmail;
+
     private int rating;
 
     private LocalDateTime regDate;

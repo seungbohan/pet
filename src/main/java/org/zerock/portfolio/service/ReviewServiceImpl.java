@@ -5,6 +5,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.zerock.portfolio.dto.BoardDTO;
 import org.zerock.portfolio.dto.PageRequestDTO;
@@ -12,6 +14,7 @@ import org.zerock.portfolio.dto.PageResultDTO;
 import org.zerock.portfolio.dto.ReviewDTO;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ReviewEntity;
+import org.zerock.portfolio.entity.UserEntity;
 import org.zerock.portfolio.repository.BoardRepository;
 import org.zerock.portfolio.repository.ImageRepository;
 import org.zerock.portfolio.repository.ReviewRepository;
@@ -29,6 +32,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
 
+    private final UserRepository userRepository;
+
     @Override
     public PageResultDTO<ReviewDTO, ReviewEntity> getList(Long boardId, PageRequestDTO pageRequestDTO) {
 
@@ -38,6 +43,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         Page<ReviewEntity> result = reviewRepository.findByBoard_id(boardId, pageable);
 
+        log.info("reviewEntity" + result.getContent());
         Function<ReviewEntity, ReviewDTO> fn = (entity -> entityToDto(entity));
 
         return new PageResultDTO<>(result, fn);
@@ -45,7 +51,22 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public Long register(ReviewDTO reviewDTO) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        Optional<UserEntity> user = userRepository.findByEmail(email, false);
+
+        if(!user.isPresent()) {
+
+            log.info("user not found");
+
+            throw new RuntimeException("Check Email or Social");
+        }
+
         ReviewEntity reviewEntity = dtoToEntity(reviewDTO);
+        reviewEntity.setUser(user.get());
 
         reviewRepository.save(reviewEntity);
         return reviewEntity.getId();

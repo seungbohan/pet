@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <link rel="stylesheet" th:href="@{/css/loginStyle.css}" />
+</head>
+<body>
+<div class="container">
+    <div class="form-container">
+        <!-- 로고 영역 -->
+        <div class="logo-section">
+            <div class="logo-placeholder">
+                <!-- 여기에 로고 이미지나 텍스트를 넣으세요 -->
+                <a th:href="@{/board/main}"><div class="logo-text">LOGO</div></a>
+            </div>
+        </div>
+
+        <!-- 로그인 폼 -->
+        <form id="loginForm">
+            <h2 class="form-title">로그인</h2>
+
+            <div class="form-group">
+                <label class="form-label" for="loginEmail">이메일 <span class="required">*</span></label>
+                <input type="email" name="email" id="loginEmail" class="form-input" placeholder="이메일을 입력하세요" required>
+                <div class="error-message" id="loginEmailError">올바른 이메일 형식을 입력해주세요.</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="loginPassword">비밀번호 <span class="required">*</span></label>
+                <div class="password-container">
+                    <input type="password" name="password" id="loginPassword" class="form-input" placeholder="비밀번호를 입력하세요" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">보기</button>
+                </div>
+                <div class="error-message" id="loginPasswordError">비밀번호를 입력해주세요.</div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="rememberMe" class="checkbox">
+                <label for="rememberMe" class="checkbox-label">로그인 상태 유지</label>
+            </div>
+
+            <button type="submit" class="submit-btn">로그인</button>
+
+            <div class="divider">
+                <span>또는</span>
+            </div>
+
+            <div class="social-login">
+                <button type="button" class="social-btn kakao-btn" onclick="socialLogin('kakao')">
+                    <span>카카오</span>
+                </button>
+                <button type="button" class="social-btn naver-btn" onclick="socialLogin('naver')">
+                    <span>네이버</span>
+                </button>
+                <button type="button" class="social-btn google-btn" onclick="socialLogin('google')">
+                    <span>구글</span>
+                </button>
+            </div>
+
+            <div class="links">
+                <a href="#" onclick="showFindPassword()">비밀번호 찾기</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 회원가입 링크 섹션 -->
+    <div class="signup-links">
+        <span>아직 계정이 없으신가요?</span><br><br>
+        <a th:href="@{/join/signup}" class="signup-btn">회원가입</a>
+    </div>
+</div>
+
+<script>
+    // 비밀번호 보기/숨기기
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const button = input.nextElementSibling;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            button.textContent = '숨기기';
+        } else {
+            input.type = 'password';
+            button.textContent = '보기';
+        }
+    }
+
+    // 소셜 로그인
+    function socialLogin(provider) {
+        alert(`${provider} 로그인이 시작됩니다.`);
+        // 실제 소셜 로그인 로직 구현
+    }
+
+    // 비밀번호 찾기
+    function showFindPassword() {
+        alert('비밀번호 찾기 페이지로 이동합니다.');
+        // 비밀번호 찾기 페이지로 이동
+        // window.location.href = 'find-password.html';
+    }
+
+    // 유효성 검사 함수
+    function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    function showError(fieldId, message) {
+        const errorElement = document.getElementById(fieldId + 'Error');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    }
+
+    function hideError(fieldId) {
+        const errorElement = document.getElementById(fieldId + 'Error');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+    }
+
+    // 로그인 폼 이벤트 리스너
+    document.getElementById('loginForm').addEventListener('submit',async function(e) {
+        e.preventDefault();
+
+        const email = document.querySelector('[name="email"]').value;
+        const password = document.querySelector('[name="password"]').value;
+
+        // 이메일 검증
+        if (!validateEmail(email)) {
+            showError('loginEmail', '올바른 이메일 형식을 입력해주세요.');
+            return;
+        } else {
+            hideError('loginEmail');
+        }
+
+        // 비밀번호 검증
+        if (password.length < 1) {
+            showError('loginPassword', '비밀번호를 입력해주세요.');
+            return;
+        } else {
+            hideError('loginPassword');
+        }
+
+        const dto = {
+            email,
+            password
+        }
+
+        try {
+            const response = await fetch('/api/join/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dto)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+
+                alert("로그인 성공");
+                localStorage.setItem("token", result.token);
+
+                window.location.href = '/board/main'
+            } else {
+                alert("로그인 실패");
+            }
+        } catch (err) {
+
+            console.log(err);
+        }
+    });
+
+    // 실시간 입력 검증
+    document.getElementById('loginEmail').addEventListener('input', function() {
+        const email = this.value;
+        if (email && validateEmail(email)) {
+            hideError('loginEmail');
+        } else if (email) {
+            showError('loginEmail', '올바른 이메일 형식을 입력해주세요.');
+        }
+    });
+
+    document.getElementById('loginPassword').addEventListener('input', function() {
+        const password = this.value;
+        if (password) {
+            hideError('loginPassword');
+        }
+    });
+</script>
+</body>
+</html>

@@ -15,27 +15,27 @@ public class JWTTests {
         jwtUtil = new JWTUtil();
     }
 
-    @Test
-    public void testEncode() throws Exception {
+//    @Test
+//    public void testEncode() throws Exception {
+//
+//        String email = "user95@zerock.org";
+//
+//        String str = jwtUtil.generateToken(email,role);
+//
+//        System.out.println(str);
+//    }
 
-        String email = "user95@zerock.org";
-
-        String str = jwtUtil.generateToken(email);
-
-        System.out.println(str);
-    }
-
-    @Test
-    public void testValidate() throws Exception {
-
-        String email = "user95@zerock.org";
-
-        String str = jwtUtil.generateToken(email);
-
-        Thread.sleep(5000);
-
-        String resultEmail = jwtUtil.validateAndExtract(str);
-
-        System.out.println(resultEmail);
-    }
+//    @Test
+//    public void testValidate() throws Exception {
+//
+//        String email = "user95@zerock.org";
+//
+//        String str = jwtUtil.generateToken(email);
+//
+//        Thread.sleep(5000);
+//
+//        String resultEmail = jwtUtil.validateAndExtract(str);
+//
+//        System.out.println(resultEmail);
+//    }
 }

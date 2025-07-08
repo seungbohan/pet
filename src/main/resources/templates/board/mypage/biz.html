@@ -9,17 +9,17 @@
     <form th:action="@{/board/mypage/biz}" th:method="post">
         <div class="form-group">
             <label>상호 명</label>
-            <input type="text" name="name" placeholder="상호 명을 입력해주세요" />
+            <input type="text" name="name" />
         </div>
 
         <div class="form-group">
             <label>전화번호</label>
-            <input type="text" name="phoneNumber" placeholder="전화번호 입력해주세요" />
+            <input type="text" name="phoneNumber" />
         </div>
 
         <div class="form-group">
             <label>위치</label>
-            <input type="text" name="location" placeholder="위치를 입력해주세요" />
+            <input type="text" name="location" />
         </div>
 
         <div class="form-group fileForm">
@@ -70,7 +70,38 @@
         </ul>
     </div>
 
-  <script th:inline="javascript">
+  <script>
+      console.log("✅ JS 로딩 확인됨");
+      const token = localStorage.getItem("token")
+      console.log("📦 토큰:", token);
+
+      document.addEventListener("DOMContentLoaded", async function() {
+
+          if (!token) {
+              alert("로그인이 필요합니다");
+              window.location.href = "/join/login";
+              return;
+          }
+
+          try {
+              const response = await fetch("/api/mypage/biz", {
+                  headers: {
+                      "Authorization": "Bearer " + token
+                  }
+              });
+
+              if (!response.ok) {
+                  throw new Error("인증 실패");
+              }
+
+          } catch (e) {
+              alert("세션이 만료되었거나 인증에 실패했습니다 다시 로그인해주세요");
+              localStorage.removeItem("token");
+              window.location.href = "/join/login";
+          }
+      })
+
+
       $(document).ready(function () {
 
           let regex = new RegExp("(.*?)\.(exe|sh|zip|alz|tiff)$");
@@ -148,6 +179,9 @@
                   data: formData,
                   type: 'POST',
                   dataType: 'json',
+                  headers: {
+                      "Authorization": "Bearer " + token
+                  },
                   success: function (result) {
                       showResult(result);
                   },
@@ -171,6 +205,9 @@
             data: {fileName: targetFile},
             type: 'POST',
             dataType: 'text',
+            headers: {
+                "Authorization": "Bearer " + token
+            },
             success: function (result) {
                 alert(result);
                 targetLi.remove();

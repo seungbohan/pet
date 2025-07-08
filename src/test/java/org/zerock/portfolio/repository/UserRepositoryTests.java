@@ -24,16 +24,31 @@ public class UserRepositoryTests {
     @Test
     public void insertUser() {
 
-        IntStream.rangeClosed(1,100).forEach(i -> {
-            UserEntity user = UserEntity.builder()
-                    .email("user" + i +"@abc.com")
-                    .password("1111")
-                    .name("user" + i)
-                    .phoneNumber("010-" + i + "-1234")
-                    .fromSocial(false)
-                    .build();
-            userRepository.save(user);
-        });
+//        IntStream.rangeClosed(1,100).forEach(i -> {
+//            UserEntity user = UserEntity.builder()
+//                    .email("user" + i +"@abc.com")
+//                    .password("1111")
+//                    .name("user" + i)
+//                    .phoneNumber("010-" + i + "-1234")
+//                    .fromSocial(false)
+//                    .build();
+//            userRepository.save(user);
+//        });
+
+        UserEntity user = UserEntity.builder()
+                .email("aa@aa.com")
+                .password(passwordEncoder.encode("qwer1234@@"))
+                .name("aaa")
+                .phoneNumber("01011111111")
+                .fromSocial(false)
+                .build();
+
+        user.addUserRole(UserRole.USER);
+        user.addUserRole(UserRole.BIZ);
+        user.addUserRole(UserRole.ADMIN);
+        userRepository.save(user);
+
+
     }
 
     @Transactional
@@ -48,7 +63,7 @@ public class UserRepositoryTests {
             user.addUserRole(UserRole.USER);
 
             if (user.getId() > 80) {
-                user.addUserRole(UserRole.MANAGER);
+                user.addUserRole(UserRole.BIZ);
             }
 
             if (user.getId() > 90) {

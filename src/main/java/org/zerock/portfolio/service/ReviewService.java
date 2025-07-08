@@ -27,7 +27,6 @@ public interface ReviewService {
         ReviewEntity reviewEntity = ReviewEntity.builder()
                 .id(reviewDTO.getId())
                 .board(BoardEntity.builder().id(reviewDTO.getBoardId()).build())
-                .user(UserEntity.builder().name(reviewDTO.getWriter()).build())
                 .content(reviewDTO.getContent())
                 .rating(reviewDTO.getRating())
                 .build();
@@ -35,13 +34,13 @@ public interface ReviewService {
     }
 
     default ReviewDTO entityToDto(ReviewEntity reviewEntity) {
-
         ReviewDTO reviewDTO = ReviewDTO.builder()
                 .id(reviewEntity.getId())
                 .content(reviewEntity.getContent())
                 .rating(reviewEntity.getRating())
                 .boardId(reviewEntity.getBoard().getId())
                 .writer(reviewEntity.getUser().getName())
+                .writerEmail(reviewEntity.getUser().getEmail())
                 .regDate(reviewEntity.getRegDate())
                 .modDate(reviewEntity.getModDate()).build();
         return reviewDTO;

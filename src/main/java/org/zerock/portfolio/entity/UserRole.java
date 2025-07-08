@@ -2,5 +2,5 @@ package org.zerock.portfolio.entity;
 
 public enum UserRole {
 
-    USER, MANAGER, ADMIN
+    USER, BIZ, ADMIN
 }

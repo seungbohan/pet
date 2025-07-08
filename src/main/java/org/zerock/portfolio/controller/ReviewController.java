@@ -15,7 +15,7 @@ import org.zerock.portfolio.service.ReviewService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/review")
+@RequestMapping("/api/review")
 @Log4j2
 @RequiredArgsConstructor
 public class ReviewController {
@@ -42,6 +42,7 @@ public class ReviewController {
     public ResponseEntity<Long> modify(@PathVariable("id") Long id, @RequestBody ReviewDTO reviewDTO) {
 
         reviewService.modify(reviewDTO);
+        log.info("---------reviewDTO: " + reviewDTO);
 
         return new ResponseEntity<>(id, HttpStatus.OK);
     }

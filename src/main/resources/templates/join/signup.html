@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입</title>
+  <link rel="stylesheet" th:href="@{/css/signupStyle.css}">
+</head>
+<body>
+<div class="container">
+  <div class="form-container">
+    <!-- 로고 영역 -->
+    <div class="logo-section">
+      <div class="logo-placeholder">
+        <!-- 여기에 로고 이미지나 텍스트를 넣으세요 -->
+        <a th:href="@{/board/main}"><div class="logo-text">LOGO</div></a>
+      </div>
+    </div>
+
+    <!-- 회원가입 타입 선택 -->
+    <div class="signup-type-toggle">
+      <button type="button" class="signup-type-btn active" onclick="setSignupType('individual')">일반회원</button>
+      <button type="button" class="signup-type-btn" onclick="setSignupType('business')">사업자회원</button>
+    </div>
+
+    <!-- 회원가입 폼 -->
+    <form id="signupForm" class="individual-mode">
+      <h2 class="form-title" id="formTitle">일반회원 가입</h2>
+
+      <!-- 공통 필드 -->
+      <div class="form-group">
+        <label class="form-label" for="signupName">이름 <span class="required">*</span></label>
+        <input type="text" name="name" id="signupName" class="form-input" placeholder="이름을 입력하세요" required>
+        <div class="error-message" id="signupNameError">이름을 입력해주세요.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="signupEmail">이메일 <span class="required">*</span></label>
+        <input type="email" name="email" id="signupEmail" class="form-input" placeholder="이메일을 입력하세요" required>
+        <div class="error-message" id="signupEmailError">올바른 이메일 형식을 입력해주세요.</div>
+        <div class="success-message" id="signupEmailSuccess">사용 가능한 이메일입니다.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="signupPhone">
+          <span class="individual-only">휴대폰 번호</span>
+          <span class="business-only">전화번호</span>
+          <span class="required">*</span>
+        </label>
+        <input type="tel" name="phoneNumber" id="signupPhone" class="form-input" placeholder="'-' 없이 숫자만 입력하세요" required>
+        <div class="error-message" id="signupPhoneError">올바른 전화번호를 입력해주세요.</div>
+      </div>
+
+      <!-- 사업자 전용 필드 -->
+      <div class="form-group business-only">
+        <label class="form-label" for="companyName">상호명 <span class="required">*</span></label>
+        <input type="text" name="bizName" id="companyName" class="form-input" placeholder="상호명을 입력하세요">
+        <div class="error-message" id="companyNameError">상호명을 입력해주세요.</div>
+      </div>
+
+      <div class="form-group business-only">
+        <label class="form-label" for="companyRegion">지역 <span class="required">*</span></label>
+        <input type="text" name="location" id="companyRegion" class="form-input" placeholder="지역을 입력하세요 (예: 서울 강남구, 부산 해운대구)">
+        <div class="error-message" id="companyRegionError">지역을 입력해주세요.</div>
+      </div>
+
+      <!-- 비밀번호 필드 -->
+      <div class="form-group">
+        <label class="form-label" for="signupPassword">비밀번호 <span class="required">*</span></label>
+        <div class="password-container">
+          <input type="password" name="password" id="signupPassword" class="form-input" placeholder="8자 이상 입력하세요" required>
+          <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')">보기</button>
+        </div>
+        <div class="error-message" id="signupPasswordError">8자 이상의 비밀번호를 입력해주세요.</div>
+        <div class="info-text">영문, 숫자, 특수문자를 포함하여 8자 이상 입력해주세요.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="signupPasswordConfirm">비밀번호 확인 <span class="required">*</span></label>
+        <div class="password-container">
+          <input type="password" id="signupPasswordConfirm" class="form-input" placeholder="비밀번호를 다시 입력하세요" required>
+          <button type="button" class="password-toggle" onclick="togglePassword('signupPasswordConfirm')">보기</button>
+        </div>
+        <div class="error-message" id="signupPasswordConfirmError">비밀번호가 일치하지 않습니다.</div>
+      </div>
+
+      <!-- 약관 동의 -->
+      <div class="checkbox-group">
+        <input type="checkbox" id="agreeTerms" class="checkbox" required>
+        <label for="agreeTerms" class="checkbox-label">
+          <strong>이용약관</strong> 및 <strong>개인정보처리방침</strong>에 동의합니다. <span class="required">*</span>
+          <br><a href="#" style="color: #4169E1; text-decoration: underline;">약관 보기</a>
+        </label>
+      </div>
+
+      <div class="checkbox-group business-only">
+        <input type="checkbox" id="agreeBusinessTerms" class="checkbox">
+        <label for="agreeBusinessTerms" class="checkbox-label">
+          <strong>사업자 서비스 이용약관</strong>에 동의합니다.
+          <br><a href="#" style="color: #4169E1; text-decoration: underline;">사업자 약관 보기</a>
+        </label>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="agreeMarketing" class="checkbox">
+        <label for="agreeMarketing" class="checkbox-label">
+          마케팅 정보 수신에 동의합니다. (선택)
+          <br><span style="font-size: 11px; color: #999;">이벤트, 혜택 정보를 이메일과 SMS로 받아보실 수 있습니다.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="submit-btn" id="signupSubmitBtn">일반회원 가입하기</button>
+
+      <div class="links">
+        <span>이미 계정이 있으신가요?</span>
+        <a th:href="@{/join/login}">로그인</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let currentSignupType = 'individual';
+
+  // 회원가입 타입 설정
+  function setSignupType(type) {
+    currentSignupType = type;
+    const signupForm = document.getElementById('signupForm');
+    const formTitle = document.getElementById('formTitle');
+    const submitBtn = document.getElementById('signupSubmitBtn');
+
+    // 클래스 업데이트
+    signupForm.className = `${type}-mode`;
+
+    // 제목과 버튼 텍스트 업데이트
+    if (type === 'business') {
+      formTitle.textContent = '사업자회원 가입';
+      submitBtn.textContent = '사업자회원 가입하기';
+    } else {
+      formTitle.textContent = '일반회원 가입';
+      submitBtn.textContent = '일반회원 가입하기';
+    }
+
+    // 토글 버튼 활성화 상태 업데이트
+    document.querySelectorAll('.signup-type-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // 필수 입력 상태 초기화
+    clearErrors();
+  }
+
+  // 비밀번호 보기/숨기기
+  function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.nextElementSibling;
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      button.textContent = '숨기기';
+    } else {
+      input.type = 'password';
+      button.textContent = '보기';
+    }
+  }
+
+  // 유효성 검사 함수들
+  function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  function validatePhone(phone) {
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+
+    // 일반회원: 휴대폰 번호 (010, 011, 016, 017, 018, 019로 시작하는 10-11자리)
+    if (currentSignupType === 'individual') {
+      const mobileRegex = /^01[0-9]{8,9}$/;
+      return mobileRegex.test(cleanPhone);
+    }
+    // 사업자회원: 전화번호 (일반 전화번호 포함, 더 유연한 검증)
+    else {
+      // 02(서울), 031-033(경기), 041-044(충청), 051-055(경남), 061-064(전남/제주) 등
+      // 또는 070(인터넷 전화), 1588, 1644 등 대표번호
+      const phoneRegex = /^(0[2-9][0-9]{7,8}|01[0-9]{8,9}|070[0-9]{8}|15[0-9]{2}[0-9]{4}|16[0-9]{2}[0-9]{4})$/;
+      return phoneRegex.test(cleanPhone);
+    }
+  }
+
+  function showError(fieldId, message) {
+    const errorElement = document.getElementById(fieldId + 'Error');
+    if (errorElement) {
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+    }
+  }
+
+  function hideError(fieldId) {
+    const errorElement = document.getElementById(fieldId + 'Error');
+    if (errorElement) {
+      errorElement.style.display = 'none';
+    }
+  }
+
+  function showSuccess(fieldId, message) {
+    const successElement = document.getElementById(fieldId + 'Success');
+    if (successElement) {
+      successElement.textContent = message;
+      successElement.style.display = 'block';
+    }
+  }
+
+  function hideSuccess(fieldId) {
+    const successElement = document.getElementById(fieldId + 'Success');
+    if (successElement) {
+      successElement.style.display = 'none';
+    }
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.success-message').forEach(el => el.style.display = 'none');
+  }
+
+  // 회원가입 폼 이벤트 리스너
+  document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const dto = {
+      name: document.querySelector('[name="name"]').value,
+      email: document.querySelector('[name="email"]').value,
+      phoneNumber: document.querySelector('[name="phoneNumber"]').value,
+      password: document.querySelector('[name="password"]').value,
+
+      bizName: currentSignupType === 'business' ? document.querySelector('[name="bizName"]').value : null
+    }
+
+    const url = currentSignupType === 'business' ? '/api/join/signup/biz' : '/api/join/signup/user';
+
+    console.log("📦 전송할 DTO:", dto);
+
+    try {
+      const response = await fetch( url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dto)
+      });
+
+      console.log("📡 서버 응답 상태:", response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+
+        console.log("📨 서버 응답 메시지:", result);  // ✅ 확인용 로그
+
+        alert(result.message);
+        window.location.href = '/board/main';
+      } else {
+        const result = await response.json();
+
+        console.log("📨 서버 응답 메시지:", result);  // ✅ 확인용 로그
+
+        alert(result.message);
+      }
+    } catch (err) {
+      alert("에러가 발생했습니다");
+      console.error("🚨 네트워크 오류:", err);  // ✅ 확인용 로그
+    }
+
+    let isValid = true;
+
+    // 이름 검증
+    if (name.trim().length < 2) {
+      showError('signupName', '2글자 이상의 이름을 입력해주세요.');
+      isValid = false;
+    } else {
+      hideError('signupName');
+    }
+
+    // 이메일 검증
+    if (!validateEmail(email)) {
+      showError('signupEmail', '올바른 이메일 형식을 입력해주세요.');
+      isValid = false;
+    } else {
+      hideError('signupEmail');
+      showSuccess('signupEmail', '사용 가능한 이메일입니다.');
+    }
+
+    // 휴대폰/전화번호 검증
+    if (!validatePhone(phone)) {
+      const phoneLabel = currentSignupType === 'business' ? '전화번호' : '휴대폰 번호';
+      showError('signupPhone', `올바른 ${phoneLabel}를 입력해주세요.`);
+      isValid = false;
+    } else {
+      hideError('signupPhone');
+    }
+
+    // 사업자회원 전용 검증
+    if (currentSignupType === 'business') {
+      const companyName = document.getElementById('companyName').value;
+      const companyRegion = document.getElementById('companyRegion').value;
+
+      // 회사명 검증
+      if (companyName.trim().length < 1) {
+        showError('companyName', '회사명을 입력해주세요.');
+        isValid = false;
+      } else {
+        hideError('companyName');
+      }
+
+      // 지역 검증
+      if (!companyRegion.trim()) {
+        showError('companyRegion', '지역을 입력해주세요.');
+        isValid = false;
+      } else {
+        hideError('companyRegion');
+      }
+    }
+
+    // 비밀번호 검증
+    if (password.length < 8) {
+      showError('signupPassword', '8자 이상의 비밀번호를 입력해주세요.');
+      isValid = false;
+    } else {
+      hideError('signupPassword');
+    }
+
+    // 비밀번호 확인 검증
+    if (password !== passwordConfirm) {
+      showError('signupPasswordConfirm', '비밀번호가 일치하지 않습니다.');
+      isValid = false;
+    } else {
+      hideError('signupPasswordConfirm');
+    }
+
+    // 약관 동의 검증
+    if (!agreeTerms) {
+      alert('이용약관 및 개인정보처리방침에 동의해주세요.');
+      isValid = false;
+    }
+
+    if (isValid) {
+      const memberType = currentSignupType === 'business' ? '사업자회원' : '일반회원';
+      alert(`${memberType} 가입이 완료되었습니다!`);
+      // 실제 회원가입 로직 구현 후 로그인 페이지로 이동
+      // window.location.href = 'login.html';
+    }
+  });
+
+  // 휴대폰 번호 포맷팅
+  document.getElementById('signupPhone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/[^0-9]/g, '');
+    if (value.length <= 11) {
+      e.target.value = value;
+    }
+  });
+
+  // 실시간 입력 검증
+  document.getElementById('signupEmail').addEventListener('input', function() {
+    const email = this.value;
+    if (email && validateEmail(email)) {
+      hideError('signupEmail');
+      showSuccess('signupEmail', '사용 가능한 이메일입니다.');
+    } else if (email) {
+      showError('signupEmail', '올바른 이메일 형식을 입력해주세요.');
+      hideSuccess('signupEmail');
+    }
+  });
+
+  document.getElementById('signupPasswordConfirm').addEventListener('input', function() {
+    const password = document.getElementById('signupPassword').value;
+    const passwordConfirm = this.value;
+
+    if (passwordConfirm && password === passwordConfirm) {
+      hideError('signupPasswordConfirm');
+    } else if (passwordConfirm) {
+      showError('signupPasswordConfirm', '비밀번호가 일치하지 않습니다.');
+    }
+  });
+
+  document.getElementById('signupPhone').addEventListener('input', function() {
+    const phone = this.value;
+    if (phone && validatePhone(phone)) {
+      hideError('signupPhone');
+    } else if (phone) {
+      const phoneLabel = currentSignupType === 'business' ? '전화번호' : '휴대폰 번호';
+      showError('signupPhone', `올바른 ${phoneLabel}를 입력해주세요.`);
+    }
+  });
+</script>
+</body>
+</html>
