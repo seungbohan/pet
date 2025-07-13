@@ -8,11 +8,10 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public interface BoardService {
-
-    Long register(BoardDTO boardDTO);
 
     BoardDTO read(Long id);
 
@@ -72,7 +71,7 @@ public interface BoardService {
                 .phoneNumber(boardEntity.getPhoneNumber())
                 .build();
 
-        List<ImageDTO> imageDTOList = imageEntities.stream().map(imageEntity -> {
+        List<ImageDTO> imageDTOList = imageEntities.stream().filter(Objects::nonNull).map(imageEntity -> {
             return ImageDTO.builder()
                     .folderPath(imageEntity.getFolderPath())
                     .fileName(imageEntity.getFileName())

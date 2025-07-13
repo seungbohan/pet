@@ -27,23 +27,6 @@ public class BoardServiceImpl implements BoardService {
 
     private final ImageRepository imageRepository;
 
-    @Transactional
-    @Override
-    public Long register(BoardDTO boardDTO) {
-
-        Map<String ,Object> entityMap = dtoToEntity(boardDTO);
-
-        BoardEntity boardEntity = (BoardEntity) entityMap.get("board");
-
-        List<ImageEntity> imageList = (List<ImageEntity>) entityMap.get("imageList");
-
-        boardRepository.save(boardEntity);
-
-        imageList.forEach(imageEntity -> imageRepository.save(imageEntity));
-
-        return boardEntity.getId();
-    }
-
     @Override
     public BoardDTO read(Long id) {
         List<Object[]> result = boardRepository.getBoardWithReview(id);

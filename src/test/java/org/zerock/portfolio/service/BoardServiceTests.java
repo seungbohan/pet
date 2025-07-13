@@ -21,28 +21,28 @@ public class BoardServiceTests {
     @Autowired
     private BoardService boardService;
 
-    @Test
-    public void testRegister() {
-        IntStream.rangeClosed(1, 100).forEach(i -> {
-
-            List<ImageDTO> imageDTOList = new ArrayList<>();
-
-            int count = (int) (Math.random() * 5) + 1;
-            for (int j = 0; j < count; j++) {
-                ImageDTO imageDTO = ImageDTO.builder()
-                        .fileName("test" + j + ".jpg")
-                        .uuid(UUID.randomUUID().toString())
-                        .build();
-                imageDTOList.add(imageDTO);
-            }
-
-            BoardDTO boardDTO = BoardDTO.builder()
-                    .name("장소" + i)
-                    .location("주소" + i)
-                    .phoneNumber("전화번호" + i)
-                    .imageDTOList(imageDTOList)
-                    .build();
-            boardService.register(boardDTO);
-        });
-    }
+//    @Test
+//    public void testRegister() {
+//        IntStream.rangeClosed(1, 100).forEach(i -> {
+//
+//            List<ImageDTO> imageDTOList = new ArrayList<>();
+//
+//            int count = (int) (Math.random() * 5) + 1;
+//            for (int j = 0; j < count; j++) {
+//                ImageDTO imageDTO = ImageDTO.builder()
+//                        .fileName("test" + j + ".jpg")
+//                        .uuid(UUID.randomUUID().toString())
+//                        .build();
+//                imageDTOList.add(imageDTO);
+//            }
+//
+//            BoardDTO boardDTO = BoardDTO.builder()
+//                    .name("장소" + i)
+//                    .location("주소" + i)
+//                    .phoneNumber("전화번호" + i)
+//                    .imageDTOList(imageDTOList)
+//                    .build();
+//            boardService.register(boardDTO);
+//        });
+//    }
 }

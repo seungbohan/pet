@@ -2,64 +2,107 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
-  <link rel="stylesheet" th:href="@{/css/listStyle.css}" />
+  <title>인기 게시판</title>
+  <link rel="stylesheet" th:href="@{/css/popularListStyle.css}" />
 </head>
 <body>
-<div class="top-bar">
-  <a th:href="@{/board/main}"><button class="btn">로고</button></a>
-</div>
-<div class="board-container">
-  <h2 class="board-title">인기 게시판</h2>
+<div class="main-container">
+  <!-- 상단 바 -->
+  <div class="top-bar">
+    <a th:href="@{/board/main}"><button class="btn">LOGO</button></a>
+  </div>
 
-  <table class="board-table">
-    <thead>
-    <tr>
-      <th>No</th>
-      <th>제목</th>
-      <th>상호명</th>
-      <th>리뷰 수</th>
-      <th>평점</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="dto: ${popularList.dtoList}">
-      <th>
-        <a th:href="@{/board/read(id = ${dto.id}, page = ${popularList.page})}">[[${dto.id}]]</a>
-      </th>
-      <td>
-        [[${dto.name}]]
-      </td>
-      <td>
-        [[${dto.name}]]
-      </td>
-      <td>
-        [[${dto.reviewCnt}]]
-      </td>
-      <td>
-        [[${dto.avg}]]
-      </td>
-    </tr>
-    </tbody>
-  </table>
+  <!-- 게시판 컨테이너 -->
+  <div class="board-container">
+    <h2 class="board-title">인기 게시판</h2>
 
-  <div class="pagination">
-    <a th:if="${popularList.prev}"
-       th:href="@{/board/list/popular(page=${popularList.start - 1})}"
-       class="page-btn">&lt;</a>
+    <!-- 게시판 테이블 -->
+    <table class="board-table">
+      <thead>
+      <tr>
+        <th>No</th>
+        <th>제목</th>
+        <th>상호명</th>
+        <th>리뷰 수</th>
+        <th>평점</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="dto: ${popularList.dtoList}" onclick="goToDetail(this)">
+        <td>
+          <a th:href="@{/board/read(id = ${dto.id}, page = ${popularList.page})}" th:text="${dto.id}">1</a>
+        </td>
+        <td>
+          [[${dto.name}]]
+        </td>
+        <td>
+          [[${dto.name}]]
+        </td>
+        <td>
+          [[${dto.reviewCnt}]]
+        </td>
+        <td>
+          [[${dto.avg}]]
+        </td>
+      </tr>
+      </tbody>
+    </table>
 
-    <!-- 페이지 번호 -->
-    <a th:each="page : ${popularList.pageList}"
-       th:href="@{/board/list/popular(page=${page})}"
-       th:text="${page}"
-       th:classappend="${page == popularList.page ? 'active' : ''}"
-       class="page-btn"></a>
+    <!-- 페이지네이션 -->
+    <div class="pagination">
+      <a th:if="${popularList.prev}"
+         th:href="@{/board/list/popular(page=${popularList.start - 1})}"
+         class="page-btn page-move-btn">이전</a>
 
-    <!-- 다음 페이지 -->
-    <a th:if="${popularList.next}"
-       th:href="@{/board/list/popular(page=${popularList.end + 1})}"
-       class="page-btn">다음</a>
+      <a th:each="page : ${popularList.pageList}"
+         th:href="@{/board/list/popular(page=${page})}"
+         th:text="${page}"
+         th:classappend="${page == popularList.page ? 'active' : ''}"
+         class="page-btn">1</a>
+
+      <a th:if="${popularList.next}"
+         th:href="@{/board/list/popular(page=${popularList.end + 1})}"
+         class="page-btn page-move-btn">다음</a>
+    </div>
   </div>
 </div>
+
+<script>
+  // 게시물 상세 페이지로 이동
+  function goToDetail(row) {
+    const link = row.querySelector('a');
+    if (link) {
+      window.location.href = link.href;
+    }
+  }
+
+  // 테이블 행 클릭 이벤트 (링크가 아닌 영역 클릭시에도 이동)
+  document.querySelectorAll('.board-table tbody tr').forEach(row => {
+    row.addEventListener('click', function(e) {
+      // 링크를 직접 클릭한 경우가 아니라면
+      if (e.target.tagName !== 'A') {
+        const link = this.querySelector('a');
+        if (link) {
+          window.location.href = link.href;
+        }
+      }
+    });
+  });
+
+  // 페이지 로드 애니메이션
+  document.addEventListener('DOMContentLoaded', function() {
+    // 테이블 행에 순차적 애니메이션 효과
+    const rows = document.querySelectorAll('.board-table tbody tr');
+    rows.forEach((row, index) => {
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        row.style.transition = 'all 0.5s ease';
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      }, index * 50);
+    });
+  });
+</script>
 </body>
 </html>

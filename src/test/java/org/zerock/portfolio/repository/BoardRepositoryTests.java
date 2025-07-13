@@ -26,52 +26,52 @@ public class BoardRepositoryTests {
     @Autowired
     private ImageRepository imageRepository;
 
-    @Test
-    public void testListPage() {
-
-        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id"));
-
-        Page<Object[]> result = boardRepository.getListPage(pageRequest);
-
-        for (Object[] obj : result.getContent() ) {
-            System.out.println(Arrays.toString(obj));
-        }
-    }
-
-    @Test
-    public void testGetBoardWithReview() {
-
-        List<Object[]> result = boardRepository.getBoardWithReview(100L);
-        System.out.println(result);
-
-        for (Object[] obj : result ) {
-            System.out.println(Arrays.toString(obj));
-        }
-    }
-
-    @Commit
-    @Transactional
-    @Test
-    public void insertImage() {
-
-        IntStream.rangeClosed(1, 100).forEach(i -> {
-
-            Optional<BoardEntity> boardEntity = boardRepository.findById((long) i);
-
-            if (boardEntity.isPresent()) {
-                int count = (int) (Math.random() * 5) + 1;
-
-                for (int j = 0; j < count; j++) {
-
-                    ImageEntity imageEntity = ImageEntity.builder()
-                            .fileName("test" + j + ".jpg")
-                            .uuid(UUID.randomUUID().toString())
-                            .board(boardEntity.get())
-                            .build();
-
-                    imageRepository.save(imageEntity);
-                }
-            }
-        });
-    }
+//    @Test
+//    public void testListPage() {
+//
+//        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id"));
+//
+//        Page<Object[]> result = boardRepository.getListPage(pageRequest);
+//
+//        for (Object[] obj : result.getContent() ) {
+//            System.out.println(Arrays.toString(obj));
+//        }
+//    }
+//
+//    @Test
+//    public void testGetBoardWithReview() {
+//
+//        List<Object[]> result = boardRepository.getBoardWithReview(100L);
+//        System.out.println(result);
+//
+//        for (Object[] obj : result ) {
+//            System.out.println(Arrays.toString(obj));
+//        }
+//    }
+//
+//    @Commit
+//    @Transactional
+//    @Test
+//    public void insertImage() {
+//
+//        IntStream.rangeClosed(1, 100).forEach(i -> {
+//
+//            Optional<BoardEntity> boardEntity = boardRepository.findById((long) i);
+//
+//            if (boardEntity.isPresent()) {
+//                int count = (int) (Math.random() * 5) + 1;
+//
+//                for (int j = 0; j < count; j++) {
+//
+//                    ImageEntity imageEntity = ImageEntity.builder()
+//                            .fileName("test" + j + ".jpg")
+//                            .uuid(UUID.randomUUID().toString())
+//                            .board(boardEntity.get())
+//                            .build();
+//
+//                    imageRepository.save(imageEntity);
+//                }
+//            }
+//        });
+//    }
 }

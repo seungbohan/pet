@@ -8,11 +8,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.zerock.portfolio.dto.BoardDTO;
 import org.zerock.portfolio.dto.UserCountDTO;
 import org.zerock.portfolio.service.AdminDashboardService;
+import org.zerock.portfolio.service.BoardService;
 
 @Controller
 @Log4j2
@@ -49,5 +49,43 @@ public class AdminDashboardController {
         }
 
         return ResponseEntity.ok("권한 있음");
+    }
+
+    @GetMapping("/admin/register")
+    public void register() {
+
+    }
+
+    @GetMapping("/api/admin/register")
+    public ResponseEntity<String> apiAdminRegister() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth==null || auth.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN") )) {
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음");
+        }
+
+        return ResponseEntity.ok("권한 있음");
+    }
+
+    @PostMapping("/api/admin/register/board")
+    @ResponseBody
+    public ResponseEntity<Long> apiAdminRegisterBoard(@RequestBody BoardDTO boardDTO) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth==null || auth.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN") )) {
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        log.info("boardDTO: " + boardDTO);
+        
+        Long id = adminDashboardService.register(boardDTO);
+        
+        return ResponseEntity.ok(id);
     }
 }

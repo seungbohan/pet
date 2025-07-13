@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지</title>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/mypage.css}" />
+</head>
+<body>
+<div class="main-container">
+    <!-- 헤더 -->
+    <div class="header">
+        <div class="user-avatar">👤</div>
+        <h1>마이페이지</h1>
+        <p>회원 정보를 관리하세요</p>
+    </div>
+
+    <!-- 폼 컨테이너 -->
+    <div class="form-container">
+        <!-- 안내 카드 -->
+        <div class="info-card">
+            <h3>📝 회원정보 수정</h3>
+            <p>이름을 수정할 수 있습니다. 이메일은 변경할 수 없습니다.</p>
+        </div>
+
+        <!-- 메시지 영역 -->
+        <div id="messageArea"></div>
+
+        <!-- 폼 -->
+        <form id="userForm">
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" name="name" id="name" placeholder="이름을 입력하세요" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="text" name="email" id="email" readonly placeholder="이메일을 불러오는 중..." />
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="button-group">
+                <button type="button" id="modify" class="btn btn-primary">
+                    수정하기
+                </button>
+                <button type="button" id="delete" class="btn btn-danger">
+                    회원탈퇴
+                </button>
+            </div>
+        </form>
+
+        <!-- 탈퇴 안내 -->
+        <div class="info-card" style="margin-top: 30px; border-left-color: #dc3545; background: #fff5f5;">
+            <h3>⚠️ 회원탈퇴 안내</h3>
+            <p>탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다. 신중하게 결정해 주세요.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    console.log("✅ JS 로딩 확인됨");
+    const token = localStorage.getItem("token");
+    console.log("📦 토큰:", token);
+
+    // 메시지 표시 함수
+    function showMessage(message, type = 'success') {
+        const messageArea = document.getElementById('messageArea');
+        messageArea.innerHTML = `<div class="message ${type}">${message}</div>`;
+
+        // 3초 후 메시지 제거
+        setTimeout(() => {
+            messageArea.innerHTML = '';
+        }, 3000);
+    }
+
+    // 버튼 로딩 상태 관리
+    function setButtonLoading(button, loading) {
+        if (loading) {
+            button.classList.add('loading');
+            button.disabled = true;
+        } else {
+            button.classList.remove('loading');
+            button.disabled = false;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", async function() {
+        if (!token) {
+            showMessage("로그인이 필요합니다", 'error');
+            setTimeout(() => {
+                window.location.href = "/join/login";
+            }, 1500);
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/mypage/user", {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("인증 실패");
+            }
+
+            const data = await response.json();
+
+            document.querySelector("input[name=email]").value = data.email;
+            document.querySelector("input[name=name]").value = data.name;
+
+            // 이름의 첫 글자로 아바타 업데이트
+            if (data.name) {
+                document.querySelector('.user-avatar').textContent = data.name.charAt(0).toUpperCase();
+            }
+
+            showMessage("회원정보를 불러왔습니다", 'success');
+
+        } catch (e) {
+            showMessage("세션이 만료되었거나 인증에 실패했습니다", 'error');
+            localStorage.removeItem("token");
+            setTimeout(() => {
+                window.location.href = "/join/login";
+            }, 2000);
+        }
+    });
+
+    document.getElementById("modify").addEventListener("click", async function () {
+        const modifyBtn = this;
+        const email = document.querySelector("input[name=email]").value;
+        const name = document.querySelector("input[name=name]").value.trim();
+
+        // 유효성 검사
+        if (!name) {
+            showMessage("이름을 입력해주세요", 'error');
+            document.querySelector("input[name=name]").focus();
+            return;
+        }
+
+        if (name.length < 2) {
+            showMessage("이름은 2글자 이상 입력해주세요", 'error');
+            document.querySelector("input[name=name]").focus();
+            return;
+        }
+
+        setButtonLoading(modifyBtn, true);
+
+        try {
+            const response = await fetch("/api/mypage/user/modify", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token,
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify({
+                    email,
+                    name
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("요청 실패");
+            }
+
+            showMessage("회원정보가 성공적으로 수정되었습니다!", 'success');
+
+            // 아바타 업데이트
+            document.querySelector('.user-avatar').textContent = name.charAt(0).toUpperCase();
+
+            setTimeout(() => location.reload(), 1500);
+
+        } catch (e) {
+            showMessage("수정에 실패했습니다. 다시 시도해주세요.", 'error');
+            console.error("수정 오류:", e);
+        } finally {
+            setButtonLoading(modifyBtn, false);
+        }
+    });
+
+    document.getElementById("delete").addEventListener("click", async function () {
+        const deleteBtn = this;
+
+        const confirmed = confirm("정말로 회원을 탈퇴하시겠습니까?\n\n탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.");
+        if (!confirmed) {
+            return;
+        }
+
+        const doubleConfirmed = confirm("정말로 확실하신가요?\n\n이 작업은 되돌릴 수 없습니다.");
+        if (!doubleConfirmed) {
+            return;
+        }
+
+        setButtonLoading(deleteBtn, true);
+
+        try {
+            const response = await fetch("/api/mypage/user/delete", {
+                method: "DELETE",
+                headers: {
+                    "Authorization": "Bearer " + token,
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("요청 실패");
+            }
+
+            showMessage("회원탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.", 'success');
+            localStorage.removeItem("token");
+
+            setTimeout(() => {
+                window.location.href = "/join/login";
+            }, 2000);
+
+        } catch (e) {
+            showMessage("탈퇴 처리에 실패했습니다. 다시 시도해주세요.", 'error');
+            console.error("탈퇴 오류:", e);
+        } finally {
+            setButtonLoading(deleteBtn, false);
+        }
+    });
+
+    // 엔터키로 수정하기
+    document.querySelector("input[name=name]").addEventListener("keypress", function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById("modify").click();
+        }
+    });
+
+    // 입력 필드 애니메이션
+    document.querySelectorAll('.form-group input').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 package org.zerock.portfolio.security.filter;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -99,7 +100,7 @@ public class ApiCheckFilter extends OncePerRequestFilter {
                 String rolesJson = result.get("roles");
 
                 ObjectMapper objectMapper = new ObjectMapper();
-                List<String> rolesList = objectMapper.readValue(rolesJson, List.class);
+                List<String> rolesList = objectMapper.readValue(rolesJson, new TypeReference<List<String>>() {});
 
                 log.info("email: " + email);
                 log.info("role: " + rolesList);

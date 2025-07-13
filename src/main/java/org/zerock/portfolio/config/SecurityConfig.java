@@ -42,12 +42,13 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests((auth) -> {
             auth.requestMatchers("/api/admin/**").hasRole("ADMIN");
-            auth.requestMatchers("/api/mypage/biz","/uploadAjax", "/removeFile").hasRole("BIZ");
+            auth.requestMatchers("/uploadAjax", "/removeFile").hasRole("ADMIN");
             auth.requestMatchers(HttpMethod.POST,"/api/review/**").hasRole("USER");
             auth.requestMatchers(HttpMethod.PUT,"/api/review/**").hasRole("USER");
             auth.requestMatchers(HttpMethod.DELETE,"/api/review/**").hasRole("USER");
-            auth.requestMatchers("/board/list/**", "/join/**", "/api/join/**","/board/main",
-                    "/board/read","/board/mypage/biz" ,"/display", "/admin/**").permitAll();
+            auth.requestMatchers("/api/mypage/**").hasRole("USER");
+            auth.requestMatchers("/", "/board/list/**", "/join/**", "/api/join/**","/board/main",
+                    "/board/read","/board/mypage/user" ,"/display", "/admin/**").permitAll();
             auth.requestMatchers(HttpMethod.GET, "/api/review/**").permitAll();
             auth.requestMatchers("/css/**", "/js/**", "/images/**","/favicon.ico").permitAll();
         });
@@ -65,7 +66,7 @@ public class SecurityConfig {
 
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://pet-1-fyh8.onrender.com"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 configuration.setAllowCredentials(true);
                 configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -105,6 +106,6 @@ public class SecurityConfig {
 
     @Bean
     public ApiCheckFilter apiCheckFilter() {
-        return new ApiCheckFilter(List.of("/api/mypage/biz","/uploadAjax","/removeFile" ,"/api/review/**", "/api/admin/**"), jwtUtil());
+        return new ApiCheckFilter(List.of("/api/mypage/**","/uploadAjax","/removeFile" ,"/api/review/**", "/api/admin/**"), jwtUtil());
     }
 }

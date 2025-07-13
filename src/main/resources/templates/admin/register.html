@@ -1,41 +1,41 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script  src="http://code.jquery.com/jquery-latest.min.js"></script>
 </head>
 <body>
-    <form th:action="@{/board/mypage/biz}" th:method="post">
-        <div class="form-group">
-            <label>상호 명</label>
-            <input type="text" name="name" />
+
+<form th:action="@{/admin/register}" th:method="post">
+    <div class="form-group">
+        <label>상호 명</label>
+        <input type="text" name="name" />
+    </div>
+
+    <div class="form-group">
+        <label>전화번호</label>
+        <input type="text" name="phoneNumber" />
+    </div>
+
+    <div class="form-group">
+        <label>위치</label>
+        <input type="text" name="location" />
+    </div>
+
+    <div class="form-group fileForm">
+        <label>이미지 파일</label>
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="customFile" multiple>
+            <label class="custom-file-label" data-browse="Browse"></label>
         </div>
+    </div>
 
-        <div class="form-group">
-            <label>전화번호</label>
-            <input type="text" name="phoneNumber" />
-        </div>
+    <div class="box">
 
-        <div class="form-group">
-            <label>위치</label>
-            <input type="text" name="location" />
-        </div>
+    </div>
 
-        <div class="form-group fileForm">
-            <label>이미지 파일</label>
-            <div class="custom-file">
-                <input type="file" class="custom-file-input" id="customFile" multiple>
-                <label class="custom-file-label" data-browse="Browse"></label>
-            </div>
-        </div>
-
-        <div class="box">
-
-        </div>
-
-        <button type="submit" class="btn btn-primary">등록</button>
-    </form>
+    <button type="button" id="register" class="btn btn-primary">등록</button>
+</form>
 
   <style>
       .uploadResult {
@@ -70,37 +70,59 @@
         </ul>
     </div>
 
-  <script>
-      console.log("✅ JS 로딩 확인됨");
-      const token = localStorage.getItem("token")
-      console.log("📦 토큰:", token);
+<script>
 
-      document.addEventListener("DOMContentLoaded", async function() {
+    const token = localStorage.getItem('token');
+    console.log(token);
 
-          if (!token) {
-              alert("로그인이 필요합니다");
-              window.location.href = "/join/login";
-              return;
-          }
+    document.getElementById("register").addEventListener("click", async function () {
 
-          try {
-              const response = await fetch("/api/mypage/biz", {
-                  headers: {
-                      "Authorization": "Bearer " + token
-                  }
-              });
+        const name = document.querySelector("input[name='name']").value;
+        const phoneNumber = document.querySelector("input[name='phoneNumber']").value;
+        const location = document.querySelector("input[name='location']").value;
 
-              if (!response.ok) {
-                  throw new Error("인증 실패");
-              }
+        let imageDTOList = [];
 
-          } catch (e) {
-              alert("세션이 만료되었거나 인증에 실패했습니다 다시 로그인해주세요");
-              localStorage.removeItem("token");
-              window.location.href = "/join/login";
-          }
-      })
+        document.querySelectorAll(".uploadResult li").forEach(function (li) {
 
+            imageDTOList.push({
+                fileName: li.dataset.name,
+                folderPath: li.dataset.path,
+                uuid: li.dataset.uuid,
+            })
+        })
+
+        if (imageDTOList.length === 0) {
+            imageDTOList = [];
+        }
+
+        try {
+            const response = await fetch('/api/admin/register/board', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({
+                    name,
+                    phoneNumber,
+                    location,
+                    imageDTOList
+                })
+            })
+
+            if (!response.ok) {
+                throw new Error('업로드 실패');
+            }
+
+            const id = await response.json();
+            alert("등록 완료, 게시글로 이동합니다");
+            window.location.href = `/board/read?id=${id}`
+
+        } catch (e) {
+            alert("업로드 실패")
+        }
+    })
 
       $(document).ready(function () {
 
@@ -230,10 +252,7 @@
           });
 
           $(".box").html(str);
-
-          $("form").submit();
       })
-
-  </script>
+</script>
 </body>
 </html>
