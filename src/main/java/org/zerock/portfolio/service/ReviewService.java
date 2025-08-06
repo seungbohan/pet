@@ -1,40 +1,35 @@
 package org.zerock.portfolio.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.zerock.portfolio.dto.BoardDTO;
 import org.zerock.portfolio.dto.PageRequestDTO;
 import org.zerock.portfolio.dto.PageResultDTO;
-import org.zerock.portfolio.dto.ReviewDTO;
+import org.zerock.portfolio.dto.BoardReviewDTO;
 import org.zerock.portfolio.entity.BoardEntity;
+import org.zerock.portfolio.entity.BoardReviewEntity;
 import org.zerock.portfolio.entity.ReviewEntity;
-import org.zerock.portfolio.entity.UserEntity;
-
-import java.util.List;
 
 public interface ReviewService {
 
-    PageResultDTO<ReviewDTO, ReviewEntity> getList(Long boardId, PageRequestDTO pageRequestDTO);
+    PageResultDTO<BoardReviewDTO, ReviewEntity> getList(Long boardId, PageRequestDTO pageRequestDTO);
 
-    Long register(ReviewDTO reviewDTO);
+    Long register(BoardReviewDTO boardReviewDTO);
 
-    void modify(ReviewDTO reviewDTO);
+    void modify(BoardReviewDTO boardReviewDTO);
 
     void remove(Long id);
 
-    default ReviewEntity dtoToEntity(ReviewDTO reviewDTO) {
+    default ReviewEntity dtoToEntity(BoardReviewDTO boardReviewDTO) {
 
-        ReviewEntity reviewEntity = ReviewEntity.builder()
-                .id(reviewDTO.getId())
-                .board(BoardEntity.builder().id(reviewDTO.getBoardId()).build())
-                .content(reviewDTO.getContent())
-                .rating(reviewDTO.getRating())
+        BoardReviewEntity reviewEntity = BoardReviewEntity.builder()
+                .id(boardReviewDTO.getId())
+                .board(BoardEntity.builder().id(boardReviewDTO.getBoardId()).build())
+                .content(boardReviewDTO.getContent())
+                .rating(boardReviewDTO.getRating())
                 .build();
         return reviewEntity;
     }
 
-    default ReviewDTO entityToDto(ReviewEntity reviewEntity) {
-        ReviewDTO reviewDTO = ReviewDTO.builder()
+    default BoardReviewDTO entityToDto(BoardReviewEntity reviewEntity) {
+        BoardReviewDTO boardReviewDTO = BoardReviewDTO.builder()
                 .id(reviewEntity.getId())
                 .content(reviewEntity.getContent())
                 .rating(reviewEntity.getRating())
@@ -43,17 +38,17 @@ public interface ReviewService {
                 .writerEmail(reviewEntity.getUser().getEmail())
                 .regDate(reviewEntity.getRegDate())
                 .modDate(reviewEntity.getModDate()).build();
-        return reviewDTO;
+        return boardReviewDTO;
     }
 
-    default ReviewDTO entitiesToDto(ReviewEntity reviewEntity, Double avg) {
-        ReviewDTO reviewDTO = ReviewDTO.builder()
+    default BoardReviewDTO entitiesToDto(BoardReviewEntity reviewEntity, Double avg) {
+        BoardReviewDTO boardReviewDTO = BoardReviewDTO.builder()
                 .id(reviewEntity.getId())
                 .content(reviewEntity.getContent())
                 .rating(reviewEntity.getRating())
                 .writer(reviewEntity.getUser().getName())
                 .build();
 
-        return reviewDTO;
+        return boardReviewDTO;
     }
 }

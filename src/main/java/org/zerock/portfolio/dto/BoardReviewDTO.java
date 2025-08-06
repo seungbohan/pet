@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 @Builder
-public class ReviewDTO {
+public class BoardReviewDTO {
 
     private Long id;
 

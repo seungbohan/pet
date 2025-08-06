@@ -5,7 +5,7 @@
     <title>게시판</title>
     <!-- Head 안에 넣기 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
     <script th:src="@{/js/starrr.js}"></script>
     <link rel="stylesheet" th:href="@{/css/starrr.css}" />
 
@@ -824,7 +824,9 @@
                     self.location.reload();
                 },
                 error: function() {
-                    alert("리뷰 등록에 실패했습니다.");
+                    if (confirm("로그인이 필요합니다 로그인 하시겠습니까?")) {
+                        window.location.href = "/join/login";
+                    }
                 }
             });
         });

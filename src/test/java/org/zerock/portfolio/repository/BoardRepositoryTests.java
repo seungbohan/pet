@@ -10,6 +10,8 @@ import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ImageEntity;
+import org.zerock.portfolio.entity.PetPlaceEntity;
+import org.zerock.portfolio.entity.SyncLog;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +27,26 @@ public class BoardRepositoryTests {
 
     @Autowired
     private ImageRepository imageRepository;
+
+//    @Autowired
+//    private SyncLogRepository syncLogRepository;
+//
+//    @Autowired
+//    private PetPlaceRepository petPlaceRepository;
+//
+//    @Test
+//    public void test() {
+//        Optional<SyncLog> s = syncLogRepository.findTopByOperationOrderByModDateDesc("petTourSyncList");
+//        Optional<PetPlaceEntity> entity = petPlaceRepository.findById(10L);
+//        System.out.println(s.get().getModDate());
+//        System.out.println(entity.get().getModifiedtime());
+//        if (s.get().getModDate().isBefore(entity.get().getModifiedtime())) {
+//
+//            System.out.println("update");
+//            System.out.println(s.get().getModDate());
+//            System.out.println(entity.get().getModifiedtime());
+//        }
+//    }
 
 //    @Test
 //    public void testListPage() {

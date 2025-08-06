@@ -48,9 +48,9 @@ public class SecurityConfig {
             auth.requestMatchers(HttpMethod.DELETE,"/api/review/**").hasRole("USER");
             auth.requestMatchers("/api/mypage/**").hasRole("USER");
             auth.requestMatchers("/", "/board/list/**", "/join/**", "/api/join/**","/board/main",
-                    "/board/read","/board/mypage/user" ,"/display", "/admin/**").permitAll();
+                    "/board/read","/board/mypage/user" ,"/display", "/admin/**", "/api/petplaces", "/board/petplaces").permitAll();
             auth.requestMatchers(HttpMethod.GET, "/api/review/**").permitAll();
-            auth.requestMatchers("/css/**", "/js/**", "/images/**","/favicon.ico").permitAll();
+            auth.requestMatchers("/css/**", "/js/**", "/images/**","/favicon.ico","/.well‑known/**").permitAll();
         });
 
 

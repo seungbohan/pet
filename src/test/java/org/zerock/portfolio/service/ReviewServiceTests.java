@@ -1,11 +1,7 @@
 package org.zerock.portfolio.service;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.zerock.portfolio.dto.ReviewDTO;
-
-import java.util.List;
 
 @SpringBootTest
 public class ReviewServiceTests {

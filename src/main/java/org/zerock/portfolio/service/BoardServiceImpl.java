@@ -3,17 +3,14 @@ package org.zerock.portfolio.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.dto.*;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ImageEntity;
 import org.zerock.portfolio.repository.BoardRepository;
 import org.zerock.portfolio.repository.ImageRepository;
-import org.zerock.portfolio.repository.ReviewRepository;
 
 import java.util.*;
 import java.util.function.Function;
@@ -24,7 +21,6 @@ import java.util.function.Function;
 public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
-
     private final ImageRepository imageRepository;
 
     @Override
@@ -98,4 +94,10 @@ public class BoardServiceImpl implements BoardService {
 
         return new MainPageResultDTO<>(recent, popular, fn);
     }
+
+//    public void registerApi(Map<String, Object> entityMap) {
+//
+//        entityMap.get("list")
+//
+//    }
 }

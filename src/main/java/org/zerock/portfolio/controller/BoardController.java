@@ -17,6 +17,7 @@ import org.zerock.portfolio.dto.UserDTO;
 import org.zerock.portfolio.entity.UserEntity;
 import org.zerock.portfolio.repository.UserRepository;
 import org.zerock.portfolio.security.util.JWTUtil;
+import org.zerock.portfolio.service.ApiPetPlaceServiceImpl;
 import org.zerock.portfolio.service.BoardService;
 import org.zerock.portfolio.service.UserService;
 
@@ -31,6 +32,7 @@ public class BoardController {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final UserService userService;
+    private final ApiPetPlaceServiceImpl apiPetPlaceService;
 
     @GetMapping("/")
     public String index() {
@@ -60,6 +62,12 @@ public class BoardController {
 
         model.addAttribute("board", boardService.read(id));
     }
+//
+//    @GetMapping("/board/petplaces")
+//    public void petplaces(@RequestParam("id") Long id, Model model) {
+//        model.addAttribute("petplaces",apiPetPlaceService.getAllPetPlace());
+//        model.addAttribute("petplacesimg",apiPetPlaceService.getAllPetPlaceImg());
+//    }
 
     @GetMapping("/board/mypage/user")
     public void pageUser() {
@@ -111,5 +119,10 @@ public class BoardController {
 
         userService.delete(email);
         return ResponseEntity.ok("탈퇴 완료");
+    }
+
+    @GetMapping("/board/petplaces")
+    public void petplaces() {
+
     }
 }

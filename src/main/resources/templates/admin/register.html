@@ -1,11 +1,276 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>register</title>-->
+<!--    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>-->
+<!--    <script type="module">-->
+<!--        window.SupabaseModule = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm')-->
+<!--    </script>-->
+
+<!--</head>-->
+<!--<body>-->
+
+<!--<form th:action="@{/admin/register}" th:method="post">-->
+<!--    <div class="form-group">-->
+<!--        <label>상호 명</label>-->
+<!--        <input type="text" name="name" />-->
+<!--    </div>-->
+
+<!--    <div class="form-group">-->
+<!--        <label>전화번호</label>-->
+<!--        <input type="text" name="phoneNumber" />-->
+<!--    </div>-->
+
+<!--    <div class="form-group">-->
+<!--        <label>위치</label>-->
+<!--        <input type="text" name="location" />-->
+<!--    </div>-->
+
+<!--    <div class="form-group fileForm">-->
+<!--        <label>이미지 파일</label>-->
+<!--        <div class="custom-file">-->
+<!--            <input type="file" class="custom-file-input" id="customFile" multiple>-->
+<!--            <label class="custom-file-label" data-browse="Browse"></label>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div class="box">-->
+
+<!--    </div>-->
+
+<!--    <button type="button" id="register" class="btn btn-primary">등록</button>-->
+<!--</form>-->
+
+<!--  <style>-->
+<!--      .uploadResult {-->
+<!--          width: 100%;-->
+<!--          background-color: gray;-->
+<!--          margin-top: 10px;-->
+<!--      }-->
+
+<!--      .uploadResult ul {-->
+<!--          display: flex;-->
+<!--          flex-flow: row;-->
+<!--          justify-content: center;-->
+<!--          align-items: center;-->
+<!--          vertical-align: top;-->
+<!--          overflow: auto;-->
+<!--      }-->
+
+<!--      .uploadResult ul li {-->
+<!--          list-style: none;-->
+<!--          padding: 10px;-->
+<!--          margin-left: 2em;-->
+<!--      }-->
+
+<!--      .uploadResult ul li img {-->
+<!--          width: 100px;-->
+<!--      }-->
+<!--  </style>-->
+
+<!--    <div class="uploadResult">-->
+<!--        <ul>-->
+
+<!--        </ul>-->
+<!--    </div>-->
+
+<!--<script>-->
+
+<!--    const token = localStorage.getItem('token');-->
+<!--    console.log(token);-->
+
+<!--      $(document).ready(function () {-->
+
+<!--          let regex = new RegExp("(.*?)\.(exe|sh|zip|alz|tiff)$");-->
+<!--          let maxSize = 10485760;-->
+
+<!--          function checkExtension(fileName, fileSize) {-->
+
+<!--              if (fileSize > maxSize) {-->
+<!--                  alert("파일 사이즈 초과");-->
+<!--                  return false;-->
+<!--              }-->
+
+<!--              if (regex.test(fileName)) {-->
+<!--                  alert("해당 종류의 파일은 업로드할 수 없습니다")-->
+<!--                  return false;-->
+<!--              }-->
+<!--              return true;-->
+<!--          }-->
+
+<!--          function showResult(uploadResultArr) {-->
+
+<!--              let uploadUL = $(".uploadResult ul");-->
+
+<!--              let str = "";-->
+
+<!--              $(uploadResultArr).each(function (i , obj) {-->
+
+<!--                  str += "<li data-name='" + obj.fileName + "' data-path='" + obj.folderPath + "' data-uuid='" + obj.uuid + "'>";-->
+<!--                  str += "<div>";-->
+<!--                  str += "<button type='button' data-file=\'" + obj.imageURL + "\' ";-->
+<!--                  str += "class='btn-warning btn-sm'>X</button>";-->
+<!--                  str += "<img src='/display?fileName=" + obj.thumbnailURL+"'>";-->
+<!--                  str += "</div>";-->
+<!--                  str += "</li>";-->
+<!--              });-->
+
+<!--              uploadUL.append(str);-->
+<!--          }-->
+
+<!--          $(".custom-file-input").on("change", function () {-->
+
+<!--              let fileName = $(this).val().split("\\").pop();-->
+<!--              $(this).siblings(".custom-file-label").addClass("selected").html(fileName);-->
+
+<!--              let formData = new FormData();-->
+
+<!--              let inputFile = $(this);-->
+
+<!--              let files = inputFile[0].files;-->
+
+<!--              let appended = false;-->
+
+<!--              for (let i = 0; i < files.length; i++) {-->
+
+<!--                  if (!checkExtension(files[i].name, files[i].size)) {-->
+<!--                      return false;-->
+<!--                  }-->
+
+<!--                  formData.append('uploadFiles', files[i]);-->
+<!--                  appended = true;-->
+<!--              }-->
+
+<!--              if (!appended) {-->
+<!--                  return false;-->
+<!--              }-->
+
+<!--              for (let value of formData.values()) {-->
+<!--                  console.log(value);-->
+<!--              }-->
+
+<!--              $.ajax({-->
+<!--                  url: '/uploadAjax',-->
+<!--                  processData: false,-->
+<!--                  contentType: false,-->
+<!--                  data: formData,-->
+<!--                  type: 'POST',-->
+<!--                  dataType: 'json',-->
+<!--                  headers: {-->
+<!--                      "Authorization": "Bearer " + token-->
+<!--                  },-->
+<!--                  success: function (result) {-->
+<!--                      showResult(result);-->
+<!--                  },-->
+<!--                  error: function (jqXHR, textStatus, errorThrown) {-->
+<!--                      console.log(textStatus);-->
+<!--                  }-->
+<!--              });-->
+<!--          });-->
+<!--      });-->
+
+
+
+<!--    $(".uploadResult").on("click", "li button", function (e) {-->
+
+<!--        let targetFile = $(this).data("file");-->
+
+<!--        let targetLi = $(this).closest("li");-->
+
+<!--        $.ajax({-->
+<!--            url: '/removeFile',-->
+<!--            data: {fileName: targetFile},-->
+<!--            type: 'POST',-->
+<!--            dataType: 'text',-->
+<!--            headers: {-->
+<!--                "Authorization": "Bearer " + token-->
+<!--            },-->
+<!--            success: function (result) {-->
+<!--                alert(result);-->
+<!--                targetLi.remove();-->
+<!--            }-->
+<!--        })-->
+<!--    })-->
+
+<!--      $(".btn-primary").on("click", function (e) {-->
+<!--          e.preventDefault();-->
+
+<!--          let str = "";-->
+
+<!--          $(".uploadResult li").each(function (i, obj) {-->
+
+<!--              let target = $(obj);-->
+
+<!--              str += "<input type='hidden' name='imageDTOList[" + i + "].fileName' value='" + target.data("name") + "'>";-->
+<!--              str += "<input type='hidden' name='imageDTOList[" + i + "].folderPath' value='" + target.data("path") + "'>";-->
+<!--              str += "<input type='hidden' name='imageDTOList[" + i + "].uuid' value='" + target.data("uuid") + "'>";-->
+<!--          });-->
+
+<!--          $(".box").html(str);-->
+<!--      })-->
+
+<!--    document.getElementById("register").addEventListener("click", async function () {-->
+
+<!--        const name = document.querySelector("input[name='name']").value;-->
+<!--        const phoneNumber = document.querySelector("input[name='phoneNumber']").value;-->
+<!--        const location = document.querySelector("input[name='location']").value;-->
+
+<!--        let imageDTOList = [];-->
+
+<!--        document.querySelectorAll(".uploadResult li").forEach(function (li) {-->
+
+<!--            imageDTOList.push({-->
+<!--                fileName: li.dataset.name,-->
+<!--                folderPath: li.dataset.path,-->
+<!--                uuid: li.dataset.uuid,-->
+<!--            })-->
+<!--        })-->
+
+<!--        if (imageDTOList.length === 0) {-->
+<!--            imageDTOList = [];-->
+<!--        }-->
+
+<!--        try {-->
+<!--            const response = await fetch('/api/admin/register/board', {-->
+<!--                method: 'POST',-->
+<!--                headers: {-->
+<!--                    'Content-Type': 'application/json',-->
+<!--                    'Authorization': 'Bearer ' + token-->
+<!--                },-->
+<!--                body: JSON.stringify({-->
+<!--                    name,-->
+<!--                    phoneNumber,-->
+<!--                    location,-->
+<!--                    imageDTOList-->
+<!--                })-->
+<!--            })-->
+
+<!--            if (!response.ok) {-->
+<!--                throw new Error('업로드 실패');-->
+<!--            }-->
+
+<!--            const id = await response.json();-->
+<!--            alert("등록 완료, 게시글로 이동합니다");-->
+<!--            window.location.href = `/board/read?id=${id}`-->
+
+<!--        } catch (e) {-->
+<!--            alert("업로드 실패")-->
+<!--        }-->
+<!--    })-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8" />
+    <title>register</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/index.min.js"></script>
 </head>
 <body>
-
 <form th:action="@{/admin/register}" th:method="post">
     <div class="form-group">
         <label>상호 명</label>
@@ -25,58 +290,102 @@
     <div class="form-group fileForm">
         <label>이미지 파일</label>
         <div class="custom-file">
-            <input type="file" class="custom-file-input" id="customFile" multiple>
+            <input type="file" class="custom-file-input" id="customFile" multiple />
             <label class="custom-file-label" data-browse="Browse"></label>
         </div>
     </div>
 
-    <div class="box">
-
-    </div>
+    <div class="box"></div>
 
     <button type="button" id="register" class="btn btn-primary">등록</button>
 </form>
 
-  <style>
-      .uploadResult {
-          width: 100%;
-          background-color: gray;
-          margin-top: 10px;
-      }
+<style>
+    .uploadResult {
+        width: 100%;
+        background-color: gray;
+        margin-top: 10px;
+    }
 
-      .uploadResult ul {
-          display: flex;
-          flex-flow: row;
-          justify-content: center;
-          align-items: center;
-          vertical-align: top;
-          overflow: auto;
-      }
+    .uploadResult ul {
+        display: flex;
+        flex-flow: row;
+        justify-content: center;
+        align-items: center;
+        vertical-align: top;
+        overflow: auto;
+    }
 
-      .uploadResult ul li {
-          list-style: none;
-          padding: 10px;
-          margin-left: 2em;
-      }
+    .uploadResult ul li {
+        list-style: none;
+        padding: 10px;
+        margin-left: 2em;
+    }
 
-      .uploadResult ul li img {
-          width: 100px;
-      }
-  </style>
+    .uploadResult ul li img {
+        width: 100px;
+    }
+</style>
 
-    <div class="uploadResult">
-        <ul>
-
-        </ul>
-    </div>
+<div class="uploadResult">
+    <ul></ul>
+</div>
 
 <script>
+    const token = localStorage.getItem("token");
 
-    const token = localStorage.getItem('token');
-    console.log(token);
+    // ✅ Supabase 초기화
+    const supabaseUrl = "https://xwhhcfsxmnqphbyqjpoz.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3aGhjZnN4bW5xcGhieXFqcG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1NTgzMDUsImV4cCI6MjA2ODEzNDMwNX0.0bGFQ_mZR6N7hqiHAsYckP6C14adxafhcmOH5-70pL8";
+    const supabase = SupabaseModule.createClient(supabaseUrl, supabaseKey);
 
+    $(".custom-file-input").on("change", async function () {
+        let file = this.files[0];
+        if (!file) return;
+
+        let fileName = Date.now() + "_" + file.name;
+
+        const { data, error } = await supabase.storage
+            .from("uploads")
+            .upload(fileName, file);
+
+        if (error) {
+            alert("업로드 실패: " + error.message);
+            return;
+        }
+
+        const { data: urlData } = supabase.storage
+            .from("uploads")
+            .getPublicUrl(fileName);
+
+        $(".uploadResult ul").append(`
+        <li data-name="${file.name}" data-path="uploads" data-uuid="${fileName}">
+          <div>
+            <button type='button' data-file='${fileName}' class='btn-warning btn-sm'>X</button>
+            <img src='${urlData.publicUrl}'>
+          </div>
+        </li>
+      `);
+    });
+
+    // ✅ 삭제 버튼 클릭 시 Supabase에서 삭제
+    $(".uploadResult").on("click", "li button", async function () {
+        const targetFile = $(this).data("file");
+        const targetLi = $(this).closest("li");
+
+        const { error } = await supabase.storage.from("uploads").remove([targetFile]);
+
+        if (error) {
+            alert("삭제 실패: " + error.message);
+            return;
+        }
+
+        alert("삭제 완료");
+        targetLi.remove();
+    });
+
+    // ✅ 등록 버튼 클릭 시 서버로 이미지 정보 전송
     document.getElementById("register").addEventListener("click", async function () {
-
         const name = document.querySelector("input[name='name']").value;
         const phoneNumber = document.querySelector("input[name='phoneNumber']").value;
         const location = document.querySelector("input[name='location']").value;
@@ -84,175 +393,37 @@
         let imageDTOList = [];
 
         document.querySelectorAll(".uploadResult li").forEach(function (li) {
-
             imageDTOList.push({
                 fileName: li.dataset.name,
                 folderPath: li.dataset.path,
                 uuid: li.dataset.uuid,
-            })
-        })
-
-        if (imageDTOList.length === 0) {
-            imageDTOList = [];
-        }
+            });
+        });
 
         try {
-            const response = await fetch('/api/admin/register/board', {
-                method: 'POST',
+            const response = await fetch("/api/admin/register/board", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + token,
                 },
                 body: JSON.stringify({
                     name,
                     phoneNumber,
                     location,
-                    imageDTOList
-                })
-            })
+                    imageDTOList,
+                }),
+            });
 
-            if (!response.ok) {
-                throw new Error('업로드 실패');
-            }
+            if (!response.ok) throw new Error("업로드 실패");
 
             const id = await response.json();
             alert("등록 완료, 게시글로 이동합니다");
-            window.location.href = `/board/read?id=${id}`
-
+            window.location.href = `/board/read?id=${id}`;
         } catch (e) {
-            alert("업로드 실패")
+            alert("업로드 실패");
         }
-    })
-
-      $(document).ready(function () {
-
-          let regex = new RegExp("(.*?)\.(exe|sh|zip|alz|tiff)$");
-          let maxSize = 10485760;
-
-          function checkExtension(fileName, fileSize) {
-
-              if (fileSize > maxSize) {
-                  alert("파일 사이즈 초과");
-                  return false;
-              }
-
-              if (regex.test(fileName)) {
-                  alert("해당 종류의 파일은 업로드할 수 없습니다")
-                  return false;
-              }
-              return true;
-          }
-
-          function showResult(uploadResultArr) {
-
-              let uploadUL = $(".uploadResult ul");
-
-              let str = "";
-
-              $(uploadResultArr).each(function (i , obj) {
-
-                  str += "<li data-name='" + obj.fileName + "' data-path='" + obj.folderPath + "' data-uuid='" + obj.uuid + "'>";
-                  str += "<div>";
-                  str += "<button type='button' data-file=\'" + obj.imageURL + "\' ";
-                  str += "class='btn-warning btn-sm'>X</button>";
-                  str += "<img src='/display?fileName=" + obj.thumbnailURL+"'>";
-                  str += "</div>";
-                  str += "</li>";
-              });
-
-              uploadUL.append(str);
-          }
-
-          $(".custom-file-input").on("change", function () {
-
-              let fileName = $(this).val().split("\\").pop();
-              $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
-
-              let formData = new FormData();
-
-              let inputFile = $(this);
-
-              let files = inputFile[0].files;
-
-              let appended = false;
-
-              for (let i = 0; i < files.length; i++) {
-
-                  if (!checkExtension(files[i].name, files[i].size)) {
-                      return false;
-                  }
-
-                  formData.append('uploadFiles', files[i]);
-                  appended = true;
-              }
-
-              if (!appended) {
-                  return false;
-              }
-
-              for (let value of formData.values()) {
-                  console.log(value);
-              }
-
-              $.ajax({
-                  url: '/uploadAjax',
-                  processData: false,
-                  contentType: false,
-                  data: formData,
-                  type: 'POST',
-                  dataType: 'json',
-                  headers: {
-                      "Authorization": "Bearer " + token
-                  },
-                  success: function (result) {
-                      showResult(result);
-                  },
-                  error: function (jqXHR, textStatus, errorThrown) {
-                      console.log(textStatus);
-                  }
-              });
-          });
-      });
-
-
-
-    $(".uploadResult").on("click", "li button", function (e) {
-
-        let targetFile = $(this).data("file");
-
-        let targetLi = $(this).closest("li");
-
-        $.ajax({
-            url: '/removeFile',
-            data: {fileName: targetFile},
-            type: 'POST',
-            dataType: 'text',
-            headers: {
-                "Authorization": "Bearer " + token
-            },
-            success: function (result) {
-                alert(result);
-                targetLi.remove();
-            }
-        })
-    })
-
-      $(".btn-primary").on("click", function (e) {
-          e.preventDefault();
-
-          let str = "";
-
-          $(".uploadResult li").each(function (i, obj) {
-
-              let target = $(obj);
-
-              str += "<input type='hidden' name='imageDTOList[" + i + "].fileName' value='" + target.data("name") + "'>";
-              str += "<input type='hidden' name='imageDTOList[" + i + "].folderPath' value='" + target.data("path") + "'>";
-              str += "<input type='hidden' name='imageDTOList[" + i + "].uuid' value='" + target.data("uuid") + "'>";
-          });
-
-          $(".box").html(str);
-      })
+    });
 </script>
 </body>
 </html>

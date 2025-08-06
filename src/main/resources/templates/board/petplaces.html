@@ -1,0 +1,950 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="ko" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>게시판</title>-->
+<!--    &lt;!&ndash; Head 안에 넣기 &ndash;&gt;-->
+<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">-->
+<!--    <script src="https://code.jquery.com/jquery-latest.min.js"></script>-->
+<!--    <script th:src="@{/js/starrr.js}"></script>-->
+<!--    <link rel="stylesheet" th:href="@{/css/starrr.css}" />-->
+
+<!--    <style>-->
+<!--        * {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            box-sizing: border-box;-->
+<!--        }-->
+
+<!--        body {-->
+<!--            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;-->
+<!--            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);-->
+<!--            color: #333;-->
+<!--            min-height: 100vh;-->
+<!--        }-->
+
+<!--        .main-container {-->
+<!--            max-width: 1200px;-->
+<!--            margin: 0 auto;-->
+<!--            background: white;-->
+<!--            min-height: 100vh;-->
+<!--            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);-->
+<!--        }-->
+
+<!--        /* 상단 바 */-->
+<!--        .top-bar {-->
+<!--            padding: 20px 30px;-->
+<!--            background: white;-->
+<!--            border-bottom: 1px solid #e9ecef;-->
+<!--            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);-->
+<!--        }-->
+
+<!--        .top-bar .btn {-->
+<!--            padding: 12px 24px;-->
+<!--            border: none;-->
+<!--            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);-->
+<!--            color: white;-->
+<!--            border-radius: 12px;-->
+<!--            cursor: pointer;-->
+<!--            font-size: 16px;-->
+<!--            font-weight: 600;-->
+<!--            letter-spacing: 1px;-->
+<!--            transition: all 0.3s ease;-->
+<!--            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);-->
+<!--            text-decoration: none;-->
+<!--        }-->
+
+<!--        .top-bar .btn:hover {-->
+<!--            transform: translateY(-2px);-->
+<!--            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);-->
+<!--        }-->
+
+<!--        /* 게시판 상세 섹션 */-->
+<!--        .board-detail-section {-->
+<!--            padding: 40px 30px;-->
+<!--            animation: fadeInUp 0.6s ease;-->
+<!--        }-->
+
+<!--        .board-title {-->
+<!--            font-size: 28px;-->
+<!--            font-weight: 700;-->
+<!--            color: #333;-->
+<!--            margin-bottom: 30px;-->
+<!--            text-align: center;-->
+<!--            position: relative;-->
+<!--        }-->
+
+<!--        .board-title::after {-->
+<!--            content: '';-->
+<!--            position: absolute;-->
+<!--            bottom: -10px;-->
+<!--            left: 50%;-->
+<!--            transform: translateX(-50%);-->
+<!--            width: 60px;-->
+<!--            height: 3px;-->
+<!--            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);-->
+<!--            border-radius: 2px;-->
+<!--        }-->
+
+<!--        /* 이미지 슬라이더 */-->
+<!--        .image-slider {-->
+<!--            position: relative;-->
+<!--            margin-bottom: 40px;-->
+<!--            border-radius: 16px;-->
+<!--            overflow: hidden;-->
+<!--            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);-->
+<!--            height: 300px;-->
+<!--        }-->
+
+<!--        .slider-container {-->
+<!--            position: relative;-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--            overflow: hidden;-->
+<!--        }-->
+
+<!--        .slider-wrapper {-->
+<!--            display: flex;-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--            transition: transform 0.5s ease;-->
+<!--        }-->
+
+<!--        .image-box {-->
+<!--            flex: 0 0 100%;-->
+<!--            height: 100%;-->
+<!--            overflow: hidden;-->
+<!--            background: #f8f9fa;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--        }-->
+
+<!--        .image-box img {-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--            object-fit: cover;-->
+<!--            transition: transform 0.3s ease;-->
+<!--        }-->
+
+<!--        .image-box:hover img {-->
+<!--            transform: scale(1.05);-->
+<!--        }-->
+
+<!--        .slider-nav {-->
+<!--            position: absolute;-->
+<!--            top: 50%;-->
+<!--            transform: translateY(-50%);-->
+<!--            background: rgba(255, 255, 255, 0.9);-->
+<!--            border: none;-->
+<!--            border-radius: 50%;-->
+<!--            width: 45px;-->
+<!--            height: 45px;-->
+<!--            font-size: 16px;-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);-->
+<!--            z-index: 10;-->
+<!--        }-->
+
+<!--        .slider-nav:hover {-->
+<!--            background: white;-->
+<!--            transform: translateY(-50%) scale(1.1);-->
+<!--            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);-->
+<!--        }-->
+
+<!--        .slider-prev {-->
+<!--            left: 15px;-->
+<!--        }-->
+
+<!--        .slider-next {-->
+<!--            right: 15px;-->
+<!--        }-->
+
+<!--        .slider-dots {-->
+<!--            position: absolute;-->
+<!--            bottom: 15px;-->
+<!--            left: 50%;-->
+<!--            transform: translateX(-50%);-->
+<!--            display: flex;-->
+<!--            gap: 8px;-->
+<!--            z-index: 10;-->
+<!--        }-->
+
+<!--        .slider-dot {-->
+<!--            width: 8px;-->
+<!--            height: 8px;-->
+<!--            border-radius: 50%;-->
+<!--            background: rgba(255, 255, 255, 0.5);-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--        }-->
+
+<!--        .slider-dot.active {-->
+<!--            background: white;-->
+<!--            transform: scale(1.2);-->
+<!--        }-->
+
+<!--        .image-counter {-->
+<!--            position: absolute;-->
+<!--            top: 15px;-->
+<!--            right: 15px;-->
+<!--            background: rgba(0, 0, 0, 0.6);-->
+<!--            color: white;-->
+<!--            padding: 5px 12px;-->
+<!--            border-radius: 15px;-->
+<!--            font-size: 12px;-->
+<!--            font-weight: 500;-->
+<!--        }-->
+
+<!--        /* 정보 입력 그리드 */-->
+<!--        .info-input-grid {-->
+<!--            display: grid;-->
+<!--            grid-template-columns: 1fr 1fr;-->
+<!--            gap: 25px;-->
+<!--            margin-bottom: 50px;-->
+<!--        }-->
+
+<!--        .info-input-grid > div {-->
+<!--            display: flex;-->
+<!--            flex-direction: column;-->
+<!--        }-->
+
+<!--        .info-input-grid label {-->
+<!--            font-weight: 600;-->
+<!--            color: #495057;-->
+<!--            margin-bottom: 8px;-->
+<!--            font-size: 14px;-->
+<!--        }-->
+
+<!--        .info-input-grid input {-->
+<!--            padding: 15px 20px;-->
+<!--            border: 2px solid #e9ecef;-->
+<!--            border-radius: 12px;-->
+<!--            font-size: 16px;-->
+<!--            background: #f8f9fa;-->
+<!--            color: #333;-->
+<!--            font-weight: 500;-->
+<!--            transition: all 0.3s ease;-->
+<!--        }-->
+
+<!--        .info-input-grid input[name="avg"] {-->
+<!--            color: #ffc107;-->
+<!--            font-weight: 600;-->
+<!--        }-->
+
+<!--        /* 리뷰 섹션 */-->
+<!--        .review-title {-->
+<!--            font-size: 24px;-->
+<!--            font-weight: 700;-->
+<!--            color: #333;-->
+<!--            margin-bottom: 25px;-->
+<!--            padding-bottom: 10px;-->
+<!--            border-bottom: 2px solid #e9ecef;-->
+<!--        }-->
+
+<!--        /* 리뷰 테이블 */-->
+<!--        .review-table {-->
+<!--            width: 100%;-->
+<!--            border-collapse: collapse;-->
+<!--            background: white;-->
+<!--            border-radius: 16px;-->
+<!--            overflow: hidden;-->
+<!--            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);-->
+<!--            border: 1px solid #e9ecef;-->
+<!--            margin-bottom: 30px;-->
+<!--        }-->
+
+<!--        .review-table th {-->
+<!--            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);-->
+<!--            padding: 18px 15px;-->
+<!--            text-align: center;-->
+<!--            font-size: 16px;-->
+<!--            font-weight: 600;-->
+<!--            color: #495057;-->
+<!--            border-bottom: 2px solid #e9ecef;-->
+<!--        }-->
+
+<!--        .review-table td {-->
+<!--            padding: 16px 15px;-->
+<!--            text-align: center;-->
+<!--            font-size: 14px;-->
+<!--            border-bottom: 1px solid #f1f3f4;-->
+<!--            transition: all 0.2s ease;-->
+<!--        }-->
+
+<!--        .review-table tr:hover td {-->
+<!--            background: #f8f9fa;-->
+<!--        }-->
+
+<!--        .review-table tr:last-child td {-->
+<!--            border-bottom: none;-->
+<!--        }-->
+
+<!--        .review-table tbody tr:nth-child(even) {-->
+<!--            background: #fafbfc;-->
+<!--        }-->
+
+<!--        .review-table tbody tr:nth-child(even):hover {-->
+<!--            background: #f8f9fa;-->
+<!--        }-->
+
+<!--        /* 리뷰 테이블 컬럼 너비 */-->
+<!--        .review-table th:first-child,-->
+<!--        .review-table td:first-child {-->
+<!--            width: 8%;-->
+<!--        }-->
+
+<!--        .review-table th:nth-child(2),-->
+<!--        .review-table td:nth-child(2) {-->
+<!--            width: 50%;-->
+<!--            text-align: left;-->
+<!--            padding-left: 25px;-->
+<!--        }-->
+
+<!--        .review-table th:nth-child(3),-->
+<!--        .review-table td:nth-child(3) {-->
+<!--            width: 20%;-->
+<!--        }-->
+
+<!--        .review-table th:nth-child(4),-->
+<!--        .review-table td:nth-child(4) {-->
+<!--            width: 12%;-->
+<!--            color: #ffc107;-->
+<!--            font-weight: 600;-->
+<!--        }-->
+
+<!--        .review-table th:nth-child(5),-->
+<!--        .review-table td:nth-child(5) {-->
+<!--            width: 10%;-->
+<!--        }-->
+
+<!--        /* 버튼 스타일 */-->
+<!--        .edit-btn, .delete-btn, .confirm-btn, .cancel-btn {-->
+<!--            padding: 6px 12px;-->
+<!--            border: none;-->
+<!--            border-radius: 6px;-->
+<!--            font-size: 12px;-->
+<!--            font-weight: 500;-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--            margin: 0 2px;-->
+<!--        }-->
+
+<!--        .edit-btn, .confirm-btn {-->
+<!--            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);-->
+<!--            color: white;-->
+<!--        }-->
+
+<!--        .edit-btn:hover, .confirm-btn:hover {-->
+<!--            transform: translateY(-1px);-->
+<!--            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);-->
+<!--        }-->
+
+<!--        .delete-btn, .cancel-btn {-->
+<!--            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);-->
+<!--            color: white;-->
+<!--        }-->
+
+<!--        .delete-btn:hover, .cancel-btn:hover {-->
+<!--            transform: translateY(-1px);-->
+<!--            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);-->
+<!--        }-->
+
+<!--        /* 리뷰 입력 */-->
+<!--        .review-input {-->
+<!--            background: white;-->
+<!--            padding: 30px;-->
+<!--            border-radius: 16px;-->
+<!--            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);-->
+<!--            border: 1px solid #e9ecef;-->
+<!--            margin-bottom: 30px;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 20px;-->
+<!--        }-->
+
+<!--        .starrr, .edit-starrr {-->
+<!--            flex-shrink: 0;-->
+<!--        }-->
+
+<!--        .inputReview {-->
+<!--            flex: 1;-->
+<!--            padding: 15px 20px;-->
+<!--            border: 2px solid #e9ecef;-->
+<!--            border-radius: 12px;-->
+<!--            font-size: 16px;-->
+<!--            outline: none;-->
+<!--            transition: all 0.3s ease;-->
+<!--        }-->
+
+<!--        .inputReview:focus {-->
+<!--            border-color: #4169E1;-->
+<!--            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);-->
+<!--        }-->
+
+<!--        .submit-btn {-->
+<!--            padding: 15px 30px;-->
+<!--            border: none;-->
+<!--            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);-->
+<!--            color: white;-->
+<!--            border-radius: 12px;-->
+<!--            font-size: 16px;-->
+<!--            font-weight: 600;-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);-->
+<!--            flex-shrink: 0;-->
+<!--        }-->
+
+<!--        .submit-btn:hover {-->
+<!--            transform: translateY(-2px);-->
+<!--            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);-->
+<!--        }-->
+
+<!--        /* 페이지네이션 */-->
+<!--        .pagination {-->
+<!--            display: flex;-->
+<!--            justify-content: center;-->
+<!--            align-items: center;-->
+<!--            gap: 8px;-->
+<!--            margin-top: 30px;-->
+<!--        }-->
+
+<!--        .page-btn {-->
+<!--            padding: 12px 16px;-->
+<!--            border: 2px solid #e9ecef;-->
+<!--            background: white;-->
+<!--            border-radius: 8px;-->
+<!--            color: #666;-->
+<!--            text-decoration: none;-->
+<!--            font-weight: 500;-->
+<!--            transition: all 0.3s ease;-->
+<!--            min-width: 44px;-->
+<!--            text-align: center;-->
+<!--            cursor: pointer;-->
+<!--        }-->
+
+<!--        .page-btn:hover {-->
+<!--            border-color: #4169E1;-->
+<!--            color: #4169E1;-->
+<!--            transform: translateY(-1px);-->
+<!--            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);-->
+<!--        }-->
+
+<!--        .page-btn.active {-->
+<!--            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);-->
+<!--            border-color: #4169E1;-->
+<!--            color: white;-->
+<!--            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);-->
+<!--        }-->
+
+<!--        .page-btn.active:hover {-->
+<!--            transform: translateY(-2px);-->
+<!--            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);-->
+<!--        }-->
+
+<!--        /* 별점 스타일 커스터마이징 */-->
+<!--        .starrr, .edit-starrr {-->
+<!--            display: inline-block;-->
+<!--        }-->
+
+<!--        .starrr a, .edit-starrr a {-->
+<!--            font-size: 20px;-->
+<!--            color: #ddd;-->
+<!--            text-decoration: none;-->
+<!--            transition: color 0.3s ease;-->
+<!--        }-->
+
+<!--        .starrr a.starred, .edit-starrr a.starred {-->
+<!--            color: #ffc107;-->
+<!--        }-->
+
+<!--        .starrr a:hover, .edit-starrr a:hover {-->
+<!--            color: #ffc107;-->
+<!--        }-->
+
+<!--        /* 반응형 */-->
+<!--        @media (max-width: 768px) {-->
+<!--            .main-container {-->
+<!--                margin: 0;-->
+<!--                border-radius: 0;-->
+<!--            }-->
+
+<!--            .board-detail-section {-->
+<!--                padding: 20px 15px;-->
+<!--            }-->
+
+<!--            .top-bar {-->
+<!--                padding: 15px 20px;-->
+<!--            }-->
+
+<!--            .board-title {-->
+<!--                font-size: 24px;-->
+<!--                margin-bottom: 20px;-->
+<!--            }-->
+
+<!--            .info-input-grid {-->
+<!--                grid-template-columns: 1fr;-->
+<!--                gap: 15px;-->
+<!--                margin-bottom: 30px;-->
+<!--            }-->
+
+<!--            .image-box {-->
+<!--                height: 200px;-->
+<!--            }-->
+
+<!--            .review-input {-->
+<!--                flex-direction: column;-->
+<!--                align-items: stretch;-->
+<!--                gap: 15px;-->
+<!--                padding: 20px;-->
+<!--            }-->
+
+<!--            .review-table {-->
+<!--                font-size: 12px;-->
+<!--            }-->
+
+<!--            .review-table th,-->
+<!--            .review-table td {-->
+<!--                padding: 10px 8px;-->
+<!--            }-->
+
+<!--            .review-table th:nth-child(2),-->
+<!--            .review-table td:nth-child(2) {-->
+<!--                padding-left: 12px;-->
+<!--            }-->
+
+<!--            .pagination {-->
+<!--                flex-wrap: wrap;-->
+<!--                gap: 5px;-->
+<!--            }-->
+
+<!--            .page-btn {-->
+<!--                padding: 8px 12px;-->
+<!--                font-size: 14px;-->
+<!--                min-width: 36px;-->
+<!--            }-->
+<!--        }-->
+
+<!--        @media (max-width: 480px) {-->
+<!--            .review-table th:nth-child(5),-->
+<!--            .review-table td:nth-child(5) {-->
+<!--                display: none;-->
+<!--            }-->
+
+<!--            .review-table th:nth-child(2),-->
+<!--            .review-table td:nth-child(2) {-->
+<!--                width: 60%;-->
+<!--            }-->
+
+<!--            .edit-btn, .delete-btn, .confirm-btn, .cancel-btn {-->
+<!--                display: block;-->
+<!--                margin: 2px 0;-->
+<!--                width: 100%;-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* 애니메이션 */-->
+<!--        @keyframes fadeInUp {-->
+<!--            from {-->
+<!--                opacity: 0;-->
+<!--                transform: translateY(20px);-->
+<!--            }-->
+<!--            to {-->
+<!--                opacity: 1;-->
+<!--                transform: translateY(0);-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* 빈 리뷰 상태 */-->
+<!--        .empty-reviews {-->
+<!--            text-align: center;-->
+<!--            padding: 60px 20px;-->
+<!--            color: #999;-->
+<!--        }-->
+
+<!--        .empty-reviews h4 {-->
+<!--            font-size: 18px;-->
+<!--            margin-bottom: 10px;-->
+<!--        }-->
+
+<!--        .empty-reviews p {-->
+<!--            font-size: 14px;-->
+<!--            color: #aaa;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="main-container">-->
+<!--    &lt;!&ndash; 상단 바 &ndash;&gt;-->
+<!--    <div class="top-bar">-->
+<!--        <a th:href="@{/board/main}"><button class="btn">LOGO</button></a>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; 게시판 상세 섹션 &ndash;&gt;-->
+<!--    <div class="board-detail-section" th:each="place : ${petplaces}">-->
+<!--        <h2 class="board-title">게시글</h2>-->
+
+<!--        &lt;!&ndash; 이미지 슬라이더 &ndash;&gt;-->
+<!--        <div class="image-slider">-->
+<!--            <div class="slider-container">-->
+<!--                <div class="slider-wrapper" id="sliderWrapper">-->
+<!--                    <div class="image-box" th:each="image : ${petplacesimg}">-->
+<!--                        <img th:if="${place.contentid} == ${image.contentid}" th:src="${image.originimgurl}" alt="매장 이미지">-->
+<!--                    </div>-->
+<!--                    &lt;!&ndash; 이미지가 없을 때 기본 이미지 &ndash;&gt;-->
+<!--                    <div class="image-box" th:if="${#lists.isEmpty(place.imageDTOList)}">-->
+<!--                        <div style="color: #999; font-size: 18px;">이미지가 없습니다</div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; 네비게이션 버튼 (이미지가 2개 이상일 때만 표시) &ndash;&gt;-->
+<!--                <div th:if="${petplacesimg.size() > 1}">-->
+<!--                    <button class="slider-nav slider-prev" onclick="prevSlide()">‹</button>-->
+<!--                    <button class="slider-nav slider-next" onclick="nextSlide()">›</button>-->
+
+<!--                    &lt;!&ndash; 이미지 카운터 &ndash;&gt;-->
+<!--                    <div class="image-counter">-->
+<!--                        <span id="currentImageIndex">1</span> / <span th:text="${petplacesimg.size()}">1</span>-->
+<!--                    </div>-->
+
+<!--                    &lt;!&ndash; 점 네비게이션 &ndash;&gt;-->
+<!--                    <div class="slider-dots" id="sliderDots">-->
+<!--                        &lt;!&ndash; JavaScript로 동적 생성 &ndash;&gt;-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 정보 입력 &ndash;&gt;-->
+<!--        <div class="info-input-grid">-->
+<!--            <div>-->
+<!--                <label>상호명</label>-->
+<!--                <input type="text" name="title" th:value="${place.title}" readOnly>-->
+<!--            </div>-->
+<!--            <div>-->
+<!--                <label>전화번호</label>-->
+<!--                <input type="text" name="phoneNumber" th:value="${place.tel}" readOnly>-->
+<!--            </div>-->
+<!--            <div>-->
+<!--                <label>평점</label>-->
+<!--&lt;!&ndash;                <input type="text" name="avg" th:value="'★ ' + ${board.avg}" readOnly>&ndash;&gt;-->
+<!--            </div>-->
+<!--            <div>-->
+<!--                <label>위치</label>-->
+<!--                <input type="text" name="location" th:value="${place.addr1}" readOnly>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 리뷰 테이블 &ndash;&gt;-->
+<!--        <h3 class="review-title">리뷰</h3>-->
+<!--        <table class="review-table">-->
+<!--            <thead>-->
+<!--            <tr>-->
+<!--                <th>No</th>-->
+<!--                <th>내용</th>-->
+<!--                <th>작성자</th>-->
+<!--                <th>평점</th>-->
+<!--                <th>관리</th>-->
+<!--            </tr>-->
+<!--            </thead>-->
+<!--            <tbody id="review-body">-->
+<!--            &lt;!&ndash; JS로 리뷰가 들어올 자리 &ndash;&gt;-->
+<!--            </tbody>-->
+<!--        </table>-->
+
+<!--        &lt;!&ndash; 리뷰 작성 &ndash;&gt;-->
+<!--        <div class="review-input">-->
+<!--            <div class="starrr"></div>-->
+<!--            <input class="inputReview" type="text" placeholder="리뷰를 남겨주세요">-->
+<!--            <button class="submit-btn">등록</button>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 페이지네이션 &ndash;&gt;-->
+<!--        <div id="review-pagination" class="pagination"></div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--<script th:inline="javascript">-->
+<!--    let boardId = [[${board.id}]];-->
+
+<!--    function parseJwt(token) {-->
+<!--        try {-->
+<!--            const base64Payload = token.split('.')[1];-->
+<!--            const jsonPayload = atob(base64Payload);-->
+<!--            return JSON.parse(jsonPayload);-->
+<!--        } catch (e) {-->
+<!--            return null;-->
+<!--        }-->
+<!--    }-->
+<!--    const token = localStorage.getItem('token');-->
+<!--    const payload = parseJwt(token);-->
+<!--    const currentUser = payload ? payload.sub : null;-->
+
+<!--    $(document).ready(function () {-->
+<!--        let rating = 0;-->
+<!--        let currentSlideIndex = 0;-->
+<!--        const totalSlides = $('.image-box').length;-->
+
+<!--        // 별점 초기화-->
+<!--        $('.starrr').starrr({-->
+<!--            rating: rating,-->
+<!--            change: function (e, value) {-->
+<!--                rating = value;-->
+<!--            }-->
+<!--        });-->
+
+<!--        // 슬라이더 초기화-->
+<!--        initializeSlider();-->
+
+<!--        function initializeSlider() {-->
+<!--            if (totalSlides <= 1) return;-->
+
+<!--            // 점 네비게이션 생성-->
+<!--            for (let i = 0; i < totalSlides; i++) {-->
+<!--                const dot = $(`<div class="slider-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`);-->
+<!--                $('#sliderDots').append(dot);-->
+<!--            }-->
+<!--        }-->
+
+<!--        // 슬라이더 함수들을 전역으로 등록-->
+<!--        window.nextSlide = function() {-->
+<!--            currentSlideIndex = (currentSlideIndex + 1) % totalSlides;-->
+<!--            updateSlider();-->
+<!--        };-->
+
+<!--        window.prevSlide = function() {-->
+<!--            currentSlideIndex = (currentSlideIndex - 1 + totalSlides) % totalSlides;-->
+<!--            updateSlider();-->
+<!--        };-->
+
+<!--        window.goToSlide = function(index) {-->
+<!--            currentSlideIndex = index;-->
+<!--            updateSlider();-->
+<!--        };-->
+
+<!--        function updateSlider() {-->
+<!--            const translateX = -currentSlideIndex * 100;-->
+<!--            $('#sliderWrapper').css('transform', `translateX(${translateX}%)`);-->
+
+<!--            // 점 네비게이션 업데이트-->
+<!--            $('.slider-dot').removeClass('active');-->
+<!--            $('.slider-dot').eq(currentSlideIndex).addClass('active');-->
+
+<!--            // 이미지 카운터 업데이트-->
+<!--            $('#currentImageIndex').text(currentSlideIndex + 1);-->
+<!--        }-->
+
+<!--        // 자동 슬라이드 (옵션)-->
+<!--        if (totalSlides > 1) {-->
+<!--            setInterval(() => {-->
+<!--                nextSlide();-->
+<!--            }, 5000);-->
+<!--        }-->
+
+<!--        function loadReviewPage(page = 1) {-->
+<!--            $.get(`/api/review/${boardId}/all?page=${page}`, function (data) {-->
+<!--                const list = data.dtoList;-->
+
+<!--                if (list.length === 0) {-->
+<!--                    $('#review-body').html(`-->
+<!--                            <tr>-->
+<!--                                <td colspan="5" class="empty-reviews">-->
+<!--                                    <h4>아직 리뷰가 없습니다</h4>-->
+<!--                                    <p>첫 번째 리뷰를 남겨보세요!</p>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                        `);-->
+<!--                    $('#review-pagination').html('');-->
+<!--                    return;-->
+<!--                }-->
+
+<!--                const html = list.map((r, i) =>-->
+<!--                    // language=HTML-->
+<!--                    `<tr data-id="${r.id}">-->
+<!--                            <td>${(page - 1) * data.size + i + 1}</td>-->
+<!--                            <td class="review-content">${r.content}</td>-->
+<!--                            <td>${r.writer}</td>-->
+<!--                            <td class="review-rating">★ ${r.rating}</td>-->
+<!--                            <td>${currentUser === r.writerEmail ? `<button class="edit-btn">수정</button>-->
+<!--                            <button class="delete-btn">삭제</button>` :  ''}</td>-->
+<!--                        </tr>`-->
+<!--                ).join('');-->
+<!--                $('#review-body').html(html);-->
+
+<!--                let pagination = '';-->
+<!--                if (data.prev) {-->
+<!--                    pagination += `<a href="#" onclick="loadReviewPage(${data.start - 1})" class="page-btn">이전</a>`;-->
+<!--                }-->
+<!--                data.pageList.forEach(p => {-->
+<!--                    pagination += `<a href="#" onclick="loadReviewPage(${p})"-->
+<!--                                         class="page-btn ${p === data.page ? 'active' : ''}">${p}</a>`;-->
+<!--                });-->
+<!--                if (data.next) {-->
+<!--                    pagination += `<a href="#" onclick="loadReviewPage(${data.end + 1})" class="page-btn">다음</a>`;-->
+<!--                }-->
+<!--                $('#review-pagination').html(pagination);-->
+<!--            });-->
+<!--        }-->
+
+<!--        loadReviewPage(); // 첫 로딩-->
+
+<!--        $('.submit-btn').click(function () {-->
+<!--            let data = {boardId: boardId, rating: rating, content: $('.inputReview').val()};-->
+
+<!--            if (!token) {-->
+<!--                if (confirm("로그인이 필요합니다 로그인 하시겠습니까?")) {-->
+<!--                    window.location.href = "/join/login";-->
+<!--                }-->
+<!--                return;-->
+<!--            }-->
+
+<!--            if (!rating) {-->
+<!--                alert("별점을 선택해주세요!");-->
+<!--                return;-->
+<!--            }-->
+
+<!--            if (!data.content.trim()) {-->
+<!--                alert("리뷰 내용을 입력해주세요!");-->
+<!--                return;-->
+<!--            }-->
+
+<!--            $.ajax({-->
+<!--                url: '/api/review/' + boardId,-->
+<!--                type: 'POST',-->
+<!--                data: JSON.stringify(data),-->
+<!--                contentType: 'application/json; charset=UTF-8',-->
+<!--                dataType: 'text',-->
+<!--                headers: {-->
+<!--                    "Authorization": "Bearer " + token-->
+<!--                },-->
+<!--                success: function (result) {-->
+<!--                    alert("리뷰가 등록되었습니다!");-->
+<!--                    self.location.reload();-->
+<!--                },-->
+<!--                error: function() {-->
+<!--                    if (confirm("로그인이 필요합니다 로그인 하시겠습니까?")) {-->
+<!--                        window.location.href = "/join/login";-->
+<!--                    }-->
+<!--                }-->
+<!--            });-->
+<!--        });-->
+
+<!--        $(document).on('click', '.delete-btn', function () {-->
+<!--            if (!confirm("정말로 삭제하시겠습니까?")) return;-->
+
+<!--            const reviewId = $(this).closest('tr').data('id');-->
+
+<!--            $.ajax({-->
+<!--                url: '/api/review/' + boardId + `/${reviewId}`,-->
+<!--                type: "DELETE",-->
+<!--                headers: {-->
+<!--                    "Authorization": "Bearer " + token-->
+<!--                },-->
+<!--                success: () => {-->
+<!--                    alert("삭제 완료");-->
+<!--                    self.location.reload();-->
+<!--                },-->
+<!--                error: () => {-->
+<!--                    alert("삭제에 실패했습니다.");-->
+<!--                }-->
+<!--            });-->
+<!--        });-->
+
+<!--        $(document).on('click', '.edit-btn', function () {-->
+<!--            const tr = $(this).closest('tr');-->
+<!--            const reviewId = tr.data('id');-->
+<!--            const currentRating = tr.find('.review-rating').text().replace('★ ', '');-->
+<!--            const currentContent = tr.find('.review-content').text();-->
+
+<!--            const originalContent = tr.find('.review-content').text();-->
+<!--            const originalRating = parseInt(tr.find('.review-rating').text().replace('★ ', ''));-->
+
+<!--            tr.data('original-content', originalContent);-->
+<!--            tr.data('original-rating', originalRating);-->
+
+<!--            tr.find('.review-content').html(`<input type="text" value="${currentContent}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">`);-->
+<!--            tr.find('.review-rating').html(`<div class="edit-starrr"></div>`);-->
+<!--            tr.find('.edit-starrr').starrr({-->
+<!--                rating: currentRating,-->
+<!--                change: function (e, value) {-->
+<!--                    rating = value;-->
+<!--                }-->
+<!--            });-->
+
+<!--            tr.find('.edit-btn').text("확인").removeClass('edit-btn').addClass('confirm-btn');-->
+<!--            tr.find('.delete-btn').text("취소").removeClass('delete-btn').addClass('cancel-btn');-->
+
+<!--            $(".edit-btn, .delete-btn").not(this).hide();-->
+<!--        });-->
+
+<!--        $(document).on('click', '.confirm-btn', function () {-->
+<!--            const tr = $(this).closest('tr');-->
+<!--            const reviewId = tr.data('id');-->
+
+<!--            const newContent = tr.find('.review-content input').val();-->
+<!--            const newRating = rating;-->
+
+<!--            if (!newRating) {-->
+<!--                alert("별점을 선택해주세요!");-->
+<!--                return;-->
+<!--            }-->
+
+<!--            if (!newContent.trim()) {-->
+<!--                alert("리뷰 내용을 입력해주세요!");-->
+<!--                return;-->
+<!--            }-->
+
+<!--            const data = {boardId: boardId, rating: newRating, content: newContent, id: reviewId};-->
+
+<!--            $.ajax({-->
+<!--                url: '/api/review/' + boardId +  `/${reviewId}`,-->
+<!--                type: 'PUT',-->
+<!--                data: JSON.stringify(data),-->
+<!--                contentType: 'application/json; charset=UTF-8',-->
+<!--                dataType: 'text',-->
+<!--                headers: {-->
+<!--                    "Authorization": "Bearer " + token-->
+<!--                },-->
+<!--                success: function (result) {-->
+<!--                    alert("리뷰가 수정 되었습니다");-->
+<!--                    self.location.reload();-->
+<!--                },-->
+<!--                error: function() {-->
+<!--                    alert("수정에 실패했습니다.");-->
+<!--                }-->
+<!--            });-->
+<!--        });-->
+
+<!--        $(document).on('click', '.cancel-btn', function () {-->
+<!--            const tr = $(this).closest('tr');-->
+
+<!--            const originalContent = tr.data('original-content');-->
+<!--            const originalRating = tr.data('original-rating');-->
+
+<!--            tr.find('.review-content').text(originalContent);-->
+<!--            tr.find('.review-rating').text('★ ' + originalRating);-->
+
+<!--            $(".edit-btn, .delete-btn").show();-->
+<!--            tr.find('.confirm-btn').text("수정").removeClass('confirm-btn').addClass('edit-btn');-->
+<!--            tr.find('.cancel-btn').text("삭제").removeClass('cancel-btn').addClass('delete-btn');-->
+<!--        });-->
+
+<!--        // 페이지 로드 애니메이션-->
+<!--        setTimeout(() => {-->
+<!--            $('.info-input-grid > div').each((index, element) => {-->
+<!--                setTimeout(() => {-->
+<!--                    $(element).css({-->
+<!--                        'opacity': '0',-->
+<!--                        'transform': 'translateY(20px)'-->
+<!--                    }).animate({-->
+<!--                        'opacity': '1'-->
+<!--                    }, 500).css('transform', 'translateY(0)');-->
+<!--                }, index * 100);-->
+<!--            });-->
+<!--        }, 200);-->
+<!--    });-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->

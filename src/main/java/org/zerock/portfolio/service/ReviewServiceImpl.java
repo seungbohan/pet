@@ -8,49 +8,44 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.zerock.portfolio.dto.BoardDTO;
 import org.zerock.portfolio.dto.PageRequestDTO;
 import org.zerock.portfolio.dto.PageResultDTO;
-import org.zerock.portfolio.dto.ReviewDTO;
-import org.zerock.portfolio.entity.BoardEntity;
+import org.zerock.portfolio.dto.BoardReviewDTO;
+import org.zerock.portfolio.entity.BoardReviewEntity;
 import org.zerock.portfolio.entity.ReviewEntity;
 import org.zerock.portfolio.entity.UserEntity;
-import org.zerock.portfolio.repository.BoardRepository;
-import org.zerock.portfolio.repository.ImageRepository;
-import org.zerock.portfolio.repository.ReviewRepository;
+import org.zerock.portfolio.repository.BoardReviewRepository;
 import org.zerock.portfolio.repository.UserRepository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
-    private final ReviewRepository reviewRepository;
+    private final BoardReviewRepository boardReviewRepository;
 
     private final UserRepository userRepository;
 
     @Override
-    public PageResultDTO<ReviewDTO, ReviewEntity> getList(Long boardId, PageRequestDTO pageRequestDTO) {
+    public PageResultDTO<BoardReviewDTO, ReviewEntity> getList(Long boardId, PageRequestDTO pageRequestDTO) {
 
         pageRequestDTO.setSize(5);
 
         Pageable pageable = pageRequestDTO.getPageable(Sort.by("id").descending());
 
-        Page<ReviewEntity> result = reviewRepository.findByBoard_id(boardId, pageable);
+        Page<BoardReviewEntity> result = boardReviewRepository.findByBoard_id(boardId, pageable);
 
         log.info("reviewEntity" + result.getContent());
-        Function<ReviewEntity, ReviewDTO> fn = (entity -> entityToDto(entity));
+        Function<BoardReviewEntity, BoardReviewDTO> fn = (entity -> entityToDto(entity));
 
         return new PageResultDTO<>(result, fn);
     }
 
     @Override
-    public Long register(ReviewDTO reviewDTO) {
+    public Long register(BoardReviewDTO boardReviewDTO) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -65,29 +60,29 @@ public class ReviewServiceImpl implements ReviewService {
             throw new RuntimeException("Check Email or Social");
         }
 
-        ReviewEntity reviewEntity = dtoToEntity(reviewDTO);
+        ReviewEntity reviewEntity = dtoToEntity(boardReviewDTO);
         reviewEntity.setUser(user.get());
 
-        reviewRepository.save(reviewEntity);
+        boardReviewRepository.save(reviewEntity);
         return reviewEntity.getId();
     }
 
     @Override
-    public void modify(ReviewDTO reviewDTO) {
+    public void modify(BoardReviewDTO boardReviewDTO) {
 
-        Optional<ReviewEntity> reviewEntity = reviewRepository.findById(reviewDTO.getId());
+        Optional<ReviewEntity> reviewEntity = boardReviewRepository.findById(boardReviewDTO.getId());
 
         if(reviewEntity.isPresent()) {
             ReviewEntity entity = reviewEntity.get();
-            entity.changeContent(reviewDTO.getContent());
-            entity.changeRating(reviewDTO.getRating());
+            entity.changeContent(boardReviewDTO.getContent());
+            entity.changeRating(boardReviewDTO.getRating());
 
-            reviewRepository.save(entity);
+            boardReviewRepository.save(entity);
         }
     }
 
     @Override
     public void remove(Long id) {
-        reviewRepository.deleteById(id);
+        boardReviewRepository.deleteById(id);
     }
 }

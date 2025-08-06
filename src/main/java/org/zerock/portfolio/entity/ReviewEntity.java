@@ -8,9 +8,10 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"board", "user"})
 @Builder
-public class ReviewEntity extends BaseEntity {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "review_type")
+public abstract class ReviewEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,9 +20,6 @@ public class ReviewEntity extends BaseEntity {
     private String content;
 
     private int rating;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    private BoardEntity board;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity user;

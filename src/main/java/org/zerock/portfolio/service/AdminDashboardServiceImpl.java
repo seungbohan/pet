@@ -11,7 +11,7 @@ import org.zerock.portfolio.entity.ImageEntity;
 import org.zerock.portfolio.entity.UserRole;
 import org.zerock.portfolio.repository.BoardRepository;
 import org.zerock.portfolio.repository.ImageRepository;
-import org.zerock.portfolio.repository.ReviewRepository;
+import org.zerock.portfolio.repository.BoardReviewRepository;
 import org.zerock.portfolio.repository.UserRepository;
 
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class AdminDashboardServiceImpl implements AdminDashboardService{
 
     private final BoardRepository boardRepository;
-    private final ReviewRepository reviewRepository;
+    private final BoardReviewRepository boardReviewRepository;
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
 
@@ -38,7 +38,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService{
     @Override
     public Long reviewCount() {
 
-        Long reviewCount = reviewRepository.count();
+        Long reviewCount = boardReviewRepository.count();
 
         return reviewCount;
     }

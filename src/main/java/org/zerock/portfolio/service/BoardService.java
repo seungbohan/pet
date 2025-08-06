@@ -21,6 +21,16 @@ public interface BoardService {
 
     MainPageResultDTO<BoardDTO, Object[]> getMainRecentList(PageRequestDTO pageRequestDTO);
 
+  //  void registerApi(Map<String, Object> entityMap);
+
+//    default Map<String ,Object> apiDtoToEntity(Map<String, Object> entityMap) {
+//
+//        Map<String ,Object> dtoMap = new HashMap<>();
+//
+//        BoardEntity boardEntity = (BoardEntity) entityMap.get("board");
+//        List<ImageEntity> imageList = (List<ImageEntity>) entityMap.get("imageList");
+//    }
+
     default Map<String ,Object> dtoToEntity(BoardDTO boardDTO) {
         Map<String ,Object> entityMap = new HashMap<>();
 

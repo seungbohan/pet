@@ -3,24 +3,17 @@ package org.zerock.portfolio.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.test.annotation.Commit;
-import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ReviewEntity;
 import org.zerock.portfolio.entity.UserEntity;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.stream.IntStream;
 
 @SpringBootTest
-public class ReviewRepositoryTests {
+public class BoardReviewRepositoryTests {
 
     @Autowired
-    private ReviewRepository reviewRepository;
+    private BoardReviewRepository boardReviewRepository;
 
     @Test
     public void insertReview() {
@@ -41,7 +34,7 @@ public class ReviewRepositoryTests {
                     .rating((int)(Math.random() * 5) + 1)
                     .build();
 
-            reviewRepository.save(review);
+            boardReviewRepository.save(review);
         });
     }
 
