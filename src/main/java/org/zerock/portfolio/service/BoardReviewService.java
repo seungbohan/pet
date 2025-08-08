@@ -7,9 +7,9 @@ import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.BoardReviewEntity;
 import org.zerock.portfolio.entity.ReviewEntity;
 
-public interface ReviewService {
+public interface BoardReviewService {
 
-    PageResultDTO<BoardReviewDTO, ReviewEntity> getList(Long boardId, PageRequestDTO pageRequestDTO);
+    PageResultDTO<BoardReviewDTO, BoardReviewEntity> getList(Long boardId, PageRequestDTO pageRequestDTO);
 
     Long register(BoardReviewDTO boardReviewDTO);
 
@@ -17,7 +17,7 @@ public interface ReviewService {
 
     void remove(Long id);
 
-    default ReviewEntity dtoToEntity(BoardReviewDTO boardReviewDTO) {
+    default BoardReviewEntity dtoToEntity(BoardReviewDTO boardReviewDTO) {
 
         BoardReviewEntity reviewEntity = BoardReviewEntity.builder()
                 .id(boardReviewDTO.getId())

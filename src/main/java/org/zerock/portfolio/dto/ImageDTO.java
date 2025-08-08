@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.zerock.portfolio.common.ImageLike;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -13,7 +14,7 @@ import java.net.URLEncoder;
 @NoArgsConstructor
 @Data
 @Builder
-public class ImageDTO implements Serializable {
+public class ImageDTO implements Serializable, ImageLike {
 
     private String fileName;
 

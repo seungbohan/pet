@@ -27,7 +27,6 @@ public class PetPlaceEntity {
     private String title;
     private String addr1;
     private String tel;
-    private LocalDateTime modifiedtime;
     private double mapx;
     private double mapy;
 }

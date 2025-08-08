@@ -8,8 +8,12 @@ import org.springframework.web.bind.annotation.*;
 import org.zerock.portfolio.dto.PageRequestDTO;
 import org.zerock.portfolio.dto.PageResultDTO;
 import org.zerock.portfolio.dto.BoardReviewDTO;
+import org.zerock.portfolio.dto.PetPlaceReviewDTO;
+import org.zerock.portfolio.entity.BoardReviewEntity;
+import org.zerock.portfolio.entity.PetPlaceReviewEntity;
 import org.zerock.portfolio.entity.ReviewEntity;
-import org.zerock.portfolio.service.ReviewService;
+import org.zerock.portfolio.service.BoardReviewService;
+import org.zerock.portfolio.service.PetPlaceReviewService;
 
 @RestController
 @RequestMapping("/api/review")
@@ -17,20 +21,33 @@ import org.zerock.portfolio.service.ReviewService;
 @RequiredArgsConstructor
 public class ReviewController {
 
-    private final ReviewService reviewService;
+    private final BoardReviewService boardReviewService;
+    private final PetPlaceReviewService petPlaceReviewService;
 
-    @GetMapping("/{boardId}/all")
-    public ResponseEntity<PageResultDTO<BoardReviewDTO, ReviewEntity>> getList(@PathVariable("boardId") Long boardId, PageRequestDTO pageRequestDTO) {
+    @GetMapping("/{type}/{targetId}/all")
+    public ResponseEntity<?> getList(@PathVariable("type") String type,
+                                     @PathVariable("targetId") Long targetId,
+                                     PageRequestDTO pageRequestDTO) {
 
-        PageResultDTO<BoardReviewDTO, ReviewEntity> result = reviewService.getList(boardId, pageRequestDTO);
+        switch (type) {
+            case "board":
+                PageResultDTO<BoardReviewDTO, BoardReviewEntity> result = boardReviewService.getList(targetId, pageRequestDTO);
+                return new ResponseEntity<>(result, HttpStatus.OK);
+            case "petPlace":
+                PageResultDTO<PetPlaceReviewDTO, PetPlaceReviewEntity> result2 = petPlaceReviewService.getList(targetId, pageRequestDTO);
+                return new ResponseEntity<>(result2, HttpStatus.OK);
+            default:
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        }
     }
 
-    @PostMapping("/{boardId}")
-    public ResponseEntity<Long> register(@RequestBody BoardReviewDTO boardReviewDTO) {
+    @PostMapping("/{type}/{targetId}")
+    public ResponseEntity<Long> register(@PathVariable("type") String type,
+                                         @PathVariable("targetId") Long targetId,
+                                         @RequestBody BoardReviewDTO boardReviewDTO) {
 
-        Long id = reviewService.register(boardReviewDTO);
+        Long id = boardReviewService.register(boardReviewDTO);
 
         return new ResponseEntity<>(id, HttpStatus.OK);
     }
@@ -38,7 +55,7 @@ public class ReviewController {
     @PutMapping("/{boardId}/{id}")
     public ResponseEntity<Long> modify(@PathVariable("id") Long id, @RequestBody BoardReviewDTO boardReviewDTO) {
 
-        reviewService.modify(boardReviewDTO);
+        boardReviewService.modify(boardReviewDTO);
         log.info("---------reviewDTO: " + boardReviewDTO);
 
         return new ResponseEntity<>(id, HttpStatus.OK);
@@ -47,7 +64,7 @@ public class ReviewController {
     @DeleteMapping("/{boardId}/{id}")
     public ResponseEntity<Long> remove(@PathVariable("id") Long id) {
 
-        reviewService.remove(id);
+        boardReviewService.remove(id);
 
         return new ResponseEntity<>(id, HttpStatus.OK);
     }

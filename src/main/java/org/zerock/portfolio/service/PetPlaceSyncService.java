@@ -50,7 +50,6 @@ public class PetPlaceSyncService {
                         .title(dto.getTitle())
                         .mapx(dto.getMapx())
                         .mapy(dto.getMapy())
-                        .modifiedtime(dto.getModifiedtime())
                         .build());
             }
         }

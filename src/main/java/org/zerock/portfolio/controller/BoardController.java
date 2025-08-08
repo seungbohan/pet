@@ -11,16 +11,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.zerock.portfolio.dto.BoardDTO;
-import org.zerock.portfolio.dto.PageRequestDTO;
-import org.zerock.portfolio.dto.UserDTO;
+import org.zerock.portfolio.common.BoardLike;
+import org.zerock.portfolio.dto.*;
 import org.zerock.portfolio.entity.UserEntity;
 import org.zerock.portfolio.repository.UserRepository;
 import org.zerock.portfolio.security.util.JWTUtil;
 import org.zerock.portfolio.service.ApiPetPlaceServiceImpl;
 import org.zerock.portfolio.service.BoardService;
+import org.zerock.portfolio.service.PetPlaceService;
 import org.zerock.portfolio.service.UserService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -33,6 +35,7 @@ public class BoardController {
     private final JWTUtil jwtUtil;
     private final UserService userService;
     private final ApiPetPlaceServiceImpl apiPetPlaceService;
+    private final PetPlaceService petPlaceService;
 
     @GetMapping("/")
     public String index() {
@@ -41,33 +44,81 @@ public class BoardController {
     @GetMapping("/board/main")
     public void main(PageRequestDTO pageRequestDTO, Model model) {
 
-        model.addAttribute("recentList", boardService.getMainRecentList(pageRequestDTO).getRecentDtoList());
-        model.addAttribute("popularList", boardService.getMainRecentList(pageRequestDTO).getPopularDtoList());
+        MainPageResultDTO<BoardDTO, Object[]> boardResult = boardService.getMainRecentList(pageRequestDTO);
+        List<BoardLike> boardRecentList = new ArrayList<>(boardResult.getRecentDtoList());
+        List<BoardLike> boardPopularList = new ArrayList<>(boardResult.getPopularDtoList());
+
+        MainPageResultDTO<PetPlaceDTO, Object[]> petPlaceResult = petPlaceService.getMainRecentList(pageRequestDTO);
+        List<BoardLike> petPlaceRecentList = new ArrayList<>(petPlaceResult.getRecentDtoList());
+        List<BoardLike> petPlacePopularList = new ArrayList<>(petPlaceResult.getPopularDtoList());
+
+        List<BoardLike> allRecentList = new ArrayList<>();
+        allRecentList.addAll(boardRecentList);
+        allRecentList.addAll(petPlaceRecentList);
+
+        List<BoardLike> allPopularList = new ArrayList<>();
+        allPopularList.addAll(boardPopularList);
+        allPopularList.addAll(petPlacePopularList);
+
+        model.addAttribute("recentList", allRecentList);
+        model.addAttribute("popularList", allPopularList);
+        model.addAttribute("boardRecentList", boardRecentList);
+        model.addAttribute("boardPopularList", boardPopularList);
+        model.addAttribute("petPlaceRecentList", petPlaceRecentList);
+        model.addAttribute("petPlacePopularList", petPlacePopularList);
     }
 
     @GetMapping("/board/list/all")
     public void all(PageRequestDTO pageRequestDTO, Model model) {
 
-        model.addAttribute("list", boardService.getList(pageRequestDTO));
+        PageResultDTO<BoardDTO, Object[]> boardResult = boardService.getList(pageRequestDTO);
+        List<BoardLike> boardList = new ArrayList<>(boardResult.getDtoList());
+
+        PageResultDTO<PetPlaceDTO, Object[]> petPlaceResult = petPlaceService.getList(pageRequestDTO);
+        List<BoardLike> petPlaceList = new ArrayList<>(petPlaceResult.getDtoList());
+
+        List<BoardLike> allList = new ArrayList<>();
+        allList.addAll(boardList);
+        allList.addAll(petPlaceList);
+
+        model.addAttribute("allList", allList);
     }
 
     @GetMapping("/board/list/popular")
     public void popular(PageRequestDTO pageRequestDTO, Model model) {
 
-        model.addAttribute("popularList", boardService.getPopularList(pageRequestDTO));
+        PageResultDTO<BoardDTO, Object[]> boardResult = boardService.getPopularList(pageRequestDTO);
+        List<BoardLike> boardList = new ArrayList<>(boardResult.getDtoList());
+
+        PageResultDTO<PetPlaceDTO, Object[]> petPlaceResult = petPlaceService.getPopularList(pageRequestDTO);
+        List<BoardLike> petPlaceList = new ArrayList<>(petPlaceResult.getDtoList());
+
+        List<BoardLike> popularList = new ArrayList<>();
+        popularList.addAll(boardList);
+        popularList.addAll(petPlaceList);
+
+        model.addAttribute("popularList", popularList);
     }
 
     @GetMapping("/board/read")
-    public void read(@RequestParam("id") Long id, Model model) {
+    public void read(@RequestParam("id") Long id,@RequestParam("type") String type, Model model) {
 
-        model.addAttribute("board", boardService.read(id));
+        BoardLike item = null;
+
+        switch (type) {
+            case "board":
+                item = boardService.read(id);
+                break;
+            case "petPlace":
+                item = petPlaceService.read(id);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid type" + type);
+        }
+
+        model.addAttribute("item", item);
+        model.addAttribute("type", type);
     }
-//
-//    @GetMapping("/board/petplaces")
-//    public void petplaces(@RequestParam("id") Long id, Model model) {
-//        model.addAttribute("petplaces",apiPetPlaceService.getAllPetPlace());
-//        model.addAttribute("petplacesimg",apiPetPlaceService.getAllPetPlaceImg());
-//    }
 
     @GetMapping("/board/mypage/user")
     public void pageUser() {
@@ -119,10 +170,5 @@ public class BoardController {
 
         userService.delete(email);
         return ResponseEntity.ok("탈퇴 완료");
-    }
-
-    @GetMapping("/board/petplaces")
-    public void petplaces() {
-
     }
 }

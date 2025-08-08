@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class ReviewServiceTests {
 
     @Autowired
-    private ReviewService reviewService;
+    private BoardReviewService boardReviewService;
 
 //    @Test
 //    public void testRegister() {

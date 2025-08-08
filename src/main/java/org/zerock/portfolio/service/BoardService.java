@@ -91,7 +91,7 @@ public interface BoardService {
 
         boardDTO.setImageDTOList(imageDTOList);
         boardDTO.setAvg(avg);
-        boardDTO.setReviewCnt(reviewCnt.intValue());
+        boardDTO.setReviewCnt(reviewCnt.longValue());
         return boardDTO;
     }
 }

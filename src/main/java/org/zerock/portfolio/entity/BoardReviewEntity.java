@@ -4,12 +4,16 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
-@ToString(exclude = {"petPlace", "user"})
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = {"board", "user"})
 @DiscriminatorValue("BOARD")
 public class BoardReviewEntity extends ReviewEntity{
 

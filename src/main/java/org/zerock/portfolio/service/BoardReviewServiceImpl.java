@@ -23,14 +23,14 @@ import java.util.function.Function;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class ReviewServiceImpl implements ReviewService {
+public class BoardReviewServiceImpl implements BoardReviewService {
 
     private final BoardReviewRepository boardReviewRepository;
 
     private final UserRepository userRepository;
 
     @Override
-    public PageResultDTO<BoardReviewDTO, ReviewEntity> getList(Long boardId, PageRequestDTO pageRequestDTO) {
+    public PageResultDTO<BoardReviewDTO, BoardReviewEntity> getList(Long boardId, PageRequestDTO pageRequestDTO) {
 
         pageRequestDTO.setSize(5);
 
@@ -60,7 +60,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new RuntimeException("Check Email or Social");
         }
 
-        ReviewEntity reviewEntity = dtoToEntity(boardReviewDTO);
+        BoardReviewEntity reviewEntity = dtoToEntity(boardReviewDTO);
         reviewEntity.setUser(user.get());
 
         boardReviewRepository.save(reviewEntity);
@@ -70,10 +70,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void modify(BoardReviewDTO boardReviewDTO) {
 
-        Optional<ReviewEntity> reviewEntity = boardReviewRepository.findById(boardReviewDTO.getId());
+        Optional<BoardReviewEntity> reviewEntity = boardReviewRepository.findById(boardReviewDTO.getId());
 
         if(reviewEntity.isPresent()) {
-            ReviewEntity entity = reviewEntity.get();
+            BoardReviewEntity entity = reviewEntity.get();
             entity.changeContent(boardReviewDTO.getContent());
             entity.changeRating(boardReviewDTO.getRating());
 
