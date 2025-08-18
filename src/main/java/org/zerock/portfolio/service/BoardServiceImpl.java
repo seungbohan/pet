@@ -28,6 +28,7 @@ public class BoardServiceImpl implements BoardService {
         List<Object[]> result = boardRepository.getBoardWithReview(id);
 
         BoardEntity boardEntity = (BoardEntity) result.get(0)[0];
+        boardEntity.setPhoneNumber(boardEntity.getPhoneNumber().replace(".", "-") );
         List<ImageEntity> imageList = new ArrayList<>();
         result.forEach(arr -> {
             ImageEntity imageEntity = (ImageEntity) arr[1];

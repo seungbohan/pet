@@ -47,7 +47,7 @@ public class PetPlaceDTO implements BoardLike {
 
     @Override
     public String getType() {
-        return "petplace";
+        return "petPlace";
     }
 
     @Override

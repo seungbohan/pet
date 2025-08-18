@@ -60,6 +60,7 @@ public class BoardController {
         allPopularList.addAll(boardPopularList);
         allPopularList.addAll(petPlacePopularList);
 
+        log.info("recentList: " + allRecentList + ", popularList: " + allPopularList);
         model.addAttribute("recentList", allRecentList);
         model.addAttribute("popularList", allPopularList);
         model.addAttribute("boardRecentList", boardRecentList);
@@ -103,6 +104,7 @@ public class BoardController {
     @GetMapping("/board/read")
     public void read(@RequestParam("id") Long id,@RequestParam("type") String type, Model model) {
 
+        log.info("id: " + id);
         BoardLike item = null;
 
         switch (type) {
@@ -111,6 +113,8 @@ public class BoardController {
                 break;
             case "petPlace":
                 item = petPlaceService.read(id);
+
+                log.info("item: " + item);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid type" + type);

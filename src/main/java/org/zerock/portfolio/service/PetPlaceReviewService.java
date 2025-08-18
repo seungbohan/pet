@@ -1,11 +1,8 @@
 package org.zerock.portfolio.service;
 
-import org.zerock.portfolio.dto.BoardReviewDTO;
 import org.zerock.portfolio.dto.PageRequestDTO;
 import org.zerock.portfolio.dto.PageResultDTO;
 import org.zerock.portfolio.dto.PetPlaceReviewDTO;
-import org.zerock.portfolio.entity.BoardEntity;
-import org.zerock.portfolio.entity.BoardReviewEntity;
 import org.zerock.portfolio.entity.PetPlaceEntity;
 import org.zerock.portfolio.entity.PetPlaceReviewEntity;
 

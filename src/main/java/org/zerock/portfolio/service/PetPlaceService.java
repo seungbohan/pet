@@ -84,7 +84,7 @@ public interface PetPlaceService {
                 .id(petPlaceEntity.getId())
                 .title(petPlaceEntity.getTitle())
                 .addr1(petPlaceEntity.getAddr1())
-                .tel(petPlaceEntity.getAddr1())
+                .tel(petPlaceEntity.getTel())
                 .mapx(petPlaceEntity.getMapx())
                 .mapy(petPlaceEntity.getMapy())
                 .contenttypeid(petPlaceEntity.getContenttypeid())

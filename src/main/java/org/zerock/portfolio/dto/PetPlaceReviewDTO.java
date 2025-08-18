@@ -1,9 +1,7 @@
 package org.zerock.portfolio.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
@@ -19,9 +17,9 @@ public class PetPlaceReviewDTO {
 
     private String writer;
 
-    private Long petPlaceId;
-
     private String writerEmail;
+
+    private Long petPlaceId;
 
     private int rating;
 

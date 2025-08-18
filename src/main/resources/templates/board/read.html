@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>게시판</title>
     <!-- Head 안에 넣기 -->
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ufwzhw6j2z"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
     <script th:src="@{/js/starrr.js}"></script>
@@ -586,31 +587,65 @@
     <div class="board-detail-section">
         <h2 class="board-title">게시글</h2>
 
+        <div id="map" th:if="${type == 'petPlace'}" style="width:100%;height:400px;"></div>
+
+
         <!-- 이미지 슬라이더 -->
-        <div class="image-slider">
+        <div class="image-slider" th:if="${type == 'board'}" >
             <div class="slider-container">
-                <div class="slider-wrapper" id="sliderWrapper">
-                    <div class="image-box" th:each="image : ${board.imageDTOList}">
+                <div class="slider-wrapper sliderWrapper">
+                    <div class="image-box" th:each="image : ${item.imageDTOList}">
                         <img th:src="|/display?fileName=${image.getThumbnailURL()}|" alt="매장 이미지">
                     </div>
                     <!-- 이미지가 없을 때 기본 이미지 -->
-                    <div class="image-box" th:if="${#lists.isEmpty(board.imageDTOList)}">
+                    <div class="image-box" th:if="${#lists.isEmpty(item.imageDTOList)}">
                         <div style="color: #999; font-size: 18px;">이미지가 없습니다</div>
                     </div>
                 </div>
 
                 <!-- 네비게이션 버튼 (이미지가 2개 이상일 때만 표시) -->
-                <div th:if="${board.imageDTOList.size() > 1}">
+                <div th:if="${item.imageDTOList.size() > 1}">
                     <button class="slider-nav slider-prev" onclick="prevSlide()">‹</button>
                     <button class="slider-nav slider-next" onclick="nextSlide()">›</button>
 
                     <!-- 이미지 카운터 -->
                     <div class="image-counter">
-                        <span id="currentImageIndex">1</span> / <span th:text="${board.imageDTOList.size()}">1</span>
+                        <span class="currentImageIndex">1</span> / <span th:text="${item.imageDTOList.size()}">1</span>
                     </div>
 
                     <!-- 점 네비게이션 -->
-                    <div class="slider-dots" id="sliderDots">
+                    <div class="slider-dots sliderDots">
+                        <!-- JavaScript로 동적 생성 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 펫플레이스 이미지 슬라이더 -->
+        <div class="image-slider" th:if="${type == 'petPlace'}">
+            <div class="slider-container">
+                <div class="slider-wrapper sliderWrapper">
+                    <div class="image-box" th:each="image : ${item.imageDTOList}">
+                        <img th:src="${image.getImageURL}" alt="매장 이미지">
+                    </div>
+                    <!-- 이미지가 없을 때 기본 이미지 -->
+                    <div class="image-box" th:if="${#lists.isEmpty(item.imageDTOList)}">
+                        <div style="color: #999; font-size: 18px;">이미지가 없습니다</div>
+                    </div>
+                </div>
+
+                <!-- 네비게이션 버튼 (이미지가 2개 이상일 때만 표시) -->
+                <div th:if="${item.imageDTOList.size() > 1}">
+                    <button class="slider-nav slider-prev" onclick="prevSlide()">‹</button>
+                    <button class="slider-nav slider-next" onclick="nextSlide()">›</button>
+
+                    <!-- 이미지 카운터 -->
+                    <div class="image-counter">
+                        <span class="currentImageIndex">1</span> / <span th:text="${item.imageDTOList.size()}">1</span>
+                    </div>
+
+                    <!-- 점 네비게이션 -->
+                    <div class="slider-dots sliderDots">
                         <!-- JavaScript로 동적 생성 -->
                     </div>
                 </div>
@@ -621,19 +656,19 @@
         <div class="info-input-grid">
             <div>
                 <label>상호명</label>
-                <input type="text" name="title" th:value="${board.name}" readOnly>
+                <input type="text" name="title" th:value="${item.name}" readOnly>
             </div>
             <div>
                 <label>전화번호</label>
-                <input type="text" name="phoneNumber" th:value="${board.phoneNumber}" readOnly>
+                <input type="text" name="phoneNumber" th:value="${item.phoneNumber}" readOnly>
             </div>
             <div>
                 <label>평점</label>
-                <input type="text" name="avg" th:value="'★ ' + ${board.avg}" readOnly>
+                <input type="text" name="avg" th:value="'★ ' + ${item.avg}" readOnly>
             </div>
             <div>
                 <label>위치</label>
-                <input type="text" name="location" th:value="${board.location}" readOnly>
+                <input type="text" name="location" th:value="${item.location}" readOnly>
             </div>
         </div>
 
@@ -667,7 +702,8 @@
 </div>
 
 <script th:inline="javascript">
-    let boardId = [[${board.id}]];
+    let type = [[${type}]];
+    let targetId = [[${item.id}]];
 
     function parseJwt(token) {
         try {
@@ -681,6 +717,9 @@
     const token = localStorage.getItem('token');
     const payload = parseJwt(token);
     const currentUser = payload ? payload.sub : null;
+    console.log(token);
+    console.log(payload);
+    console.log(currentUser);
 
     $(document).ready(function () {
         let rating = 0;
@@ -704,7 +743,7 @@
             // 점 네비게이션 생성
             for (let i = 0; i < totalSlides; i++) {
                 const dot = $(`<div class="slider-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`);
-                $('#sliderDots').append(dot);
+                $('.sliderDots').append(dot);
             }
         }
 
@@ -726,14 +765,14 @@
 
         function updateSlider() {
             const translateX = -currentSlideIndex * 100;
-            $('#sliderWrapper').css('transform', `translateX(${translateX}%)`);
+            $('.sliderWrapper').css('transform', `translateX(${translateX}%)`);
 
             // 점 네비게이션 업데이트
             $('.slider-dot').removeClass('active');
             $('.slider-dot').eq(currentSlideIndex).addClass('active');
 
             // 이미지 카운터 업데이트
-            $('#currentImageIndex').text(currentSlideIndex + 1);
+            $('.currentImageIndex').text(currentSlideIndex + 1);
         }
 
         // 자동 슬라이드 (옵션)
@@ -744,7 +783,7 @@
         }
 
         function loadReviewPage(page = 1) {
-            $.get(`/api/review/${boardId}/all?page=${page}`, function (data) {
+            $.get(`/api/review/${type}/${targetId}/all?page=${page}`, function (data) {
                 const list = data.dtoList;
 
                 if (list.length === 0) {
@@ -791,8 +830,10 @@
         loadReviewPage(); // 첫 로딩
 
         $('.submit-btn').click(function () {
-            let data = {boardId: boardId, rating: rating, content: $('.inputReview').val()};
+            let data = {type: type, targetId: targetId, rating: rating, content: $('.inputReview').val()};
 
+            console.log(data);
+            console.log(token);
             if (!token) {
                 if (confirm("로그인이 필요합니다 로그인 하시겠습니까?")) {
                     window.location.href = "/join/login";
@@ -811,7 +852,7 @@
             }
 
             $.ajax({
-                url: '/api/review/' + boardId,
+                url: '/api/review/' + type + "/" + targetId,
                 type: 'POST',
                 data: JSON.stringify(data),
                 contentType: 'application/json; charset=UTF-8',
@@ -837,7 +878,7 @@
             const reviewId = $(this).closest('tr').data('id');
 
             $.ajax({
-                url: '/api/review/' + boardId + `/${reviewId}`,
+                url: '/api/review/' + type + "/" + targetId + `/${reviewId}`,
                 type: "DELETE",
                 headers: {
                     "Authorization": "Bearer " + token
@@ -896,10 +937,10 @@
                 return;
             }
 
-            const data = {boardId: boardId, rating: newRating, content: newContent, id: reviewId};
+            const data = {type: type, targetId: targetId, rating: newRating, content: newContent, id: reviewId};
 
             $.ajax({
-                url: '/api/review/' + boardId +  `/${reviewId}`,
+                url: '/api/review/' + type + "/" + targetId +  `/${reviewId}`,
                 type: 'PUT',
                 data: JSON.stringify(data),
                 contentType: 'application/json; charset=UTF-8',
@@ -945,6 +986,22 @@
             });
         }, 200);
     });
+
+    if (type == 'petPlace') {
+        let mapx = [[${item.mapx}]]
+        let mapy = [[${item.mapy}]]
+        let mapOptions = {
+            center: new naver.maps.LatLng(mapy, mapx),
+            zoom: 17
+        };
+
+        let map = new naver.maps.Map('map', mapOptions);
+
+        var marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(mapy, mapx),
+            map: map
+        });
+    }
 </script>
 </body>
 </html>

@@ -9,7 +9,6 @@ public interface BoardLike {
     String getLocation();
     String getPhoneNumber();
     double getAvg();
-    int getReviewCnt();
     List<? extends ImageLike> getImages();
     String getType();
 

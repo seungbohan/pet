@@ -59,7 +59,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="dto : ${recentList}" th:attr="data-id=${dto.id}" onclick="goToDetail(this)">
+                <tr th:each="dto : ${recentList}" th:attr="data-id=${dto.id}, data-type=${dto.type}" onclick="goToDetail(this)">
                     <th>[[${dto.id}]]</th>
                     <td>[[${dto.name}]]</td>
                     <td>[[${dto.reviewCnt}]]</td>
@@ -82,7 +82,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="dto : ${popularList}" th:attr="data-id=${dto.id}" onclick="goToDetail(this)">
+                <tr th:each="dto : ${popularList}" th:attr="data-id=${dto.id}, data-type=${dto.type}" onclick="goToDetail(this)">
                     <th>[[${dto.id}]]</th>
                     <td>[[${dto.name}]]</td>
                     <td>[[${dto.reviewCnt}]]</td>
@@ -152,9 +152,10 @@
     // 게시물 상세 페이지로 이동
     function goToDetail(row) {
         const id = row.getAttribute('data-id');
+        const type = row.getAttribute('data-type');
         console.log(`게시물 ${id}클릭됨`);
         // 실제로는 상세 페이지로 이동
-        window.location.href = `/board/read?id=${id}`
+        window.location.href = `/board/read?type=${type}&id=${id}`
     }
 
     // 게시판 토글 기능

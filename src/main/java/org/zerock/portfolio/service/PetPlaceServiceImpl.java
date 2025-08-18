@@ -31,6 +31,7 @@ public class PetPlaceServiceImpl implements PetPlaceService{
         List<Object[]> result = petPlaceRepository.getPetPlaceWithReview(id);
 
         PetPlaceEntity petPlaceEntity = (PetPlaceEntity) result.get(0)[0];
+        petPlaceEntity.setTel(petPlaceEntity.getTel().replace(".", "-"));
         List<PetPlaceImgEntity> imageList = new ArrayList<>();
         result.forEach(arr -> {
             PetPlaceImgEntity petPlaceImgEntity = (PetPlaceImgEntity) arr[1];
@@ -40,6 +41,8 @@ public class PetPlaceServiceImpl implements PetPlaceService{
         Double avg = (Double) result.get(0)[2];
 
         Long reviewCnt = (Long) result.get(0)[3];
+
+        log.info("===========" + petPlaceEntity.getTel());
 
         return entitiesToDto(petPlaceEntity, imageList, avg, reviewCnt);
     }
