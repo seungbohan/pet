@@ -5,16 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>게시판 메인</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" />
+
 </head>
 <body>
 <div class="main-container">
     <!-- 상단 바 -->
-    <div class="top-bar">
-        <a th:href="@{/board/main}"><button class="btn">LOGO</button></a>
-    </div>
+
 
     <!-- 검색바 -->
     <div class="search-bar">
+        <div class="top-bar">
+            <a th:href="@{/}"><img src="/images/KakaoTalk_20250908_145552894.png" alt="withpet logo image"></a>
+        </div>
+
         <div class="search-container">
             <input type="text" placeholder="검색어를 입력해주세요." id="searchInput">
             <button class="search-btn" onclick="performSearch()">🔍</button>
@@ -59,7 +62,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="dto : ${recentList}" th:attr="data-id=${dto.id}, data-type=${dto.type}" onclick="goToDetail(this)">
+                <tr th:each="dto : ${recentList}" th:attr="data-id=${dto.id}" onclick="goToDetail(this)">
                     <th>[[${dto.id}]]</th>
                     <td>[[${dto.name}]]</td>
                     <td>[[${dto.reviewCnt}]]</td>
@@ -82,7 +85,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="dto : ${popularList}" th:attr="data-id=${dto.id}, data-type=${dto.type}" onclick="goToDetail(this)">
+                <tr th:each="dto : ${popularList}" th:attr="data-id=${dto.id}" onclick="goToDetail(this)">
                     <th>[[${dto.id}]]</th>
                     <td>[[${dto.name}]]</td>
                     <td>[[${dto.reviewCnt}]]</td>
@@ -102,7 +105,6 @@
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const signupBtn = document.getElementById('signupBtn');
-        const bizBtn = document.getElementById('bizBtn');
 
         if (token) {
             try {
@@ -136,7 +138,6 @@
             loginBtn.classList.remove('hidden');
             signupBtn.classList.remove('hidden');
             logoutBtn.classList.add('hidden');
-            bizBtn.classList.add('hidden');
         }
     });
 
@@ -152,10 +153,9 @@
     // 게시물 상세 페이지로 이동
     function goToDetail(row) {
         const id = row.getAttribute('data-id');
-        const type = row.getAttribute('data-type');
         console.log(`게시물 ${id}클릭됨`);
         // 실제로는 상세 페이지로 이동
-        window.location.href = `/board/read?type=${type}&id=${id}`
+        window.location.href = `/board/read?id=${id}`
     }
 
     // 게시판 토글 기능

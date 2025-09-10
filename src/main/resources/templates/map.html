@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ufwzhw6j2z"></script>
+    <script src="/js/MarkerClustering.js"></script>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script th:src="@{/js/starrr.js}"></script>
+    <script src="/js/map/review.js"></script>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        position: relative;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+    }
+
+    /* 왼쪽 네비게이션 바 */
+    .left-navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 60px;
+        height: 100vh;
+        background: white;
+        border-right: 1px solid #e0e0e0;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        z-index: 3000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+    }
+
+    .nav-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+        cursor: pointer;
+    }
+
+    .nav-logo span {
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .nav-logo img {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+    }
+
+    .nav-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        flex: 1;
+    }
+
+    .nav-item {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background-color 0.2s ease;
+        position: relative;
+    }
+
+    .nav-item:hover {
+        background-color: #f5f5f5;
+    }
+
+    .nav-item.active {
+        background-color: #e3f2fd;
+    }
+
+    .nav-item svg {
+        width: 24px;
+        height: 24px;
+        fill: #555;
+    }
+
+    .nav-item.active svg {
+        fill: #1976d2;
+    }
+
+    .nav-item span {
+        font-size: 10px;
+        color: #555;
+        margin-top: 2px;
+        text-align: center;
+    }
+
+    .nav-item.active span {
+        color: #1976d2;
+    }
+
+    /* 목록 토글 버튼 */
+    .list-toggle {
+        position: absolute;
+        top: 50%;
+        right: -15px;
+        transform: translateY(-50%);
+        width: 30px;
+        height: 60px;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-left: none;
+        border-radius: 0 15px 15px 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        z-index: 2999;
+    }
+
+    .list-toggle:hover {
+        background-color: #f5f5f5;
+    }
+
+    .list-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: #555;
+        transition: transform 0.3s ease;
+    }
+
+    .list-toggle.active svg {
+        transform: rotate(180deg);
+    }
+
+    /* 이미지 슬라이더 CSS */
+    .image-slider {
+        margin-bottom: 24px;
+    }
+
+    .slider-container {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+
+    .slider-wrapper {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.3s ease;
+    }
+
+    .image-box {
+        flex: 0 0 100%;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .image-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .slider-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        transition: background-color 0.2s ease;
+    }
+
+    .slider-nav:hover {
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+    .slider-prev {
+        left: 10px;
+    }
+
+    .slider-next {
+        right: 10px;
+    }
+
+    .image-counter {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+    }
+
+    .slider-dots {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 6px;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .dot.active {
+        background: white;
+    }
+
+    /* 사이드바 스타일 */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -400px;
+        width: 400px;
+        height: 100vh;
+        background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+        border-right: 1px solid #e9ecef;
+        box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+        transition: left 0.3s ease;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar.open {
+        left: 60px;
+    }
+
+    .sidebar-header {
+        padding: 20px 24px;
+        background: #007bff;
+        color: white;
+        position: relative;
+    }
+
+    .sidebar-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .sidebar-subtitle {
+        font-size: 14px;
+        opacity: 0.9;
+        margin: 4px 0 0 0;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+    }
+
+    .close-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    .filter-section {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e9ecef;
+        background: white;
+    }
+
+    .filter-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 12px;
+    }
+
+    .category-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .category-filter {
+        padding: 6px 12px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .category-filter:hover {
+        background: #e9ecef;
+        border-color: #adb5bd;
+    }
+
+    .category-filter.active {
+        background: #007bff;
+        border-color: #007bff;
+        color: white;
+    }
+
+    .sort-options {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .sort-btn {
+        padding: 4px 10px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .sort-btn:hover {
+        background: #e9ecef;
+    }
+
+    .sort-btn.active {
+        background: #28a745;
+        border-color: #28a745;
+        color: white;
+    }
+
+    .places-list {
+        padding: 0;
+    }
+
+    .place-item {
+        padding: 16px 24px;
+        border-bottom: 1px solid #f1f3f4;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        position: relative;
+    }
+
+    .place-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .place-item.selected {
+        background-color: #e3f2fd;
+        border-left: 4px solid #007bff;
+    }
+
+    .place-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .place-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #212529;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .category-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+        margin-left: 8px;
+    }
+
+    .place-address {
+        font-size: 14px;
+        color: #6c757d;
+        margin: 4px 0;
+        line-height: 1.4;
+    }
+
+    .place-distance {
+        font-size: 12px;
+        color: #28a745;
+        margin-top: 8px;
+        font-weight: 500;
+    }
+
+    .place-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .action-btn {
+        padding: 6px 12px;
+        background: none;
+        border: 1px solid #dee2e6;
+        border-radius: 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+        background: #f8f9fa;
+        border-color: #007bff;
+        color: #007bff;
+    }
+
+    /* 지도 조정 */
+    .map-container {
+        margin-left: 60px;
+        transition: margin-left 0.3s ease;
+    }
+
+    .map-container.sidebar-open {
+        margin-left: 460px;
+    }
+
+    /* 현재위치 버튼 */
+    .location-btn {
+        position: fixed;
+        bottom: 40px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        background-color: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .location-btn:hover {
+        background-color: #f8f9fa;
+        border-color: #007bff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    }
+
+    /* 상세정보 패널 */
+    .detail-panel {
+        position: fixed;
+        top: 0;
+        left: -400px;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        border-right: 1px solid #e9ecef;
+        box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+        transition: left 0.3s ease;
+        z-index: 2500;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-panel.open {
+        left: 460px;
+    }
+
+    .detail-header {
+        padding: 20px 24px;
+        background: #28a745;
+        color: white;
+        position: relative;
+    }
+
+    .detail-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+        padding-right: 40px;
+    }
+
+    .detail-category {
+        font-size: 14px;
+        opacity: 0.9;
+        margin: 4px 0 0 0;
+    }
+
+    .detail-close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+    }
+
+    .detail-close-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .detail-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+    }
+
+    .detail-section {
+        margin-bottom: 24px;
+    }
+
+    .detail-section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .detail-info {
+        background: #f8f9fa;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+    }
+
+    .detail-info-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .detail-info-item:last-child {
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+
+    .detail-info-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #6c757d;
+        width: 80px;
+        flex-shrink: 0;
+    }
+
+    .detail-info-value {
+        font-size: 14px;
+        color: #212529;
+        flex: 1;
+        line-height: 1.4;
+    }
+
+    .detail-distance {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .detail-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .detail-action-btn {
+        flex: 1;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .detail-action-btn.primary {
+        background: #007bff;
+        color: white;
+    }
+
+    .detail-action-btn.primary:hover {
+        background: #0056b3;
+    }
+
+    .detail-action-btn.secondary {
+        background: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+    }
+
+    .detail-action-btn.secondary:hover {
+        background: #e9ecef;
+    }
+
+    /* 지도 조정 */
+    .map-container.detail-open {
+        margin-left: 860px;
+    }
+
+    .map-container.sidebar-open:not(.detail-open) {
+        margin-left: 460px;
+    }
+
+    /* 리뷰 섹션 스타일 */
+    .review-section {
+        margin-bottom: 24px;
+    }
+
+    .review-summary {
+        background: #f8f9fa;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        text-align: center;
+    }
+
+    .review-average {
+        font-size: 32px;
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 8px;
+    }
+
+    .review-count {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 12px;
+    }
+
+    .review-summary .starrr {
+        margin: 0 auto 16px;
+    }
+
+    /* 리뷰 작성 폼 개선 */
+    .review-form {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .review-form h4 {
+        margin: 0 0 20px 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #212529;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .review-form h4::before {
+        content: "✍️";
+        font-size: 20px;
+    }
+
+    .review-input-group {
+        margin-bottom: 20px;
+    }
+
+    .review-input-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .review-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        background: white;
+        resize: none; /* 드래그로 크기 조정 비활성화 */
+    }
+
+    .review-input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .review-textarea {
+        min-height: 100px;
+        max-height: 200px; /* 최대 높이 제한 */
+        line-height: 1.6;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .review-submit-btn {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .review-submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 123, 255, 0.3);
+    }
+
+    .review-submit-btn:active {
+        transform: translateY(0);
+    }
+
+    /* 별점 섹션 스타일링 */
+    .rating-section {
+        background: #f8f9fa;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        text-align: center;
+    }
+
+    #ratingInput {
+        font-size: 32px;
+        margin: 8px 0;
+        letter-spacing: 4px;
+    }
+
+    /* 내용 입력칸 스타일 개선 */
+    .content-input-wrapper {
+        position: relative;
+    }
+
+    /* 입력칸 개수 표시 */
+    .input-counter {
+        text-align: right;
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+
+    /* 폼 애니메이션 */
+    .review-form {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* 리뷰 목록 스타일도 개선 */
+    .review-item {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+    .review-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #f1f3f4;
+    }
+
+    .review-author {
+        font-weight: 600;
+        color: #212529;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .review-author::before {
+        content: "👤";
+        font-size: 14px;
+        opacity: 0.7;
+    }
+
+    .review-date {
+        font-size: 12px;
+        color: #6c757d;
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+
+    .review-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .review-action-btn {
+        padding: 6px 12px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        font-size: 12px;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .review-action-btn:hover {
+        background: #f8f9fa;
+        border-color: #007bff;
+        color: #007bff;
+        transform: translateY(-1px);
+    }
+
+    .review-action-btn.danger:hover {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 16px;
+        padding: 16px 0;
+    }
+
+    .pagination-btn {
+        padding: 6px 10px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 32px;
+        text-align: center;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: #f8f9fa;
+        border-color: #007bff;
+        color: #007bff;
+    }
+
+    .pagination-btn.active {
+        background: #007bff;
+        border-color: #007bff;
+        color: white;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Starrr.js 기본 스타일 추가 */
+    .starrr, .starrr-readonly {
+        display: inline-block;
+    }
+
+    .starrr a, .starrr-readonly a {
+        font-size: 16px;
+        text-decoration: none;
+        color: #ccc;
+        cursor: pointer;
+        display: inline-block;
+        line-height: 1;
+    }
+
+    .starrr a.btn-rating-hover,
+    .starrr a.btn-rating-selected
+    , .starrr-readonly a.btn-rating-hover
+    , .starrr-readonly a.btn-rating-selected{
+        color: #FFD700 !important;
+    }
+
+    .starrr a.fa-star
+    , .starrr-readonly a.fa-star {
+        color: #FFD700;
+    }
+
+    .starrr a.fa-star-o
+    , .starrr-readonly a.fa-star-o{
+        color: #ccc;
+    }
+
+    /* 크기별 스타일 */
+    #ratingInput.starrr a {
+        font-size: 24px;
+        margin-right: 4px;
+    }
+
+    #averageStars.starrr a {
+        font-size: 20px;
+        margin-right: 2px;
+    }
+
+    .review-rating .starrr a {
+        font-size: 16px;
+        margin-right: 1px;
+    }
+
+    /* 반응형 */
+    @media (max-width: 1200px) {
+        .detail-panel {
+            width: 350px;
+            left: -350px;
+        }
+
+        .detail-panel.open {
+            left: 410px;
+        }
+
+        .map-container.detail-open {
+            margin-left: 760px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 320px;
+            left: -320px;
+        }
+
+        .sidebar.open {
+            left: 60px;
+        }
+
+        .map-container.sidebar-open {
+            margin-left: 380px;
+        }
+
+        .map-container.sidebar-open:not(.detail-open) {
+            margin-left: 380px;
+        }
+    }
+
+    /* 사용자 위치 정보 */
+    .user-location-info {
+        background: #e3f2fd;
+        padding: 12px 24px;
+        border-bottom: 1px solid #e9ecef;
+        font-size: 12px;
+        color: #1565c0;
+    }
+</style>
+<body>
+<!-- 왼쪽 네비게이션 바 -->
+<div class="left-navbar">
+    <div class="nav-logo">
+        <a th:href="@{/}"><img src="/images/KakaoTalk_20250908_145552894_01.png" alt="wihpet logo image"></a>
+    </div>
+
+    <div class="nav-menu">
+        <div class="nav-item" id="mapBtn">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <span>지도 줌</span>
+        </div>
+    </div>
+
+    <div class="nav-menu" style="margin-top: auto;">
+    </div>
+
+    <!-- 목록 토글 버튼 -->
+    <div class="list-toggle" id="listToggle">
+        <svg viewBox="0 0 24 24">
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+        </svg>
+    </div>
+</div>
+
+<!-- 사이드바 -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h2 class="sidebar-title">장소 목록</h2>
+        <p class="sidebar-subtitle">총 <span id="placeCount">0</span>개 장소</p>
+        <button class="close-btn" id="closeSidebar">×</button>
+    </div>
+
+    <div class="sidebar-content">
+        <div class="user-location-info" id="userLocationInfo">
+            📍 현재위치 기준으로 정렬됩니다
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-title">카테고리 필터</div>
+            <div class="category-filters" id="categoryFilters">
+                <div class="category-filter active" data-category="all">전체</div>
+            </div>
+
+            <div class="sort-options">
+                <button class="sort-btn active" data-sort="distance">거리순</button>
+                <button class="sort-btn" data-sort="name">이름순</button>
+            </div>
+        </div>
+
+        <div class="places-list" id="placesList">
+            <!-- 장소 목록이 여기에 동적으로 추가됩니다 -->
+        </div>
+    </div>
+</div>
+
+<!-- 상세정보 패널 -->
+<div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+        <h2 class="detail-title" id="detailTitle">장소명</h2>
+        <p class="detail-category" id="detailCategory">카테고리</p>
+        <button class="detail-close-btn" id="closeDetailPanel">×</button>
+    </div>
+
+    <div class="detail-content">
+        <div class="detail-distance" id="detailDistance">
+            📍 현재위치에서 1.2km
+        </div>
+
+        <div class="image-slider">
+            <div class="slider-container">
+                <div class="slider-wrapper sliderWrapper">
+                    <!-- JavaScript에서 동적으로 생성됩니다 -->
+                </div>
+
+                <button class="slider-nav slider-prev" onclick="prevSlide()">‹</button>
+                <button class="slider-nav slider-next" onclick="nextSlide()">›</button>
+
+                <div class="image-counter">
+                    <span class="currentImageIndex">1</span> / <span>1</span>
+                </div>
+
+                <div class="slider-dots sliderDots">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3 class="detail-section-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                기본 정보
+            </h3>
+            <div class="detail-info" id="detailBasicInfo">
+                <!-- 기본 정보가 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+
+        <!-- 리뷰 섹션 -->
+        <div class="detail-section review-section">
+            <h3 class="detail-section-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                리뷰 (<span id="reviewCount">0</span>)
+            </h3>
+
+            <!-- 리뷰 요약 -->
+            <div class="review-summary">
+                <div class="review-average" id="reviewAverage">0.0</div>
+                <div class="review-count" id="reviewCountText">리뷰 0개</div>
+            </div>
+
+            <!-- 리뷰 작성 폼 -->
+            <div class="review-form">
+                <h4>리뷰 작성하기</h4>
+
+                <div class="review-input-group">
+                    <label class="review-input-label">⭐ 평점을 선택해주세요</label>
+                    <div class="rating-section">
+                        <div class="starrr" id="ratingInput" data-rating="0"></div>
+                        <p style="font-size: 12px; color: #6c757d; margin: 8px 0 0 0;">별을 클릭해서 평점을 매겨주세요</p>
+                    </div>
+                </div>
+
+                <div class="review-input-group">
+                    <label class="review-input-label">내용</label>
+                    <div class="content-input-wrapper">
+                        <textarea class="review-input review-textarea" id="reviewContent" placeholder="이곳에서의 경험을 공유해주세요"></textarea>
+                    </div>
+                    <div class="input-counter">
+                        <span id="contentCount">0</span>/500
+                    </div>
+                </div>
+
+                <button class="review-submit-btn" onclick="submitReview()">등록</button>
+            </div>
+
+            <!-- 리뷰 목록 -->
+            <div class="review-list" id="reviewList">
+                <!-- 리뷰들이 여기에 동적으로 추가됩니다 -->
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="pagination" id="reviewPagination">
+                <!-- 페이지네이션이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+
+        <div class="detail-actions">
+            <button class="detail-action-btn primary" id="focusOnMapBtn">지도에서 보기</button>
+            <button class="detail-action-btn secondary" id="getDirectionsBtn">길찾기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 현재위치 버튼 -->
+<button class="location-btn" id="locationBtn" title="현재 위치로 이동">
+    <svg width="22" height="22" viewBox="0 0 297 297" xmlns="http://www.w3.org/2000/svg">
+        <path d="M148.5,0C66.653,0,0.067,66.616,0.067,148.499C0.067,230.383,66.653,297,148.5,297s148.433-66.617,148.433-148.501
+            C296.933,66.616,230.347,0,148.5,0z M158.597,276.411v-61.274c0-5.575-4.521-10.097-10.097-10.097s-10.097,4.521-10.097,10.097
+            v61.274c-62.68-4.908-112.845-55.102-117.747-117.814h61.207c5.575,0,10.097-4.521,10.097-10.097s-4.522-10.097-10.097-10.097
+            H20.656C25.558,75.69,75.723,25.497,138.403,20.589v61.274c0,5.575,4.521,10.097,10.097,10.097s10.097-4.521,10.097-10.097V20.589
+            c62.681,4.908,112.846,55.102,117.747,117.814h-61.207c-5.575,0-10.097,4.521-10.097,10.097s4.521,10.097,10.097,10.097h61.207
+            C271.441,221.31,221.276,271.503,158.597,276.411z" fill="#007bff"/>
+    </svg>
+</button>
+
+<!-- 지도 컨테이너 -->
+<div class="map-container" id="mapContainer">
+    <div id="map" style="width:100%;height:100vh;"></div>
+</div>
+
+<script>
+    let map;
+    let allPlaces = [];
+    let filteredPlaces = [];
+    let currentCategory = 'all';
+    let currentSort = 'distance';
+    let markers = [];
+    let markerClustering = null;
+    let userLocation = null;
+    let detailPanelOpen = false;
+    let selectedPlace = null;
+    let sidebarOpen = false;
+
+    // 두 좌표 간의 거리 계산
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371;
+        const dLat = deg2rad(lat2 - lat1);
+        const dLng = deg2rad(lng2 - lng1);
+        const a =
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c;
+        return distance;
+    }
+
+    function deg2rad(deg) {
+        return deg * (Math.PI/180);
+    }
+
+    function formatDistance(distance) {
+        if (distance < 1) {
+            return `${Math.round(distance * 1000)}m`;
+        } else {
+            return `${distance.toFixed(1)}km`;
+        }
+    }
+
+    function initMap(center) {
+        userLocation = center;
+
+        map = new naver.maps.Map('map', {
+            center,
+            zoom: 15
+        });
+
+        new naver.maps.Marker({
+            position: center,
+            map: map,
+            icon: {
+                content: `<div style="
+                    width: 20px;
+                    height: 20px;
+                    background: #007bff;
+                    border: 3px solid white;
+                    border-radius: 50%;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                "></div>`,
+                anchor: new naver.maps.Point(10, 10)
+            },
+            title: '현재 위치'
+        });
+
+        naver.maps.Event.once(map, 'init', getMap);
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                let lat = position.coords.latitude;
+                let lng = position.coords.longitude;
+                let currentLocation = new naver.maps.LatLng(lat, lng);
+                initMap(currentLocation);
+            },
+            function(error) {
+                console.log(error);
+                let defaultLocation = new naver.maps.LatLng(37.566535, 126.977969);
+                initMap(defaultLocation);
+            }
+        );
+    } else {
+        alert("Geolocation is not supported by this browser.");
+        let defaultLocation = new naver.maps.LatLng(37.566535, 126.977969);
+        initMap(defaultLocation);
+    }
+
+    function getCategoryStyle(contenttypeid) {
+        const categoryStyles = {
+            '12': {
+                category: '관광지',
+                color: '#FF6B6B',
+                bgColor: '#FFE5E5',
+                svg: `<svg width="20px" height="20px" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg"><path d="m161.493 149.785c-22.247-6.96-50.113-11.196-77.52-11.877l-20.821-44.804 34.197-16.534c1.198-.579 2.115-1.612 2.55-2.87.434-1.258.349-2.637-.237-3.832-10.84-22.108-36.738-32.159-59.498-23.914l-2.312-4.716c-1.216-2.48-4.212-3.507-6.69-2.288-2.479 1.215-3.504 4.211-2.289 6.69l2.291 4.672c-20.414 12.103-28.633 40.12-17.721 61.304.868 1.77 2.644 2.8 4.493 2.8.73 0 1.472-.16 2.173-.5l34.04-16.458 18.767 40.383c-23.635.423-46.064 5.347-65.053 14.328-2.497 1.181-3.563 4.161-2.382 6.657 1.185 2.521 4.218 3.553 6.658 2.382 18.547-8.771 40.71-13.408 64.093-13.408 28.869 0 58.857 4.202 82.276 11.528 6.31 1.776 9.283-7.322 2.986-9.543zm-140.842-71.238c10.1-29.434 50.162-34.522 67.518-8.645l-67.644 32.705c-2.62-7.783-2.6-16.164.125-24.061z"></path></svg>`
+            },
+            '14': {
+                category: '문화시설',
+                color: '#4ECDC4',
+                bgColor: '#E5F9F6',
+                svg: `<svg width="20px" height="20px" viewBox="0 0 511 512" xmlns="http://www.w3.org/2000/svg"><path d="m497.496094 433.800781h-1.066406v-33.199219c0-8.28125-6.710938-15-15-15h-17.132813v-84.152343c25.691406-5.839844 38.972656-23.140625 46.671875-38.847657z"></path></svg>`
+            },
+            '15': {
+                category: '행사',
+                color: '#45B7D1',
+                bgColor: '#E5F4FD',
+                svg: `<svg width="20px" height="20px" viewBox="0 0 511 512" xmlns="http://www.w3.org/2000/svg"><path d="m497.496094 433.800781h-1.066406v-33.199219c0-8.28125-6.710938-15-15-15h-17.132813v-84.152343c25.691406-5.839844 38.972656-23.140625 46.671875-38.847657z"></path></svg>`
+            },
+            '28': {
+                category: '레포츠',
+                color: '#96CEB4',
+                bgColor: '#F0F9F4',
+                svg: `<svg width="20px" height="20px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="m74.311 281.906h89.979c8.278 0 14.988-6.716 14.988-15v-115.048c0-8.284-6.711-15-14.988-15h-89.979c-8.278 0-14.988 6.716-14.988 15v115.048c-.001 8.284 6.71 15 14.988 15z"></path></svg>`
+            },
+            '32': {
+                category: '숙박',
+                color: '#FFC400',
+                bgColor: '#FFFBEA',
+                svg: `<svg width="20px" height="20px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="m-788.17-15.309c-35.844 0-56.93 19.619-66.306 38.369s-9.227 37.163-9.227 37.163v117.194c-28.898 3.688-46.453 21.002-54.773 37.642z"></path></svg>`
+            },
+            '38': {
+                category: '쇼핑',
+                color: '#DDA0DD',
+                bgColor: '#F8F0F8',
+                svg: `<svg width="20px" height="20px" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="m92.423 82.761-7.649-43.75c-.784-4.487-4.68-7.761-9.235-7.761h-51.056c-4.555 0-8.451 3.274-9.235 7.761z"></path></svg>`
+            },
+            '39': {
+                category: '음식점',
+                color: '#FFA07A',
+                bgColor: '#FFF2ED',
+                svg: `<svg width="20px" height="20px" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="m92.423 82.761-7.649-43.75c-.784-4.487-4.68-7.761-9.235-7.761h-51.056c-4.555 0-8.451 3.274-9.235 7.761z"></path></svg>`
+            }
+        };
+
+        return categoryStyles[contenttypeid] || {
+            category: '기타',
+            color: '#6C757D',
+            bgColor: '#F8F9FA',
+            svg: `<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>`
+        };
+    }
+
+    function createMarkerHtml(title, contenttypeid) {
+        const style = getCategoryStyle(contenttypeid);
+        return `
+              <div style="
+                  position: relative;
+                  padding: 0 8px;
+                  width: auto;
+                  height: 40px;
+                  background-color: ${style.bgColor};
+                  border: 2px solid ${style.color};
+                  border-radius: 20px;
+                  font-size: 12px;
+                  white-space: nowrap;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                  transition: all 0.2s ease;
+              "
+              onmouseover="this.style.transform='scale(1.1)'; this.style.zIndex='1000';"
+              onmouseout="this.style.transform='scale(1)'; this.style.zIndex='auto';"
+              title="${title} (${style.category})">
+                  <span style="margin-right: 6px">${style.svg}</span><span>${title}</span>
+              </div>
+          `;
+    }
+
+    function toggleSidebar() {
+        sidebarOpen = !sidebarOpen;
+        const sidebar = document.getElementById("sidebar");
+        const mapContainer = document.getElementById("mapContainer");
+        const listToggle = document.getElementById("listToggle");
+
+        if (sidebarOpen) {
+            sidebar.classList.add("open");
+            mapContainer.classList.add("sidebar-open");
+            listToggle.classList.add("active");
+        } else {
+            sidebar.classList.remove("open");
+            mapContainer.classList.remove("sidebar-open");
+            listToggle.classList.remove("active");
+
+            if (detailPanelOpen) {
+                closeDetailPanel();
+            }
+        }
+    }
+
+    function addDistancesToPlaces() {
+        if (!userLocation) return;
+        allPlaces.forEach(place => {
+            const distance = calculateDistance(
+                userLocation.lat(),
+                userLocation.lng(),
+                parseFloat(place.mapy),
+                parseFloat(place.mapx)
+            );
+            place.distance = distance;
+        });
+    }
+
+    function sortPlaces(places, sortBy) {
+        const sorted = [...places];
+        if (sortBy === 'distance') {
+            sorted.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+        } else if (sortBy === 'name') {
+            sorted.sort((a, b) => a.title.localeCompare(b.title));
+        }
+        return sorted;
+    }
+
+    function createCategoryFilters() {
+        const categorySet = new Set();
+        allPlaces.forEach(place => {
+            const style = getCategoryStyle(place.contenttypeid);
+            categorySet.add(JSON.stringify({
+                id: place.contenttypeid,
+                name: style.category,
+                color: style.color
+            }));
+        });
+
+        const filtersContainer = document.getElementById("categoryFilters");
+        const allFilters = document.querySelector("[data-category='all']");
+
+        Array.from(categorySet).forEach(categoryStr => {
+            const category = JSON.parse(categoryStr);
+            const filterElement = document.createElement("div");
+            filterElement.className = "category-filter";
+            filterElement.dataset.category = category.id;
+            filterElement.textContent = category.name;
+            filterElement.addEventListener("click", () => filterByCategory(category.id));
+            filtersContainer.appendChild(filterElement);
+        });
+
+        allFilters.addEventListener('click', function () {
+            filterByCategory('all');
+        });
+    }
+
+    function filterByCategory(categoryId) {
+        currentCategory = categoryId;
+        document.querySelectorAll('.category-filter').forEach(filter => {
+            filter.classList.remove("active");
+        });
+        document.querySelector(`[data-category='${categoryId}']`).classList.add("active");
+
+        if (categoryId === 'all') {
+            filteredPlaces = [...allPlaces];
+        } else {
+            filteredPlaces = allPlaces.filter(place => place.contenttypeid === categoryId);
+        }
+
+        updatePlacesList();
+        updateMapMarkers();
+    }
+
+    function changeSortOrder(sortBy) {
+        currentSort = sortBy;
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-sort='${sortBy}']`).classList.add('active');
+        updatePlacesList();
+    }
+
+    function updatePlacesList() {
+        const placesList = document.getElementById('placesList');
+        const placeCount = document.getElementById('placeCount');
+        const sortedPlaces = sortPlaces(filteredPlaces, currentSort);
+
+        placeCount.textContent = sortedPlaces.length;
+        placesList.innerHTML = '';
+
+        sortedPlaces.forEach((place, index) => {
+            const style = getCategoryStyle(place.contenttypeid);
+            const placeItem = document.createElement('div');
+            placeItem.className = 'place-item';
+            placeItem.dataset.placeId = place.contentid;
+            placeItem.dataset.id = place.id;
+            placeItem.addEventListener('click', () => openDetailPanel(place));
+
+            const distanceHtml = place.distance !== undefined ?
+                `<div class="place-distance">📍 ${formatDistance(place.distance)}</div>` : '';
+
+            placeItem.innerHTML = `
+            <div class="place-header">
+                <h3 class="place-title">${place.title}</h3>
+                <span class="category-badge" style="background-color: ${style.bgColor}; color: ${style.color}; border: 1px solid ${style.color};">
+                    ${style.category}
+                </span>
+            </div>
+            <p class="place-address">${place.addr1 || '주소 정보 없음'}</p>
+            ${distanceHtml}
+            <div class="place-actions">
+                <button class="action-btn" onclick="event.stopPropagation(); focusOnPlace('${place.mapy}', '${place.mapx}')">지도에서 보기</button>
+            </div>
+        `;
+
+            placesList.appendChild(placeItem);
+        });
+    }
+
+    let currentSlideIndex = 0;
+    let totalSlides = 0;
+
+    function openDetailPanel(place) {
+        if (!sidebarOpen) {
+            toggleSidebar();
+        }
+
+        selectedPlace = place;
+        detailPanelOpen = true;
+
+        const detailPanel = document.getElementById('detailPanel');
+        const mapContainer = document.getElementById('mapContainer');
+
+        detailPanel.classList.add('open');
+        mapContainer.classList.add('detail-open');
+
+        updateDetailPanel(place);
+        updateImageBox(place);
+        highlightSelectedPlace(place.contentid);
+        getMapDetail(place.id);
+
+        // 리뷰 로드 추가
+        loadReviews();
+    }
+
+    function updateImageBox(place) {
+        const sliderWrapper = document.querySelector('.slider-wrapper');
+        const imageCounter = document.querySelector('.image-counter');
+        const navButtons = document.querySelectorAll('.slider-nav');
+
+        if (!sliderWrapper) return;
+
+        if (place.imageDTOList && place.imageDTOList.length > 0) {
+            totalSlides = place.imageDTOList.length;
+            currentSlideIndex = 0;
+
+            let imagesHTML = '';
+            place.imageDTOList.forEach((image, index) => {
+                imagesHTML += `
+                <div class="image-box">
+                    <img src="${image.imageURL}" alt="매장 이미지 ${index + 1}">
+                </div>
+            `;
+            });
+
+            sliderWrapper.innerHTML = imagesHTML;
+            navButtons.forEach(btn => {
+                btn.style.display = totalSlides > 1 ? 'flex' : 'none';
+            });
+
+            if (imageCounter) {
+                const currentIndexSpan = imageCounter.querySelector('.currentImageIndex');
+                const totalSpan = imageCounter.querySelector('span:last-child');
+                if (currentIndexSpan) currentIndexSpan.textContent = '1';
+                if (totalSpan) totalSpan.textContent = totalSlides.toString();
+                imageCounter.style.display = totalSlides > 1 ? 'block' : 'none';
+            }
+
+            updateDots();
+        } else {
+            sliderWrapper.innerHTML = `
+            <div class="image-box">
+                <div style="color: #999; font-size: 18px;">이미지가 없습니다</div>
+            </div>
+        `;
+            navButtons.forEach(btn => btn.style.display = 'none');
+            if (imageCounter) imageCounter.style.display = 'none';
+            totalSlides = 0;
+            currentSlideIndex = 0;
+        }
+    }
+
+    function updateDots() {
+        const dotsContainer = document.querySelector('.slider-dots');
+        if (!dotsContainer) return;
+
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = i === currentSlideIndex ? 'dot active' : 'dot';
+            dot.onclick = () => goToSlide(i);
+            dotsContainer.appendChild(dot);
+        }
+        dotsContainer.style.display = totalSlides > 1 ? 'flex' : 'none';
+    }
+
+    function prevSlide() {
+        if (totalSlides <= 1) return;
+        currentSlideIndex = currentSlideIndex > 0 ? currentSlideIndex - 1 : totalSlides - 1;
+        updateSlider();
+    }
+
+    function nextSlide() {
+        if (totalSlides <= 1) return;
+        currentSlideIndex = currentSlideIndex < totalSlides - 1 ? currentSlideIndex + 1 : 0;
+        updateSlider();
+    }
+
+    function goToSlide(index) {
+        if (index < 0 || index >= totalSlides) return;
+        currentSlideIndex = index;
+        updateSlider();
+    }
+
+    function updateSlider() {
+        const sliderWrapper = document.querySelector('.slider-wrapper');
+        const imageCounter = document.querySelector('.image-counter .currentImageIndex');
+        const dots = document.querySelectorAll('.dot');
+
+        if (sliderWrapper) {
+            const translateX = -currentSlideIndex * 100;
+            sliderWrapper.style.transform = `translateX(${translateX}%)`;
+        }
+
+        if (imageCounter) {
+            imageCounter.textContent = (currentSlideIndex + 1).toString();
+        }
+
+        dots.forEach((dot, index) => {
+            if (index === currentSlideIndex) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
+
+    async function getMapDetail(id) {
+        if (!id) return;
+        try {
+            const response = await fetch(`/api/map/detail/${id}`);
+            const data = await response.json();
+            if (data.imageDTOList && data.imageDTOList.length > 0) {
+                updateImageBox(data);
+            }
+        } catch (error) {
+            console.log('상세 정보 로드 실패:', error);
+        }
+    }
+
+    function closeDetailPanel() {
+        detailPanelOpen = false;
+        selectedPlace = null;
+
+        const detailPanel = document.getElementById('detailPanel');
+        const mapContainer = document.getElementById('mapContainer');
+
+        detailPanel.classList.remove('open');
+        mapContainer.classList.remove('detail-open');
+
+        removeAllHighlights();
+    }
+
+    function updateDetailPanel(place) {
+        const style = getCategoryStyle(place.contenttypeid);
+
+        document.getElementById('detailTitle').textContent = place.title;
+        document.getElementById('detailCategory').textContent = style.category;
+
+        const distanceElement = document.getElementById('detailDistance');
+        if (place.distance !== undefined) {
+            distanceElement.innerHTML = `📍 현재위치에서 ${formatDistance(place.distance)}`;
+            distanceElement.style.display = 'block';
+        } else {
+            distanceElement.style.display = 'none';
+        }
+
+        const basicInfoElement = document.getElementById('detailBasicInfo');
+        basicInfoElement.innerHTML = `
+        <div class="detail-info-item">
+            <span class="detail-info-label">주소</span>
+            <span class="detail-info-value">${place.addr1 || '정보 없음'}</span>
+        </div>
+        <div class="detail-info-item">
+            <span class="detail-info-label">전화번호</span>
+            <span class="detail-info-value">${place.tel || '정보 없음'}</span>
+        </div>
+        <div class="detail-info-item">
+            <span class="detail-info-label">카테고리</span>
+            <span class="detail-info-value">${style.category}</span>
+        </div>`;
+    }
+
+    function highlightSelectedPlace(contentId) {
+        removeAllHighlights();
+        const placeItem = document.querySelector(`[data-place-id="${contentId}"]`);
+        if (placeItem) {
+            placeItem.classList.add('selected');
+        }
+    }
+
+    function removeAllHighlights() {
+        document.querySelectorAll('.place-item.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
+    }
+
+    function focusOnPlace(lat, lng) {
+        const position = new naver.maps.LatLng(lat, lng);
+        map.setCenter(position);
+        map.setZoom(17);
+    }
+
+    function updateMapMarkers() {
+        if (markerClustering) {
+            markerClustering.setMap(null);
+        }
+
+        markers.forEach(marker => {
+            marker.setMap(null);
+        });
+        markers = [];
+
+        filteredPlaces.forEach(place => {
+            let marker = new naver.maps.Marker({
+                position: new naver.maps.LatLng(place.mapy, place.mapx),
+                title: place.title,
+                icon: {
+                    content: createMarkerHtml(place.title, place.contenttypeid),
+                    size: new naver.maps.Size(40, 40),
+                    anchor: new naver.maps.Point(20, 20)
+                }
+            });
+
+            naver.maps.Event.addListener(marker, 'click', () => {
+                openDetailPanel(place);
+            });
+
+            markers.push(marker);
+        });
+
+        if (typeof MarkerClustering !== 'undefined') {
+            markerClustering = new MarkerClustering({
+                minClusterSize: 2,
+                maxZoom: 18,
+                map: map,
+                markers: markers,
+                disableClickZoom: false,
+                gridSize: 120,
+                icons: [
+                    {
+                        content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-1.png);background-size:contain;"></div>',
+                        size: new naver.maps.Size(40, 40),
+                        anchor: new naver.maps.Point(20, 20)
+                    }
+                ],
+                indexGenerator: [10, 100, 200, 500, 1000],
+                stylingFunction: function(clusterMarker, count) {
+                    clusterMarker.getElement().querySelector('div').innerText = count;
+                }
+            });
+        } else {
+            markers.forEach(marker => {
+                marker.setMap(map);
+            });
+        }
+    }
+
+    function moveToCurrentLocation() {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser.');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const newLocation = new naver.maps.LatLng(lat, lng);
+
+            map.setCenter(newLocation);
+            map.zoom(16);
+            userLocation = newLocation;
+            addDistancesToPlaces();
+
+            if (currentSort === 'distance') {
+                updatePlacesList();
+            }
+        });
+    }
+
+    async function getMap() {
+        try {
+            const response = await fetch("/api/map")
+            const data = await response.json()
+
+            allPlaces = data;
+            filteredPlaces = [...data];
+
+            addDistancesToPlaces();
+            createCategoryFilters();
+            updatePlacesList();
+            updateMapMarkers();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('listToggle').addEventListener('click', toggleSidebar);
+        document.getElementById('closeSidebar').addEventListener('click', toggleSidebar);
+        document.getElementById('closeDetailPanel').addEventListener('click', closeDetailPanel);
+
+        document.getElementById('focusOnMapBtn').addEventListener('click', () => {
+            if (selectedPlace) {
+                focusOnPlace(selectedPlace.mapy, selectedPlace.mapx);
+            }
+        });
+
+        document.getElementById('getDirectionsBtn').addEventListener('click', () => {
+            if (selectedPlace) {
+                const url = `https://map.naver.com/v5/directions/?c=15,0,0,0,dh&sp=&ep=${selectedPlace.mapx},${selectedPlace.mapy}&ewp=place`;
+                window.open(url, '_blank');
+            }
+        });
+
+        document.getElementById('locationBtn').addEventListener('click', moveToCurrentLocation);
+
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const sortBy = this.dataset.sort;
+                changeSortOrder(sortBy);
+            });
+        });
+    });
+</script>
+</body>
+</html>

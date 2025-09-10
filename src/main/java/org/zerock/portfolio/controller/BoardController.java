@@ -39,89 +39,38 @@ public class BoardController {
 
     @GetMapping("/")
     public String index() {
-        return "redirect:/board/main";
+        return "main";
     }
+
     @GetMapping("/board/main")
     public void main(PageRequestDTO pageRequestDTO, Model model) {
 
         MainPageResultDTO<BoardDTO, Object[]> boardResult = boardService.getMainRecentList(pageRequestDTO);
-        List<BoardLike> boardRecentList = new ArrayList<>(boardResult.getRecentDtoList());
-        List<BoardLike> boardPopularList = new ArrayList<>(boardResult.getPopularDtoList());
-
-        MainPageResultDTO<PetPlaceDTO, Object[]> petPlaceResult = petPlaceService.getMainRecentList(pageRequestDTO);
-        List<BoardLike> petPlaceRecentList = new ArrayList<>(petPlaceResult.getRecentDtoList());
-        List<BoardLike> petPlacePopularList = new ArrayList<>(petPlaceResult.getPopularDtoList());
-
-        List<BoardLike> allRecentList = new ArrayList<>();
-        allRecentList.addAll(boardRecentList);
-        allRecentList.addAll(petPlaceRecentList);
-
-        List<BoardLike> allPopularList = new ArrayList<>();
-        allPopularList.addAll(boardPopularList);
-        allPopularList.addAll(petPlacePopularList);
-
-        log.info("recentList: " + allRecentList + ", popularList: " + allPopularList);
-        model.addAttribute("recentList", allRecentList);
-        model.addAttribute("popularList", allPopularList);
-        model.addAttribute("boardRecentList", boardRecentList);
-        model.addAttribute("boardPopularList", boardPopularList);
-        model.addAttribute("petPlaceRecentList", petPlaceRecentList);
-        model.addAttribute("petPlacePopularList", petPlacePopularList);
+        model.addAttribute("recentList", boardResult.getRecentDtoList());
+        model.addAttribute("popularList", boardResult.getPopularDtoList());
     }
 
     @GetMapping("/board/list/all")
     public void all(PageRequestDTO pageRequestDTO, Model model) {
 
         PageResultDTO<BoardDTO, Object[]> boardResult = boardService.getList(pageRequestDTO);
-        List<BoardLike> boardList = new ArrayList<>(boardResult.getDtoList());
 
-        PageResultDTO<PetPlaceDTO, Object[]> petPlaceResult = petPlaceService.getList(pageRequestDTO);
-        List<BoardLike> petPlaceList = new ArrayList<>(petPlaceResult.getDtoList());
-
-        List<BoardLike> allList = new ArrayList<>();
-        allList.addAll(boardList);
-        allList.addAll(petPlaceList);
-
-        model.addAttribute("allList", allList);
+        model.addAttribute("allList", boardResult);
     }
 
     @GetMapping("/board/list/popular")
     public void popular(PageRequestDTO pageRequestDTO, Model model) {
 
         PageResultDTO<BoardDTO, Object[]> boardResult = boardService.getPopularList(pageRequestDTO);
-        List<BoardLike> boardList = new ArrayList<>(boardResult.getDtoList());
 
-        PageResultDTO<PetPlaceDTO, Object[]> petPlaceResult = petPlaceService.getPopularList(pageRequestDTO);
-        List<BoardLike> petPlaceList = new ArrayList<>(petPlaceResult.getDtoList());
-
-        List<BoardLike> popularList = new ArrayList<>();
-        popularList.addAll(boardList);
-        popularList.addAll(petPlaceList);
-
-        model.addAttribute("popularList", popularList);
+        model.addAttribute("popularList", boardResult);
     }
 
     @GetMapping("/board/read")
-    public void read(@RequestParam("id") Long id,@RequestParam("type") String type, Model model) {
+    public void read(@RequestParam("id") Long id, Model model) {
 
-        log.info("id: " + id);
-        BoardLike item = null;
-
-        switch (type) {
-            case "board":
-                item = boardService.read(id);
-                break;
-            case "petPlace":
-                item = petPlaceService.read(id);
-
-                log.info("item: " + item);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid type" + type);
-        }
-
+        BoardDTO item = boardService.read(id);
         model.addAttribute("item", item);
-        model.addAttribute("type", type);
     }
 
     @GetMapping("/board/mypage/user")

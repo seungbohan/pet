@@ -20,31 +20,8 @@ body {
 }
 
 /* 상단 바 */
-.top-bar {
-    padding: 20px 30px;
-    background: white;
-    border-bottom: 1px solid #e9ecef;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.top-bar .btn {
-    padding: 12px 24px;
-    border: none;
-    background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
-    color: white;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
-    text-decoration: none;
-}
-
-.top-bar .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);
+.top-bar img {
+    height: 50px;
 }
 
 /* 검색바 */

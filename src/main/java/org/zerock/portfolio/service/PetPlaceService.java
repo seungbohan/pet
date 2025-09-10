@@ -19,6 +19,8 @@ public interface PetPlaceService {
 
     MainPageResultDTO<PetPlaceDTO, Object[]> getMainRecentList(PageRequestDTO pageRequestDTO);
 
+    List<PetPlaceDTO> getMapList();
+
     //  void registerApi(Map<String, Object> entityMap);
 
 //    default Map<String ,Object> apiDtoToEntity(Map<String, Object> entityMap) {
@@ -70,7 +72,7 @@ public interface PetPlaceService {
                 .id(petPlaceEntity.getId())
                 .title(petPlaceEntity.getTitle())
                 .addr1(petPlaceEntity.getAddr1())
-                .tel(petPlaceEntity.getAddr1())
+                .tel(petPlaceEntity.getTel())
                 .mapx(petPlaceEntity.getMapx())
                 .mapy(petPlaceEntity.getMapy())
                 .contenttypeid(petPlaceEntity.getContenttypeid())

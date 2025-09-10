@@ -33,11 +33,11 @@ body {
     margin-bottom: 30px;
 }
 
-.logo-placeholder {
+.logo-placeholder img{
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    height: 60px;
+    height: 50px;
 }
 
 .logo-text {

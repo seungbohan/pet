@@ -11,12 +11,14 @@ import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ImageEntity;
 import org.zerock.portfolio.entity.PetPlaceEntity;
 import org.zerock.portfolio.entity.PetPlaceImgEntity;
+import org.zerock.portfolio.repository.PetPlaceImgRepository;
 import org.zerock.portfolio.repository.PetPlaceRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -24,6 +26,7 @@ import java.util.function.Function;
 public class PetPlaceServiceImpl implements PetPlaceService{
 
     private final PetPlaceRepository petPlaceRepository;
+    private final PetPlaceImgRepository petPlaceImgRepository;
 
     @Override
     public PetPlaceDTO read(Long id) {
@@ -100,5 +103,17 @@ public class PetPlaceServiceImpl implements PetPlaceService{
         ));
 
         return new MainPageResultDTO<>(recent, popular, fn);
+    }
+
+    @Override
+    public List<PetPlaceDTO> getMapList() {
+
+        List<PetPlaceDTO> petPlaceDTOList = petPlaceRepository.findAll()
+                .stream().map(this::entityToDto).collect(Collectors.toList());
+
+        List<PetPlaceImgEntity> imgList = petPlaceImgRepository.findAll()
+                .stream().collect(Collectors.toList());
+
+        return petPlaceDTOList;
     }
 }

@@ -9,7 +9,7 @@
 <div class="main-container">
   <!-- 상단 바 -->
   <div class="top-bar">
-    <a th:href="@{/board/main}"><button class="btn">LOGO</button></a>
+    <a th:href="@{/}"><img src="/images/KakaoTalk_20250908_145552894.png" alt="withpet logo image"></a>
   </div>
 
   <!-- 게시판 컨테이너 -->
@@ -28,9 +28,9 @@
       </tr>
       </thead>
       <tbody>
-      <tr th:each="dto: ${list.dtoList}" onclick="goToDetail(this)">
+      <tr th:each="dto: ${allList.dtoList}" onclick="goToDetail(this)">
         <td>
-          <a th:href="@{/board/read(id = ${dto.id}, page = ${list.page})}" th:text="${dto.id}">1</a>
+          <a th:href="@{/board/read(id = ${dto.id}, page = ${allList.page})}" th:text="${dto.id}">1</a>
         </td>
         <td>[[${dto.name}]]</td>
         <td>[[${dto.name}]]</td>
@@ -44,18 +44,18 @@
 
     <!-- 페이지네이션 -->
     <div class="pagination">
-      <a th:if="${list.prev}"
-         th:href="@{/board/list/all(page=${list.start - 1})}"
+      <a th:if="${allList.prev}"
+         th:href="@{/board/list/all(page=${allList.start - 1})}"
          class="page-btn page-move-btn">이전</a>
 
-      <a th:each="page : ${list.pageList}"
+      <a th:each="page : ${allList.pageList}"
          th:href="@{/board/list/all(page=${page})}"
          th:text="${page}"
-         th:classappend="${page == list.page ? 'active' : ''}"
+         th:classappend="${page == allList.page ? 'active' : ''}"
          class="page-btn">1</a>
 
-      <a th:if="${list.next}"
-         th:href="@{/board/list/all(page=${list.end + 1})}"
+      <a th:if="${allList.next}"
+         th:href="@{/board/list/all(page=${allList.end + 1})}"
          class="page-btn page-move-btn">다음</a>
     </div>
   </div>

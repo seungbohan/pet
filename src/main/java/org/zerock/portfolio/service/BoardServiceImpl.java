@@ -95,10 +95,4 @@ public class BoardServiceImpl implements BoardService {
 
         return new MainPageResultDTO<>(recent, popular, fn);
     }
-
-//    public void registerApi(Map<String, Object> entityMap) {
-//
-//        entityMap.get("list")
-//
-//    }
 }
