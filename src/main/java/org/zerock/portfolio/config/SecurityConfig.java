@@ -41,11 +41,6 @@ public class SecurityConfig {
     private final Environment env;
 
     @Bean
-    public ForwardedHeaderFilter forwardedHeaderFilter() {
-        return new ForwardedHeaderFilter();
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -73,10 +68,6 @@ public class SecurityConfig {
                     "/favicon.ico"
             ).permitAll();
         });
-
-        if (env.acceptsProfiles(Profiles.of("prod"))) {
-            http.requiresChannel((channel) -> channel.anyRequest().requiresSecure());
-        }
 
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
 

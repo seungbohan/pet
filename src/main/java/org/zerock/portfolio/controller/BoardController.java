@@ -65,6 +65,7 @@ public class BoardController {
     public void read(@RequestParam("id") Long id, Model model) {
 
         BoardDTO item = boardService.read(id);
+        log.info("item: " + item);
         model.addAttribute("item", item);
     }
 

@@ -15,28 +15,28 @@ public class BoardReviewRepositoryTests {
     @Autowired
     private BoardReviewRepository boardReviewRepository;
 
-    @Test
-    public void insertReview() {
-
-        IntStream.rangeClosed(1,300).forEach(i -> {
-
-            //게시판 번호
-            Long BoardId = (long) (Math.random() * 100) + 1;
-
-            //회원 번호
-            Long UserId = (long) (Math.random() * 100) + 1;
-            UserEntity user = UserEntity.builder().id(UserId).build();
-
-            ReviewEntity review = ReviewEntity.builder()
-                    .user(user)
-                    .board(BoardEntity.builder().id(BoardId).build())
-                    .content("이 장소는 " + i)
-                    .rating((int)(Math.random() * 5) + 1)
-                    .build();
-
-            boardReviewRepository.save(review);
-        });
-    }
+//    @Test
+//    public void insertReview() {
+//
+//        IntStream.rangeClosed(1,300).forEach(i -> {
+//
+//            //게시판 번호
+//            Long BoardId = (long) (Math.random() * 100) + 1;
+//
+//            //회원 번호
+//            Long UserId = (long) (Math.random() * 100) + 1;
+//            UserEntity user = UserEntity.builder().id(UserId).build();
+//
+//            ReviewEntity review = ReviewEntity.builder()
+//                    .user(user)
+//                    .board(BoardEntity.builder().id(BoardId).build())
+//                    .content("이 장소는 " + i)
+//                    .rating((int)(Math.random() * 5) + 1)
+//                    .build();
+//
+//            boardReviewRepository.save(review);
+//        });
+//    }
 
 //    @Test
 //    public void testGetBoardReview() {

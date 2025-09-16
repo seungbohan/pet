@@ -505,6 +505,7 @@
 
 <script>
     // let selectedCategory = '';
+    let uploadImages = [];
     let selectedImages = [];
     const token = localStorage.getItem('token');
 
@@ -582,8 +583,13 @@
                 headers: {
                     'Authorization': 'Bearer ' + token
                 },
-                body: JSON.stringify(formData)
+                body: formData
             })
+
+            const uploadResult = await response.json();
+            uploadImages.push(...uploadResult);
+
+            console.log(uploadImages);
 
             if (!response.ok) {
                 throw new Error("업로드 실패")
@@ -670,7 +676,7 @@
             name: document.getElementById('name').value.trim(),
             content: document.getElementById('content').value.trim(),
             // category: selectedCategory,
-            imageDTOList: [] // 이미지는 별도 처리 필요
+            imageDTOList: uploadImages // 이미지는 별도 처리 필요
         };
 
         if (!formData.name) {
