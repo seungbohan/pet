@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +37,16 @@ public class UploadController {
 
     @PostMapping("/uploadAjax")
     public ResponseEntity<List<ImageDTO>> uploadFile(MultipartFile[] uploadFiles) {
+
+        log.info("uploadFiles" + uploadFiles);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || auth.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
 
         List<ImageDTO> list = new ArrayList<>();
 

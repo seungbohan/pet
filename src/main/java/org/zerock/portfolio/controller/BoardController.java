@@ -1,6 +1,5 @@
 package org.zerock.portfolio.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -10,20 +9,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.zerock.portfolio.common.BoardLike;
 import org.zerock.portfolio.dto.*;
-import org.zerock.portfolio.entity.UserEntity;
 import org.zerock.portfolio.repository.UserRepository;
 import org.zerock.portfolio.security.util.JWTUtil;
 import org.zerock.portfolio.service.ApiPetPlaceServiceImpl;
 import org.zerock.portfolio.service.BoardService;
 import org.zerock.portfolio.service.PetPlaceService;
 import org.zerock.portfolio.service.UserService;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Controller
 @Log4j2
@@ -54,6 +46,7 @@ public class BoardController {
     public void all(PageRequestDTO pageRequestDTO, Model model) {
 
         PageResultDTO<BoardDTO, Object[]> boardResult = boardService.getList(pageRequestDTO);
+        log.info("allList" + boardResult);
 
         model.addAttribute("allList", boardResult);
     }
@@ -63,6 +56,8 @@ public class BoardController {
 
         PageResultDTO<BoardDTO, Object[]> boardResult = boardService.getPopularList(pageRequestDTO);
 
+        log.info("popularList" + boardResult);
+
         model.addAttribute("popularList", boardResult);
     }
 
@@ -71,6 +66,45 @@ public class BoardController {
 
         BoardDTO item = boardService.read(id);
         model.addAttribute("item", item);
+    }
+
+    @GetMapping("/board/write")
+    public void write() {
+
+    }
+
+    @GetMapping("/api/board/write")
+    @ResponseBody
+    public ResponseEntity<?> apiWrite() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_USER") )) {
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음");
+        }
+
+        return ResponseEntity.ok("권한 있음");
+    }
+
+    @PostMapping("/api/board/write")
+    @ResponseBody
+    public ResponseEntity<Long> apiWrite(@RequestBody BoardDTO boardDTO) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication==null || authentication.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_USER") )) {
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        log.info("boardDTO: " + boardDTO);
+
+        Long id = boardService.register(boardDTO);
+
+        return ResponseEntity.ok(id);
     }
 
     @GetMapping("/board/mypage/user")

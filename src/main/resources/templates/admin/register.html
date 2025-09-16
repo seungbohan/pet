@@ -334,29 +334,16 @@
 <script>
     const token = localStorage.getItem("token");
 
-    // ✅ Supabase 초기화
-    const supabaseUrl = "https://xwhhcfsxmnqphbyqjpoz.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3aGhjZnN4bW5xcGhieXFqcG96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1NTgzMDUsImV4cCI6MjA2ODEzNDMwNX0.0bGFQ_mZR6N7hqiHAsYckP6C14adxafhcmOH5-70pL8";
-    const supabase = SupabaseModule.createClient(supabaseUrl, supabaseKey);
-
     $(".custom-file-input").on("change", async function () {
         let file = this.files[0];
         if (!file) return;
 
         let fileName = Date.now() + "_" + file.name;
 
-        const { data, error } = await supabase.storage
-            .from("uploads")
-            .upload(fileName, file);
-
         if (error) {
             alert("업로드 실패: " + error.message);
             return;
         }
-
-        const { data: urlData } = supabase.storage
-            .from("uploads")
-            .getPublicUrl(fileName);
 
         $(".uploadResult ul").append(`
         <li data-name="${file.name}" data-path="uploads" data-uuid="${fileName}">
@@ -369,20 +356,6 @@
     });
 
     // ✅ 삭제 버튼 클릭 시 Supabase에서 삭제
-    $(".uploadResult").on("click", "li button", async function () {
-        const targetFile = $(this).data("file");
-        const targetLi = $(this).closest("li");
-
-        const { error } = await supabase.storage.from("uploads").remove([targetFile]);
-
-        if (error) {
-            alert("삭제 실패: " + error.message);
-            return;
-        }
-
-        alert("삭제 완료");
-        targetLi.remove();
-    });
 
     // ✅ 등록 버튼 클릭 시 서버로 이미지 정보 전송
     document.getElementById("register").addEventListener("click", async function () {

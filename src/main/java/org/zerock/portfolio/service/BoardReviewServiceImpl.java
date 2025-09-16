@@ -75,8 +75,6 @@ public class BoardReviewServiceImpl implements BoardReviewService {
         if(reviewEntity.isPresent()) {
             BoardReviewEntity entity = reviewEntity.get();
             entity.changeContent(boardReviewDTO.getContent());
-            entity.changeRating(boardReviewDTO.getRating());
-
             boardReviewRepository.save(entity);
         }
     }

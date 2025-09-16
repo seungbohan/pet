@@ -22,8 +22,6 @@ public class BoardReviewDTO {
 
     private Long boardId;
 
-    private int rating;
-
     private LocalDateTime regDate;
 
     private LocalDateTime modDate;

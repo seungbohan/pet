@@ -3,6 +3,7 @@ package org.zerock.portfolio.service;
 import org.zerock.portfolio.dto.*;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ImageEntity;
+import org.zerock.portfolio.entity.UserEntity;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -14,6 +15,8 @@ import java.util.stream.Collectors;
 public interface BoardService {
 
     BoardDTO read(Long id);
+
+    Long register(BoardDTO boardDTO);
 
     PageResultDTO<BoardDTO, Object[]> getList(PageRequestDTO pageRequestDTO);
 
@@ -37,8 +40,8 @@ public interface BoardService {
         BoardEntity boardEntity = BoardEntity.builder()
                 .id(boardDTO.getId())
                 .name(boardDTO.getName())
-                .location(boardDTO.getLocation())
-                .phoneNumber(boardDTO.getPhoneNumber())
+                .content(boardDTO.getContent())
+                .user(UserEntity.builder().id(boardDTO.getUserId()).build())
                 .build();
 
         entityMap.put("board", boardEntity);
@@ -67,18 +70,18 @@ public interface BoardService {
         BoardDTO boardDTO = BoardDTO.builder()
                 .id(boardEntity.getId())
                 .name(boardEntity.getName())
-                .location(boardEntity.getLocation())
-                .phoneNumber(boardEntity.getPhoneNumber())
+                .content(boardEntity.getContent())
+                .writer(boardEntity.getUser().getName())
                 .build();
         return boardDTO;
     }
 
-    default BoardDTO entitiesToDto(BoardEntity boardEntity, List<ImageEntity> imageEntities, Double avg, Long reviewCnt) {
+    default BoardDTO entitiesToDto(BoardEntity boardEntity, List<ImageEntity> imageEntities, Long reviewCnt) {
         BoardDTO boardDTO = BoardDTO.builder()
                 .id(boardEntity.getId())
                 .name(boardEntity.getName())
-                .location(boardEntity.getLocation())
-                .phoneNumber(boardEntity.getPhoneNumber())
+                .content(boardEntity.getContent())
+                .writer(boardEntity.getUser().getName())
                 .build();
 
         List<ImageDTO> imageDTOList = imageEntities.stream().filter(Objects::nonNull).map(imageEntity -> {
@@ -90,7 +93,6 @@ public interface BoardService {
         }).collect(Collectors.toList());
 
         boardDTO.setImageDTOList(imageDTOList);
-        boardDTO.setAvg(avg);
         boardDTO.setReviewCnt(reviewCnt.longValue());
         return boardDTO;
     }

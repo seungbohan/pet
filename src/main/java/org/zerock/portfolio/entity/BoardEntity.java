@@ -1,9 +1,6 @@
 package org.zerock.portfolio.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import org.zerock.portfolio.dto.ImageDTO;
 
@@ -24,8 +21,9 @@ public class BoardEntity {
 
     private String name;
 
-    private String location;
+    @Lob
+    private String content;
 
-    private String phoneNumber;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UserEntity user;
 }

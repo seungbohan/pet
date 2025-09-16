@@ -1,10 +1,741 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>글쓰기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 상단 바 */
+        .top-bar {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar img {
+            height: 50px;
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .breadcrumb a {
+            color: #4169E1;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* 글쓰기 컨테이너 */
+        .write-container {
+            padding: 40px 30px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .write-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .write-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+            border-radius: 2px;
+        }
+
+        /* 폼 스타일 */
+        .write-form {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fff;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4169E1;
+            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-textarea {
+            min-height: 300px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        /* 이미지 업로드 */
+        .image-upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .image-upload-section:hover {
+            border-color: #4169E1;
+            background: #f0f6ff;
+        }
+
+        .image-upload-section.dragover {
+            border-color: #4169E1;
+            background: #e3f2fd;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #6c757d;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #adb5bd;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* 이미지 미리보기 */
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .preview-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .remove-image:hover {
+            background: #dc3545;
+            transform: scale(1.1);
+        }
+
+        /* 버튼 그룹 */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* 로딩 상태 */
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+            position: relative;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 에러/성공 메시지 */
+        .message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* 글자 수 카운터 */
+        .char-counter {
+            text-align: right;
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 8px;
+        }
+
+        .char-counter.warning {
+            color: #ffc107;
+        }
+
+        .char-counter.danger {
+            color: #dc3545;
+        }
+
+        /* 카테고리 선택 */
+        /*.category-group {*/
+        /*    display: flex;*/
+        /*    flex-wrap: wrap;*/
+        /*    gap: 12px;*/
+        /*    margin-top: 8px;*/
+        /*}*/
+
+        /*.category-item {*/
+        /*    padding: 8px 16px;*/
+        /*    background: #f8f9fa;*/
+        /*    border: 2px solid #e9ecef;*/
+        /*    border-radius: 20px;*/
+        /*    cursor: pointer;*/
+        /*    transition: all 0.3s ease;*/
+        /*    font-size: 14px;*/
+        /*    user-select: none;*/
+        /*}*/
+
+        /*.category-item:hover {*/
+        /*    border-color: #4169E1;*/
+        /*    background: #f0f6ff;*/
+        /*}*/
+
+        /*.category-item.selected {*/
+        /*    background: #4169E1;*/
+        /*    border-color: #4169E1;*/
+        /*    color: white;*/
+        /*}*/
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .write-container {
+                padding: 20px 15px;
+            }
+
+            .top-bar {
+                padding: 15px 20px;
+            }
+
+            .write-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .image-preview {
+                justify-content: center;
+            }
+        }
+
+        /* 애니메이션 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body>
-$END$
+<div class="main-container">
+    <!-- 상단 바 -->
+    <div class="top-bar">
+        <a href="/"><img src="/images/KakaoTalk_20250908_145552894.png" alt="withpet logo image"></a>
+        <div class="breadcrumb">
+            <a href="/">홈</a> > <a href="/board/main">게시판</a> > 글쓰기
+        </div>
+    </div>
+
+    <!-- 글쓰기 컨테이너 -->
+    <div class="write-container">
+        <h2 class="write-title">새 글 작성</h2>
+
+        <!-- 메시지 영역 -->
+        <div id="messageArea"></div>
+
+        <!-- 글쓰기 폼 -->
+        <form class="write-form" id="writeForm">
+<!--            <div class="form-group">-->
+<!--                <label class="form-label" for="category">-->
+<!--                    카테고리 <span class="required">*</span>-->
+<!--                </label>-->
+<!--                <div class="category-group">-->
+<!--                    <div class="category-item" data-category="cafe">카페</div>-->
+<!--                    <div class="category-item" data-category="restaurant">식당</div>-->
+<!--                    <div class="category-item" data-category="pension">펜션</div>-->
+<!--                    <div class="category-item" data-category="hospital">병원</div>-->
+<!--                    <div class="category-item" data-category="shop">쇼핑</div>-->
+<!--                    <div class="category-item" data-category="etc">기타</div>-->
+<!--                </div>-->
+<!--                <input type="hidden" id="category" name="category" required>-->
+<!--            </div>-->
+
+            <div class="form-group">
+                <label class="form-label" for="name">
+                    📍 제목 <span class="required">*</span>
+                </label>
+                <input type="text" class="form-input" id="name" name="name" placeholder="매장 이름을 입력하세요" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="content">
+                    📝 상세 설명
+                </label>
+                <textarea class="form-input form-textarea" id="content" name="content" placeholder="매장에 대한 자세한 설명을 작성해주세요.&#10;&#10;- 반려동물 동반 가능 여부&#10;- 특별한 시설이나 서비스&#10;- 방문 시 주의사항&#10;- 추천 메뉴나 서비스 등"></textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span>/1000
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    📷 매장 사진
+                </label>
+                <div class="image-upload-section" onclick="document.getElementById('imageInput').click()">
+                    <div class="upload-icon">📸</div>
+                    <div class="upload-text">클릭하여 이미지를 업로드하거나</div>
+                    <div class="upload-hint">이미지를 드래그해서 놓으세요 (최대 5장)</div>
+                </div>
+                <input type="file" name="uploadFiles" id="imageInput" class="file-input" multiple accept="image/*" onchange="handleFileSelect(event)">
+                <div class="image-preview" id="imagePreview"></div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="goBack()">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                    </svg>
+                    취소
+                </button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    작성완료
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // let selectedCategory = '';
+    let selectedImages = [];
+    const token = localStorage.getItem('token');
+
+    // 메시지 표시 함수
+    function showMessage(message, type = 'success') {
+        const messageArea = document.getElementById('messageArea');
+        messageArea.innerHTML = `<div class="message ${type}">${message}</div>`;
+        messageArea.querySelector('.message').style.display = 'block';
+
+        setTimeout(() => {
+            if (messageArea.querySelector('.message')) {
+                messageArea.querySelector('.message').style.display = 'none';
+            }
+        }, 5000);
+    }
+
+    // 카테고리 선택
+    // document.querySelectorAll('.category-item').forEach(item => {
+    //     item.addEventListener('click', function() {
+    //         // 이전 선택 제거
+    //         document.querySelectorAll('.category-item').forEach(i => i.classList.remove('selected'));
+    //
+    //         // 현재 선택 추가
+    //         this.classList.add('selected');
+    //         selectedCategory = this.dataset.category;
+    //         document.getElementById('category').value = selectedCategory;
+    //     });
+    // });
+
+    // 글자 수 카운터
+    document.getElementById('content').addEventListener('input', function() {
+        const charCount = this.value.length;
+        const counter = document.getElementById('charCount');
+        counter.textContent = charCount;
+
+        // 색상 변경
+        counter.parentElement.classList.remove('warning', 'danger');
+        if (charCount > 800) {
+            counter.parentElement.classList.add('danger');
+        } else if (charCount > 600) {
+            counter.parentElement.classList.add('warning');
+        }
+    });
+
+    // 이미지 업로드 처리
+    async function handleFileSelect(event) {
+        if (!token) {
+            showMessage('로그인이 필요합니다.', 'error');
+            setTimeout(() => {
+                window.location.href = '/join/login';
+            }, 1500);
+            return;
+        }
+
+        const files = Array.from(event.target.files);
+
+        console.log(files);
+
+        // 최대 5장 제한
+        if (selectedImages.length + files.length > 5) {
+            showMessage('이미지는 최대 5장까지 업로드할 수 있습니다.', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('uploadFiles', file));
+
+        for (const [k, v] of formData.entries()) {
+            console.log(k, v.name || v); // 파일이면 v.name
+        }
+
+        try {
+            const response = await fetch('/uploadAjax', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(formData)
+            })
+
+            if (!response.ok) {
+                throw new Error("업로드 실패")
+            }
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+
+        files.forEach(file => {
+            if (file.type.startsWith('image/')) {
+                selectedImages.push(file);
+                createImagePreview(file);
+            }
+        });
+    }
+
+    // 이미지 미리보기 생성
+    function createImagePreview(file) {
+        const preview = document.getElementById('imagePreview');
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            previewItem.innerHTML = `
+                    <img src="${e.target.result}" alt="미리보기">
+                    <button type="button" class="remove-image" onclick="removeImage(this, '${file.name}')">×</button>
+                `;
+            preview.appendChild(previewItem);
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    // 이미지 제거
+    function removeImage(button, fileName) {
+        // 배열에서 제거
+        selectedImages = selectedImages.filter(file => file.name !== fileName);
+
+        // 미리보기에서 제거
+        button.parentElement.remove();
+    }
+
+    // 드래그 앤 드롭
+    const uploadSection = document.querySelector('.image-upload-section');
+
+    uploadSection.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+
+    uploadSection.addEventListener('dragleave', function() {
+        this.classList.remove('dragover');
+    });
+
+    uploadSection.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+
+        const files = Array.from(e.dataTransfer.files);
+        handleFileSelect({ target: { files } });
+    });
+
+    // 폼 제출
+    document.getElementById('writeForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (!token) {
+            showMessage('로그인이 필요합니다.', 'error');
+            setTimeout(() => {
+                window.location.href = '/join/login';
+            }, 1500);
+            return;
+        }
+
+        // 유효성 검사
+        // if (!selectedCategory) {
+        //     showMessage('카테고리를 선택해주세요.', 'error');
+        //     return;
+        // }
+
+        const formData = {
+            name: document.getElementById('name').value.trim(),
+            content: document.getElementById('content').value.trim(),
+            // category: selectedCategory,
+            imageDTOList: [] // 이미지는 별도 처리 필요
+        };
+
+        if (!formData.name) {
+            showMessage('필수 항목을 모두 입력해주세요.', 'error');
+            return;
+        }
+
+        // 버튼 로딩 상태
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.classList.add('loading');
+        submitBtn.textContent = '작성 중...';
+
+        try {
+            // 실제 구현에서는 이미지 업로드도 함께 처리
+            const response = await fetch('/api/board/write', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                showMessage('글이 성공적으로 작성되었습니다!', 'success');
+
+                setTimeout(() => {
+                    window.location.href = `/board/read?id=${result || ''}`;
+                }, 1500);
+            } else {
+                throw new Error('작성 실패');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage('글 작성 중 오류가 발생했습니다.', 'error');
+        } finally {
+            submitBtn.classList.remove('loading');
+            submitBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    작성완료
+                `;
+        }
+    });
+
+    // 취소 버튼
+    function goBack() {
+        if (confirm('작성 중인 내용이 사라집니다. 정말 나가시겠습니까?')) {
+            history.back();
+        }
+    }
+
+    // // 페이지 떠날 때 확인
+    // window.addEventListener('beforeunload', function(e) {
+    //     const hasContent = document.getElementById('name').value.trim() ||
+    //         document.getElementById('content').value.trim();
+    //
+    //     if (hasContent) {
+    //         const confirmationMessage = '작성 중인 내용이 사라집니다. 정말 나가시겠습니까?';
+    //         e.returnValue = confirmationMessage;
+    //         return confirmationMessage;
+    //     }
+    // });
+</script>
 </body>
 </html>

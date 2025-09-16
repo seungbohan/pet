@@ -23,7 +23,6 @@ public interface BoardReviewService {
                 .id(boardReviewDTO.getId())
                 .board(BoardEntity.builder().id(boardReviewDTO.getBoardId()).build())
                 .content(boardReviewDTO.getContent())
-                .rating(boardReviewDTO.getRating())
                 .build();
         return reviewEntity;
     }
@@ -32,7 +31,6 @@ public interface BoardReviewService {
         BoardReviewDTO boardReviewDTO = BoardReviewDTO.builder()
                 .id(reviewEntity.getId())
                 .content(reviewEntity.getContent())
-                .rating(reviewEntity.getRating())
                 .boardId(reviewEntity.getBoard().getId())
                 .writer(reviewEntity.getUser().getName())
                 .writerEmail(reviewEntity.getUser().getEmail())
@@ -45,7 +43,6 @@ public interface BoardReviewService {
         BoardReviewDTO boardReviewDTO = BoardReviewDTO.builder()
                 .id(reviewEntity.getId())
                 .content(reviewEntity.getContent())
-                .rating(reviewEntity.getRating())
                 .writer(reviewEntity.getUser().getName())
                 .build();
 

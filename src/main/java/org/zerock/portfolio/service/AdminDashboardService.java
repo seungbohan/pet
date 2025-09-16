@@ -27,8 +27,6 @@ public interface AdminDashboardService {
         BoardEntity boardEntity = BoardEntity.builder()
                 .id(boardDTO.getId())
                 .name(boardDTO.getName())
-                .location(boardDTO.getLocation())
-                .phoneNumber(boardDTO.getPhoneNumber())
                 .build();
 
         entityMap.put("board", boardEntity);

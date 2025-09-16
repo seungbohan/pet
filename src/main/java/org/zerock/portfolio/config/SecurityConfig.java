@@ -58,21 +58,19 @@ public class SecurityConfig {
             auth.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                     .requestMatchers("/error").permitAll();
             auth.requestMatchers("/api/admin/**").hasRole("ADMIN");
-            auth.requestMatchers("/uploadAjax", "/removeFile").hasRole("ADMIN");
-            auth.requestMatchers(HttpMethod.POST,"/api/review/**").hasRole("USER");
+            auth.requestMatchers("/uploadAjax", "/removeFile").hasRole("USER");
+            auth.requestMatchers(HttpMethod.POST,"/api/review/**", "/api/board/write").hasRole("USER");
             auth.requestMatchers(HttpMethod.PUT,"/api/review/**").hasRole("USER");
             auth.requestMatchers(HttpMethod.DELETE,"/api/review/**").hasRole("USER");
             auth.requestMatchers("/api/mypage/**").hasRole("USER");
-            auth.requestMatchers("/", "/board/list/**", "/join/**", "/api/join/**","/board/main",
-                    "/board/read","/board/mypage/user" ,"/display", "/admin/**", "/api/petplaces",
-                    "/board/petplaces", "/map", "/api/map/**", "/main", "/private.jsp").permitAll();
+            auth.requestMatchers("/", "/board/list/**", "/join/**", "/api/join/**","/board/**",
+                    "/board/mypage/user" ,"/display", "/admin/**", "/api/petplaces", "/map", "/api/map/**", "/main", "/private.jsp").permitAll();
             auth.requestMatchers(HttpMethod.GET, "/api/review/**").permitAll();
             auth.requestMatchers(
                     "/css/**",
                     "/js/**",
                     "/images/**",
-                    "/favicon.ico",
-                    "/.well-known/**"
+                    "/favicon.ico"
             ).permitAll();
         });
 
@@ -132,6 +130,6 @@ public class SecurityConfig {
 
     @Bean
     public ApiCheckFilter apiCheckFilter() {
-        return new ApiCheckFilter(List.of("/api/mypage/**","/uploadAjax","/removeFile" ,"/api/review/**", "/api/admin/**"), jwtUtil());
+        return new ApiCheckFilter(List.of("/api/mypage/**","/uploadAjax","/removeFile" ,"/api/review/**", "/api/admin/**", "/api/board/write"), jwtUtil());
     }
 }

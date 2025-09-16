@@ -1,7 +1,6 @@
 package org.zerock.portfolio.dto;
 
 import lombok.*;
-import org.zerock.portfolio.common.BoardLike;
 import org.zerock.portfolio.common.ImageLike;
 
 import java.time.LocalDateTime;
@@ -12,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PetPlaceDTO implements BoardLike {
+public class PetPlaceDTO{
 
     private Long id;
     private Long contentid;
@@ -29,29 +28,4 @@ public class PetPlaceDTO implements BoardLike {
 
     @Builder.Default
     private List<PetPlaceImgDTO> imageDTOList = new ArrayList<>();
-
-    @Override
-    public String getName() {
-        return title;
-    }
-
-    @Override
-    public String getLocation() {
-        return addr1;
-    }
-
-    @Override
-    public String getPhoneNumber() {
-        return tel;
-    }
-
-    @Override
-    public String getType() {
-        return "petPlace";
-    }
-
-    @Override
-    public List<? extends ImageLike> getImages() {
-        return imageDTOList;
-    }
 }

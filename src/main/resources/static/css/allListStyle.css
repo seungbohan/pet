@@ -197,14 +197,13 @@ body {
 
 /* 이전/다음 버튼 */
 .page-move-btn {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-    border-color: #6c757d;
-    color: white;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+    border-color: #6c757d !important;
+    color: white !important;
     font-weight: 600;
 }
 
 .page-move-btn {
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
 }
 
@@ -323,3 +322,118 @@ body {
     cursor: pointer;
 }
 
+/* 글쓰기 버튼 스타일 */
+.write-button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 30px;
+}
+
+.write-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.write-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.write-btn:hover::before {
+    left: 100%;
+}
+
+.write-btn:hover {
+    box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);
+}
+
+.write-btn:active {
+    transform: translateY(0);
+}
+
+.write-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .write-button-container {
+        padding: 0 15px;
+    }
+
+    .write-btn {
+        padding: 12px 24px;
+        font-size: 14px;
+    }
+
+    .write-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* 플로팅 버튼 스타일 (선택사항) */
+.floating-write-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 8px 25px rgba(65, 105, 225, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-write-btn:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 12px 35px rgba(65, 105, 225, 0.5);
+}
+
+.floating-write-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: white;
+}
+
+@media (max-width: 768px) {
+    .floating-write-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .floating-write-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+}

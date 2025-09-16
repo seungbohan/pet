@@ -5,12 +5,16 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.zerock.portfolio.dto.*;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ImageEntity;
+import org.zerock.portfolio.entity.UserEntity;
 import org.zerock.portfolio.repository.BoardRepository;
 import org.zerock.portfolio.repository.ImageRepository;
+import org.zerock.portfolio.repository.UserRepository;
 
 import java.util.*;
 import java.util.function.Function;
@@ -22,23 +26,55 @@ public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
     private final ImageRepository imageRepository;
+    private final UserRepository userRepository;
 
     @Override
     public BoardDTO read(Long id) {
         List<Object[]> result = boardRepository.getBoardWithReview(id);
 
         BoardEntity boardEntity = (BoardEntity) result.get(0)[0];
-        boardEntity.setPhoneNumber(boardEntity.getPhoneNumber().replace(".", "-") );
         List<ImageEntity> imageList = new ArrayList<>();
         result.forEach(arr -> {
             ImageEntity imageEntity = (ImageEntity) arr[1];
             imageList.add(imageEntity);
         });
-        Double avg = (Double) result.get(0)[2];
-        Long reviewCnt = (Long) result.get(0)[3];
+        Long reviewCnt = (Long) result.get(0)[2];
 
-        return entitiesToDto(boardEntity, imageList, avg, reviewCnt);
+        return entitiesToDto(boardEntity, imageList, reviewCnt);
+    }
 
+    @Override
+    public Long register(BoardDTO boardDTO) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        Optional<UserEntity> user = userRepository.findByEmail(email , false);
+
+        if (!user.isPresent()) {
+
+            log.info("user not found");
+
+            throw new RuntimeException("Check Email or Social");
+        }
+
+        Map<String ,Object> entityMap = dtoToEntity(boardDTO);
+
+        BoardEntity boardEntity = (BoardEntity) entityMap.get("board");
+
+        List<ImageEntity> imageList = (List<ImageEntity>) entityMap.get("imageList");
+        if (imageList == null) {
+            imageList = List.of();
+        }
+
+        boardEntity.setUser(user.get());
+
+        boardRepository.save(boardEntity);
+
+        imageList.forEach(imageEntity -> imageRepository.save(imageEntity));
+
+        return boardEntity.getId();
     }
 
     @Override
@@ -51,8 +87,7 @@ public class BoardServiceImpl implements BoardService {
         Function<Object[], BoardDTO> fn = (arr -> entitiesToDto(
                 (BoardEntity) arr[0],
                 (List<ImageEntity>)(Arrays.asList((ImageEntity) arr[1])),
-                (Double) arr[2],
-                (Long) arr[3]
+                (Long) arr[2]
         ));
 
         return new PageResultDTO<>(result, fn);
@@ -68,8 +103,7 @@ public class BoardServiceImpl implements BoardService {
         Function<Object[], BoardDTO> fn = (arr -> entitiesToDto(
                 (BoardEntity) arr[0],
                 (List<ImageEntity>)(Arrays.asList((ImageEntity) arr[1])),
-                (Double) arr[2],
-                (Long) arr[3]
+                (Long) arr[2]
         ));
 
         return new PageResultDTO<>(result, fn);
@@ -89,8 +123,7 @@ public class BoardServiceImpl implements BoardService {
         Function<Object[], BoardDTO> fn = (arr -> entitiesToDto(
                 (BoardEntity) arr[0],
                 (List<ImageEntity>)(Arrays.asList((ImageEntity) arr[1])),
-                (Double) arr[2],
-                (Long) arr[3]
+                (Long) arr[2]
         ));
 
         return new MainPageResultDTO<>(recent, popular, fn);
