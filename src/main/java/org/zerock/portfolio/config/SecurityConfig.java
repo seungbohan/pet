@@ -102,6 +102,7 @@ public class SecurityConfig {
 
                 return configuration;
             }
+
         }));
         http.httpBasic((auth) -> auth.disable());
         http.formLogin((auth) -> auth.disable());
