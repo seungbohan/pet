@@ -5,6 +5,18 @@ let reviewsPerPage = 5;
 let selectedRating = 0;
 const token = localStorage.getItem('token');
 
+function parseJwt(token) {
+    try {
+        const base64Payload = token.split('.')[1];
+        const jsonPayload = atob(base64Payload);
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        return null;
+    }
+}
+const payload = parseJwt(token);
+const currentUser = payload ? payload.sub : null;  // 현재 로그인한 사용자 이메일
+
 // 별점 초기화 (Font Awesome 사용)
 function initStarRating() {
     // 평점 입력용
@@ -12,8 +24,7 @@ function initStarRating() {
         rating: 0,
         max: 5,
         emptyClass: 'fa fa-star-o',
-        fullClass: 'fa fa-star',
-        change: function(e, value) {
+        fullClass: 'fa fa-star',        change: function(e, value) {
             selectedRating = value;
         }
     });
@@ -117,6 +128,7 @@ async function submitReview() {
 
 // 리뷰 수정
 async function editReview(reviewId) {
+    console.log(selectedPlace.id, reviewId);
     const review = reviews.find(r => r.id === reviewId);
     if (!review) return;
     if (!token) {
@@ -126,34 +138,106 @@ async function editReview(reviewId) {
         return;
     }
 
-    const newContent = prompt('새로운 리뷰 내용:', review.content);
-    if (!newContent || !newContent.trim()) return;
+    // 수정 모달 생성
+    const modal = document.createElement('div');
+    modal.className = 'edit-modal';
+    modal.innerHTML = `
+        <div class="edit-modal-content">
+            <h3>리뷰 수정</h3>
+            <div class="edit-form">
+                <label>평점:</label>
+                <div class="edit-rating-section">
+                    <div class="starrr" id="editRatingInput" data-rating="${review.rating}"></div>
+                </div>
+                <label>내용:</label>
+                <textarea id="edit-content" rows="4" maxlength="500">${review.content}</textarea>
+                <div class="input-counter">
+                    <span id="editContentCount">${review.content.length}</span>/500
+                </div>
+                <div class="edit-buttons">
+                    <button id="save-edit">저장</button>
+                    <button id="cancel-edit">취소</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 
-    const updateData = {
-        content: newContent.trim(),
-        rating: review.rating
-    };
+    // 모달 생성 후
+    const editContent = modal.querySelector('#edit-content');
+    const editContentCount = modal.querySelector('#editContentCount');
 
-    try {
-        const response = await fetch(`/api/review/petPlace/${selectedPlace.id}/${reviewId}`, {
-            method: 'PUT',
-            headers: {
-                Authorization: "Bearer " + token,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updateData)
-        });
+    editContent.addEventListener('input', function() {
+        editContentCount.textContent = this.value.length;
+    });
 
-        if (response.ok) {
-            await loadReviews(selectedPlace.id);
-            alert('리뷰가 수정되었습니다.');
-        } else {
-            alert('리뷰 수정에 실패했습니다.');
+    let selectedRating = review.rating;
+
+    // starrr.js 초기화
+    $('#editRatingInput').starrr({
+        rating: review.rating,
+        max: 5,
+        emptyClass: 'fa fa-star-o',
+        fullClass: 'fa fa-star',
+        change: function(e, value) {
+            selectedRating = value;
         }
-    } catch (error) {
-        console.error('리뷰 수정 에러:', error);
-        alert('리뷰 수정 중 오류가 발생했습니다.');
-    }
+    });
+
+    // 저장 버튼
+    modal.querySelector('#save-edit').addEventListener('click', async () => {
+        const newContent = modal.querySelector('#edit-content').value.trim();
+
+        if (!newContent) {
+            alert('리뷰 내용을 입력해주세요.');
+            return;
+        }
+
+        if (selectedRating === 0) {
+            alert('평점을 선택해주세요.');
+            return;
+        }
+
+        const updateData = {
+            id: reviewId,
+            content: newContent,
+            rating: selectedRating
+        };
+
+        try {
+            const response = await fetch(`/api/review/petPlace/${selectedPlace.id}/${reviewId}`, {
+                method: 'PUT',
+                headers: {
+                    Authorization: "Bearer " + token,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            if (response.ok) {
+                await loadReviews(selectedPlace.id);
+                alert('리뷰가 수정되었습니다.');
+                modal.remove();
+            } else {
+                alert('리뷰 수정에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('리뷰 수정 에러:', error);
+            alert('리뷰 수정 중 오류가 발생했습니다.');
+        }
+    });
+
+    // 취소 버튼
+    modal.querySelector('#cancel-edit').addEventListener('click', () => {
+        modal.remove();
+    });
+
+    // 모달 외부 클릭시 닫기
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
 }
 
 // 리뷰 삭제
@@ -202,20 +286,27 @@ function displayReviews() {
     }
 
     pageReviews.forEach(review => {
+        const isLongContent = review.content.length > 150;
+
+        const isAuthor = currentUser === review.writerEmail;
+
         const reviewHtml = `
             <div class="review-item">
                 <div class="review-header">
                     <span class="review-author">${review.writer || '익명'}</span>
-                    <span class="review-date">${review.createdAt || review.date}</span>
+                    <span class="review-date">${review.modDate}</span>
                 </div>
                 <div class="review-rating">
                     <div class="starrr-readonly" data-rating="${review.rating}"></div>
                 </div>
-                <div class="review-content">${review.content}</div>
-                <div class="review-actions">
-                    <button class="review-action-btn" onclick="editReview(${review.id})">수정</button>
-                    <button class="review-action-btn danger" onclick="deleteReview(${review.id})">삭제</button>
-                </div>
+                <div class="review-content ${isLongContent ? 'collapsible' : ''}" data-review-id="${review.id}">${review.content}</div>
+                ${isLongContent ? `<span class="review-toggle" onclick="toggleReviewContent(${review.id})">더보기</span>` : ''}
+                ${isAuthor ? `
+                    <div class="review-actions">
+                        <button class="review-action-btn" onclick="editReview(${review.id})">수정</button>
+                        <button class="review-action-btn danger" onclick="deleteReview(${review.id})">삭제</button>
+                    </div>
+                ` : ''}            
             </div>
         `;
         reviewList.append(reviewHtml);
@@ -309,3 +400,17 @@ $(document).ready(function() {
         $('#contentCount').text($(this).val().length);
     });
 });
+
+// 더보기/접기 함수
+function toggleReviewContent(reviewId) {
+    const contentEl = document.querySelector(`[data-review-id="${reviewId}"]`);
+    const toggleBtn = contentEl.nextElementSibling;
+
+    if (contentEl.classList.contains('expanded')) {
+        contentEl.classList.remove('expanded');
+        toggleBtn.textContent = '더보기';
+    } else {
+        contentEl.classList.add('expanded');
+        toggleBtn.textContent = '접기';
+    }
+}

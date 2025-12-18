@@ -18,16 +18,13 @@ public abstract class ReviewEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Lob
     private String content;
 
     private int rating;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity user;
-
-    public void changeRating(int rating) {
-        this.rating = rating;
-    }
 
     public void changeContent(String content) {
         this.content = content;

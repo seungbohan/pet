@@ -2,6 +2,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="naver-site-verification" content="878c81293bdfaf1f57c9394918d51e5100b6899e" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인</title>
     <link rel="stylesheet" th:href="@{/css/loginStyle.css}" />
@@ -89,8 +90,7 @@
 
     // 소셜 로그인
     function socialLogin(provider) {
-        alert(`${provider} 로그인이 시작됩니다.`);
-        // 실제 소셜 로그인 로직 구현
+        window.location.href = '/oauth2/authorization/' + provider;
     }
 
     // 비밀번호 찾기
@@ -165,7 +165,7 @@
                 alert("로그인 성공");
                 localStorage.setItem("token", result.token);
 
-                window.location.href = '/board/main'
+                window.location.href = '/'
             } else {
                 alert("로그인 실패");
             }

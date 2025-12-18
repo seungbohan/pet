@@ -2,9 +2,8 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="naver-site-verification" content="878c81293bdfaf1f57c9394918d51e5100b6899e" />
     <title>게시판</title>
-    <!-- Head 안에 넣기 -->
-    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ufwzhw6j2z"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
 
@@ -33,10 +32,29 @@
         /* 상단 바 */
         .top-bar {
             padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .top-bar img{
+        .top-bar img {
             height: 50px;
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .breadcrumb a {
+            color: #4169E1;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
         }
 
         /* 게시판 상세 섹션 */
@@ -66,6 +84,49 @@
             border-radius: 2px;
         }
 
+        /* 게시글 헤더 */
+        .post-header {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .post-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+            padding-top: 15px;
+            border-top: 1px solid #f1f3f4;
+        }
+
+        .meta-left {
+            display: flex;
+            gap: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .meta-item i {
+            color: #4169E1;
+        }
+
         /* 이미지 슬라이더 */
         .image-slider {
             position: relative;
@@ -73,10 +134,9 @@
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-            /* height 제거하고 aspect-ratio 사용 */
-            aspect-ratio: 16/9; /* 16:9 비율 고정 */
-            min-height: 300px;
-            max-height: 500px;
+            aspect-ratio: 16/9;
+            /*min-height: 300px;*/
+            /*max-height: 500px;*/
         }
 
         .slider-container {
@@ -107,9 +167,9 @@
         .image-box img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* ✅ 비율 유지하며 전체 표시 */
+            object-fit: contain;
             object-position: center;
-            background: #f8f9fa; /* 빈 공간 배경색 */
+            background: #f8f9fa;
             transition: transform 0.3s ease;
         }
 
@@ -117,21 +177,16 @@
             transform: scale(1.05);
         }
 
-        .image-slider.auto-height {
-            height: auto;
-            min-height: 300px;
+        .no-image-placeholder {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
         }
 
-        .image-slider.auto-height .image-box {
-            height: auto;
-            min-height: 300px;
-        }
-
-        .image-slider.auto-height .image-box img {
-            width: 100%;
-            height: auto;
-            max-height: 500px;
-            object-fit: contain;
+        .no-image-placeholder i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
         }
 
         .slider-nav {
@@ -200,38 +255,32 @@
             font-weight: 500;
         }
 
-        /* 정보 입력 그리드 */
-        .info-input-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
+        /* 게시글 내용 */
+        .post-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
             margin-bottom: 50px;
+            min-height: 200px;
         }
 
-        .info-input-grid > div {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .info-input-grid label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .info-input-grid input {
-            padding: 15px 20px;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
+        .content-text {
             font-size: 16px;
-            background: #f8f9fa;
+            line-height: 1.8;
             color: #333;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         /* 리뷰 섹션 */
+        .review-section {
+            margin-top: 50px;
+            padding-top: 40px;
+            border-top: 2px solid #f1f3f4;
+        }
+
         .review-title {
             font-size: 24px;
             font-weight: 700;
@@ -307,14 +356,7 @@
 
         .review-table th:nth-child(4),
         .review-table td:nth-child(4) {
-            width: 12%;
-            color: #ffc107;
-            font-weight: 600;
-        }
-
-        .review-table th:nth-child(5),
-        .review-table td:nth-child(5) {
-            width: 10%;
+            width: 22%;
         }
 
         /* 버튼 스타일 */
@@ -438,6 +480,61 @@
             box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);
         }
 
+        /* 게시글 수정/삭제 버튼 */
+        .meta-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .post-edit-btn, .post-delete-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .post-edit-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .post-edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .post-delete-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+
+        .post-delete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        /* 반응형 - 게시글 버튼 */
+        @media (max-width: 768px) {
+            .post-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .meta-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .post-edit-btn, .post-delete-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
+
         /* 반응형 */
         @media (max-width: 768px) {
             .main-container {
@@ -458,14 +555,39 @@
                 margin-bottom: 20px;
             }
 
-            .info-input-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
+            .post-header {
+                padding: 20px;
                 margin-bottom: 30px;
             }
 
+            .post-title {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+
+            .post-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .meta-left {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .post-content {
+                padding: 25px;
+                margin-bottom: 30px;
+            }
+
+            .content-text {
+                font-size: 15px;
+                line-height: 1.7;
+            }
+
             .image-slider {
-                aspect-ratio: 4/3; /* 더 정사각형에 가깝게 */
+                aspect-ratio: 4/3;
                 border-radius: 12px;
                 margin-bottom: 30px;
             }
@@ -504,14 +626,26 @@
         }
 
         @media (max-width: 480px) {
-            .review-table th:nth-child(5),
-            .review-table td:nth-child(5) {
-                display: none;
+            .post-title {
+                font-size: 20px;
+            }
+
+            .post-content {
+                padding: 20px;
+            }
+
+            .content-text {
+                font-size: 14px;
+            }
+
+            .review-table th:nth-child(4),
+            .review-table td:nth-child(4) {
+                width: 30%;
             }
 
             .review-table th:nth-child(2),
             .review-table td:nth-child(2) {
-                width: 60%;
+                width: 50%;
             }
 
             .edit-btn, .delete-btn, .confirm-btn, .cancel-btn {
@@ -521,7 +655,7 @@
             }
 
             .image-slider {
-                aspect-ratio: 3/2; /* 1:1보다는 약간 넓게 해서 빈 공간 줄임 */
+                aspect-ratio: 3/2;
                 border-radius: 8px;
                 margin-bottom: 20px;
             }
@@ -572,18 +706,47 @@
     <!-- 상단 바 -->
     <div class="top-bar">
         <a th:href="@{/}"><img src="/images/KakaoTalk_20250908_145552894.png" alt="withpet logo image"></a>
+        <div class="breadcrumb">
+            <a href="/">홈</a> > <a href="/board/main">게시판</a> > 게시글
+        </div>
     </div>
 
     <!-- 게시판 상세 섹션 -->
     <div class="board-detail-section">
         <h2 class="board-title">게시글</h2>
 
+        <!-- 게시글 헤더 -->
+        <div class="post-header">
+            <h1 class="post-title" th:text="${item.name}">게시글 제목이 여기에 표시됩니다</h1>
+            <div class="post-meta">
+                <div class="meta-left">
+                    <div class="meta-item">
+                        <i class="fa fa-user"></i>
+                        <span th:text="${item.writer}"></span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fa fa-calendar"></i>
+                        <span th:text="${#temporals.format(item.modDate, 'yyyy-MM-dd')}"></span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fa fa-eye"></i>
+                        <span th:text="'조회수 ' + ${item.reviewCnt}"></span>
+                    </div>
+                </div>
+
+                <div class="meta-right" style="display: none;" id="post-actions">
+                    <button class="post-edit-btn">수정</button>
+                    <button class="post-delete-btn">삭제</button>
+                </div>
+
+            </div>
+        </div>
+
         <!-- 이미지 슬라이더 -->
         <div class="image-slider">
             <div class="slider-container">
                 <div class="slider-wrapper sliderWrapper">
                     <div class="image-box" th:each="image : ${item.imageDTOList}">
-                        <!-- 원본 이미지 사용, 에러 처리 추가 -->
                         <img th:src="|/display?fileName=${image.getImageURL()}|"
                              th:alt="${image.fileName}"
                              loading="lazy"
@@ -616,49 +779,51 @@
             </div>
         </div>
 
-        <!-- 정보 입력 -->
-        <div class="info-input-grid">
-            <div>
-                <label>제목</label>
-                <input type="text" name="title" th:value="${item.name}" readOnly>
-            </div>
-            <div>
-                <label>내용</label>
-                <input type="text" name="content" th:value="${item.content}" readOnly>
+        <!-- 게시글 내용 -->
+        <div class="post-content">
+            <div class="content-text" th:text="${item.content}">
+                게시글의 내용이 여기에 표시됩니다.
+                여러 줄로 작성된 내용도 자연스럽게 표시되며,
+                긴 텍스트도 읽기 편하게 보여집니다.
+
+                개행도 제대로 처리됩니다.
             </div>
         </div>
 
-        <!-- 리뷰 테이블 -->
-        <h3 class="review-title">리뷰</h3>
-        <table class="review-table">
-            <thead>
-            <tr>
-                <th>No</th>
-                <th>내용</th>
-                <th>작성자</th>
-                <th>관리</th>
-            </tr>
-            </thead>
-            <tbody id="review-body">
-            <!-- JS로 리뷰가 들어올 자리 -->
-            </tbody>
-        </table>
+        <!-- 리뷰 섹션 -->
+        <div class="review-section">
+            <h3 class="review-title">댓글</h3>
 
-        <!-- 리뷰 작성 -->
-        <div class="review-input">
-            <input class="inputReview" type="text" placeholder="리뷰를 남겨주세요">
-            <button class="submit-btn">등록</button>
+            <!-- 리뷰 작성 -->
+            <div class="review-input">
+                <input class="inputReview" type="text" placeholder="댓글을 남겨주세요">
+                <button class="submit-btn">등록</button>
+            </div>
+
+            <!-- 리뷰 테이블 -->
+            <table class="review-table">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>내용</th>
+                    <th>작성자</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody id="review-body">
+                <!-- JS로 리뷰가 들어올 자리 -->
+                </tbody>
+            </table>
+
+            <!-- 페이지네이션 -->
+            <div id="review-pagination" class="pagination"></div>
         </div>
-
-        <!-- 페이지네이션 -->
-        <div id="review-pagination" class="pagination"></div>
     </div>
 </div>
 
 <script th:inline="javascript">
     let boardId = [[${item.id}]];
-    console.log(boardId);
-
+    let boardWriterEmail = [[${item.writerEmail}]]
     function parseJwt(token) {
         try {
             const base64Payload = token.split('.')[1];
@@ -671,11 +836,46 @@
     const token = localStorage.getItem('token');
     const payload = parseJwt(token);
     const currentUser = payload ? payload.sub : null;
-    console.log(token);
-    console.log(payload);
     console.log(currentUser);
+    console.log(payload);
 
     $(document).ready(function () {
+        // ✅ 작성자인 경우에만 수정/삭제 버튼 표시
+        if (currentUser && currentUser === boardWriterEmail) {
+            $('#post-actions').show();
+        }
+
+        // ✅ 게시글 수정 버튼 클릭
+        $('.post-edit-btn').click(function () {
+            if (confirm("게시글을 수정하시겠습니까?")) {
+                // 수정 페이지로 이동 (경로는 실제 프로젝트에 맞게 수정)
+                window.location.href = `/board/modify/${boardId}`;
+            }
+        });
+
+        // ✅ 게시글 삭제 버튼 클릭
+        $('.post-delete-btn').click(function () {
+            if (!confirm("정말로 이 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.")) {
+                return;
+            }
+
+            $.ajax({
+                url: `/api/board/${boardId}`,
+                type: 'DELETE',
+                headers: {
+                    "Authorization": "Bearer " + token
+                },
+                success: () => {
+                    alert("삭제 완료");
+                    window.location.href = "/board/list/all";
+
+                },
+                error: () => {
+                    alert("삭제에 실패했습니다.");
+                }
+            });
+        });
+
         let currentSlideIndex = 0;
         const totalSlides = $('.image-box').length;
 
@@ -734,9 +934,9 @@
                 if (list.length === 0) {
                     $('#review-body').html(`
                             <tr>
-                                <td colspan="5" class="empty-reviews">
-                                    <h4>아직 리뷰가 없습니다</h4>
-                                    <p>첫 번째 리뷰를 남겨보세요!</p>
+                                <td colspan="4" class="empty-reviews">
+                                    <h4>아직 댓글이 없습니다</h4>
+                                    <p>첫 번째 댓글을 남겨보세요!</p>
                                 </td>
                             </tr>
                         `);
@@ -745,7 +945,6 @@
                 }
 
                 const html = list.map((r, i) =>
-                    // language=HTML
                     `<tr data-id="${r.id}">
                             <td>${(page - 1) * data.size + i + 1}</td>
                             <td class="review-content">${r.content}</td>
@@ -786,7 +985,7 @@
             }
 
             if (!data.content.trim()) {
-                alert("리뷰 내용을 입력해주세요!");
+                alert("댓글 내용을 입력해주세요!");
                 return;
             }
 
@@ -800,7 +999,7 @@
                     "Authorization": "Bearer " + token
                 },
                 success: function (result) {
-                    alert("리뷰가 등록되었습니다!");
+                    alert("댓글이 등록되었습니다!");
                     self.location.reload();
                 },
                 error: function() {
@@ -856,7 +1055,7 @@
             const newContent = tr.find('.review-content input').val();
 
             if (!newContent.trim()) {
-                alert("리뷰 내용을 입력해주세요!");
+                alert("댓글 내용을 입력해주세요!");
                 return;
             }
 
@@ -872,7 +1071,7 @@
                     "Authorization": "Bearer " + token
                 },
                 success: function (result) {
-                    alert("리뷰가 수정 되었습니다");
+                    alert("댓글이 수정 되었습니다");
                     self.location.reload();
                 },
                 error: function() {
@@ -895,16 +1094,12 @@
 
         // 페이지 로드 애니메이션
         setTimeout(() => {
-            $('.info-input-grid > div').each((index, element) => {
-                setTimeout(() => {
-                    $(element).css({
-                        'opacity': '0',
-                        'transform': 'translateY(20px)'
-                    }).animate({
-                        'opacity': '1'
-                    }, 500).css('transform', 'translateY(0)');
-                }, index * 100);
-            });
+            $('.post-header, .post-content').css({
+                'opacity': '0',
+                'transform': 'translateY(20px)'
+            }).animate({
+                'opacity': '1'
+            }, 600).css('transform', 'translateY(0)');
         }, 200);
     });
 </script>

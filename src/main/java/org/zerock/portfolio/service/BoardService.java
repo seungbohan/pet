@@ -18,6 +18,10 @@ public interface BoardService {
 
     Long register(BoardDTO boardDTO);
 
+    void remove(Long id);
+
+    void modify(BoardDTO boardDTO);
+
     PageResultDTO<BoardDTO, Object[]> getList(PageRequestDTO pageRequestDTO);
 
     PageResultDTO<BoardDTO, Object[]> getPopularList(PageRequestDTO pageRequestDTO);
@@ -72,6 +76,8 @@ public interface BoardService {
                 .name(boardEntity.getName())
                 .content(boardEntity.getContent())
                 .writer(boardEntity.getUser().getName())
+                .regDate(boardEntity.getRegDate())
+                .modDate(boardEntity.getModDate())
                 .build();
         return boardDTO;
     }
@@ -82,6 +88,9 @@ public interface BoardService {
                 .name(boardEntity.getName())
                 .content(boardEntity.getContent())
                 .writer(boardEntity.getUser().getName())
+                .writerEmail(boardEntity.getUser().getEmail())
+                .regDate(boardEntity.getRegDate())
+                .modDate(boardEntity.getModDate())
                 .build();
 
         List<ImageDTO> imageDTOList = imageEntities.stream().filter(Objects::nonNull).map(imageEntity -> {

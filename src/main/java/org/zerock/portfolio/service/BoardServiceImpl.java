@@ -8,16 +8,19 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.dto.*;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ImageEntity;
 import org.zerock.portfolio.entity.UserEntity;
 import org.zerock.portfolio.repository.BoardRepository;
+import org.zerock.portfolio.repository.BoardReviewRepository;
 import org.zerock.portfolio.repository.ImageRepository;
 import org.zerock.portfolio.repository.UserRepository;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -26,6 +29,7 @@ public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
     private final ImageRepository imageRepository;
+    private final BoardReviewRepository boardReviewRepository;
     private final UserRepository userRepository;
 
     @Override
@@ -50,7 +54,7 @@ public class BoardServiceImpl implements BoardService {
 
         String email = authentication.getName();
 
-        Optional<UserEntity> user = userRepository.findByEmail(email , false);
+        Optional<UserEntity> user = userRepository.findByEmail(email);
 
         if (!user.isPresent()) {
 
@@ -75,6 +79,50 @@ public class BoardServiceImpl implements BoardService {
         imageList.forEach(imageEntity -> imageRepository.save(imageEntity));
 
         return boardEntity.getId();
+    }
+
+    @Override
+    public void modify(BoardDTO boardDTO) {
+
+        Optional<BoardEntity> result = boardRepository.findById(boardDTO.getId());
+
+        if (result.isPresent()) {
+            BoardEntity entity = result.get();
+
+            entity.setName(boardDTO.getName());
+            entity.setContent(boardDTO.getContent());
+
+            imageRepository.deleteByBoard(entity);
+
+            List<ImageDTO> imageDTOList = boardDTO.getImageDTOList();
+            if (imageDTOList != null && !imageDTOList.isEmpty()) {
+                List<ImageEntity> imageEntities = imageDTOList.stream().map(imageDTO ->
+                    ImageEntity.builder()
+                            .fileName(imageDTO.getFileName())
+                            .uuid(imageDTO.getUuid())
+                            .folderPath(imageDTO.getFolderPath())
+                            .board(entity)
+                            .build()
+                ).collect(Collectors.toList());
+
+                imageEntities.forEach(imageEntity -> imageRepository.save(imageEntity));
+            }
+
+            boardRepository.save(entity);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void remove(Long id){
+
+        Optional<BoardEntity> entity = boardRepository.findById(id);
+        if (entity.isPresent()) {
+
+            boardReviewRepository.deleteByBoardId(id);
+            imageRepository.deleteByBoard(entity.get());
+            boardRepository.deleteById(id);
+        }
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,6 +27,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.zerock.portfolio.security.filter.ApiCheckFilter;
 import org.zerock.portfolio.security.filter.ApiLoginFilter;
+import org.zerock.portfolio.security.handler.OAuth2LoginSuccessHandler;
 import org.zerock.portfolio.security.util.JWTUtil;
 
 import java.util.Collection;
@@ -53,13 +55,14 @@ public class SecurityConfig {
             auth.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                     .requestMatchers("/error").permitAll();
             auth.requestMatchers("/api/admin/**").hasRole("ADMIN");
+            auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
             auth.requestMatchers("/uploadAjax", "/removeFile").hasRole("USER");
-            auth.requestMatchers(HttpMethod.POST,"/api/review/**", "/api/board/write").hasRole("USER");
-            auth.requestMatchers(HttpMethod.PUT,"/api/review/**").hasRole("USER");
-            auth.requestMatchers(HttpMethod.DELETE,"/api/review/**").hasRole("USER");
+            auth.requestMatchers(HttpMethod.POST,"/api/review/**", "/api/board/write", "/removeFile").hasRole("USER");
+            auth.requestMatchers(HttpMethod.PUT,"/api/review/**", "/api/board/*").hasRole("USER");
+            auth.requestMatchers(HttpMethod.DELETE,"/api/review/**", "/api/board/*").hasRole("USER");
             auth.requestMatchers("/api/mypage/**").hasRole("USER");
-            auth.requestMatchers("/", "/board/list/**", "/join/**", "/api/join/**","/board/**",
-                    "/board/mypage/user" ,"/display", "/admin/**", "/api/petplaces", "/map", "/api/map/**", "/main", "/private.jsp").permitAll();
+            auth.requestMatchers("/", "/board/list/**", "/join/**", "/api/join/**","/board/**", "/api/board/modify",
+                    "/board/mypage/user" ,"/display", "/admin/**", "/api/petplaces", "/map", "/api/map/**", "/main", "/private.jsp", "/oauth2/**").permitAll();
             auth.requestMatchers(HttpMethod.GET, "/api/review/**").permitAll();
             auth.requestMatchers(
                     "/css/**",
@@ -96,8 +99,13 @@ public class SecurityConfig {
         http.formLogin((auth) -> auth.disable());
         http
                 .csrf(csrf -> csrf.disable());
-        http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
+        http.oauth2Login(oauth2 -> oauth2
+                .loginPage("/join/login")
+                .successHandler(oAuth2LoginSuccessHandler())
+        );
+        http.rememberMe(rememberMe -> rememberMe.tokenValiditySeconds(60*60*24*7));
 
         http.addFilterBefore(apiCheckFilter(), UsernamePasswordAuthenticationFilter.class);
 
@@ -122,5 +130,10 @@ public class SecurityConfig {
     @Bean
     public ApiCheckFilter apiCheckFilter() {
         return new ApiCheckFilter(List.of("/api/mypage/**","/uploadAjax","/removeFile" ,"/api/review/**", "/api/admin/**", "/api/board/write"), jwtUtil());
+    }
+
+    @Bean
+    public OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler() {
+        return new OAuth2LoginSuccessHandler(jwtUtil());
     }
 }

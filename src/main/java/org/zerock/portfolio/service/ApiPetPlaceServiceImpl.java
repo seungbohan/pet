@@ -143,7 +143,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ApiPetPlaceServiceImpl implements ApiPetPlaceService {
-
+    
     private final PetPlaceRepository petPlaceRepository;
     private final PetPlaceImgRepository petPlaceImgRepository;
 

@@ -1,5 +1,6 @@
 package org.zerock.portfolio.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -22,7 +23,9 @@ public class BoardReviewDTO {
 
     private Long boardId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime regDate;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime modDate;
 }

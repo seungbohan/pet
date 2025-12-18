@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="naver-site-verification" content="878c81293bdfaf1f57c9394918d51e5100b6899e" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>withpet - 반려동물과 함께하는 특별한 공간</title>
     <style>
@@ -87,36 +88,39 @@
             gap: 15px;
         }
 
+
         .btn {
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 12px 20px;
+            border: 2px solid #007bff;
+            border-radius: 20px;
+            background: white;
+            color: #007bff;
             text-decoration: none;
+            font-size: 14px;
             font-weight: 500;
-            transition: all 0.3s ease;
             cursor: pointer;
-            border: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+        .btn:hover {
+            background: #007bff;
             color: white;
-            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
-        }
-
-        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
         }
 
-        .btn-outline {
-            background: transparent;
-            color: #4169E1;
-            border: 2px solid #4169E1;
-        }
-
-        .btn-outline:hover {
-            background: #4169E1;
+        .btn.primary {
+            background: #007bff;
             color: white;
+        }
+
+        .btn.primary:hover {
+            background: #0056b3;
+        }
+
+        .hidden {
+            display: none;
         }
 
         /* 히어로 섹션 */
@@ -452,8 +456,10 @@
             <a href="#contact">문의</a>
         </nav>
         <div class="nav-buttons">
-            <a href="/join/login" class="btn btn-outline">로그인</a>
-            <a href="/join/signup" class="btn btn-primary">회원가입</a>
+            <a href="/join/signup"><button id="signupBtn" class="btn">회원가입</button></a>
+            <a href="/board/mypage/user"><button id="userBtn" class="btn hidden">마이페이지</button></a>
+            <a href="/join/login"><button id="loginBtn" class="btn primary">로그인</button></a>
+            <button id="logoutBtn" onclick="logout()" class="btn hidden">로그아웃</button>
         </div>
     </div>
 </header>
@@ -511,7 +517,7 @@
 <!-- 특징 섹션 -->
 <section class="features" id="features">
     <div class="container">
-        <h2 class="section-title animate-on-scroll">왜 PetPlace를 선택해야 할까요?</h2>
+        <h2 class="section-title animate-on-scroll">왜 WithPet 선택해야 할까요?</h2>
         <p class="section-subtitle animate-on-scroll">
             반려동물과 함께하는 여행과 일상을 더욱 편리하고 즐겁게 만들어주는 특별한 이유들
         </p>
@@ -562,14 +568,13 @@
 <footer class="footer">
     <div class="footer-content">
         <div class="footer-section">
-            <h3>PetPlace</h3>
+            <h3>WithPet</h3>
             <p>반려동물과 함께하는 특별한 공간</p>
             <p>언제나 우리 아이와 함께</p>
         </div>
         <div class="footer-section">
             <h3>서비스</h3>
             <a href="/board/main">동반가능 장소</a>
-            <a href="/board/main">리뷰 시스템</a>
             <a href="#contact">사업자 제휴</a>
             <a href="/board/main">커뮤니티</a>
         </div>
@@ -582,17 +587,93 @@
         </div>
         <div class="footer-section">
             <h3>연락처</h3>
-            <p>이메일: info@petplace.com</p>
-            <p>전화: 02-1234-5678</p>
-            <p>주소: 서울시 강남구 테헤란로 123</p>
+            <p>이메일: dnd230316@gmail.com</p>
         </div>
     </div>
     <div class="footer-bottom">
-        <p>&copy; 2025 PetPlace. All rights reserved.</p>
+        <p>&copy; 2025 WithPet. All rights reserved.</p>
     </div>
 </footer>
 
 <script>
+    // 페이지 로드 시 로그인 상태 확인
+    window.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const userBtn = document.getElementById('userBtn');
+
+        // 토큰이 없으면 로그인/회원가입 버튼 표시
+        if (!token) {
+            showLoginButtons();
+            return;
+        }
+
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+
+            // 토큰 만료 체크
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (payload.exp && payload.exp < currentTime) {
+                console.log('토큰이 만료되었습니다.');
+                localStorage.removeItem('token');
+                showLoginButtons();
+                return;
+            }
+
+            const rolesJson = payload.roles;
+            let roles = [];
+
+            try {
+                roles = JSON.parse(rolesJson);
+            } catch (error) {
+                console.log("roles 파싱 실패: " + error);
+                localStorage.removeItem('token');
+                showLoginButtons();
+                return;
+            }
+
+            console.log(payload);
+
+            // 유효한 토큰이면 로그아웃 버튼 표시
+            showLogoutButtons(roles);
+
+        } catch (error) {
+            console.error('토큰 파싱 에러:', error);
+            localStorage.removeItem('token');
+            showLoginButtons();
+        }
+
+        function showLoginButtons() {
+            loginBtn.classList.remove('hidden');
+            signupBtn.classList.remove('hidden');
+            logoutBtn.classList.add('hidden');
+            userBtn.classList.add('hidden');
+        }
+
+        function showLogoutButtons(roles) {
+            loginBtn.classList.add('hidden');
+            signupBtn.classList.add('hidden');
+            logoutBtn.classList.remove('hidden');
+
+            if (roles.includes('USER')) {
+                userBtn.classList.remove('hidden');
+            } else {
+                userBtn.classList.add('hidden');
+            }
+        }
+    });
+
+    // 로그아웃 함수
+    function logout() {
+        if (confirm('로그아웃 하시겠습니까?')) {
+            localStorage.removeItem('token');
+            alert('로그아웃 되었습니다');
+            window.location.href = '/';
+        }
+    }
+
     // 스크롤 시 헤더 스타일 변경
     window.addEventListener('scroll', function() {
         const header = document.getElementById('header');

@@ -26,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         log.info("loadUserByUsername : " + username);
 
-        Optional<UserEntity> result = userRepository.findByEmail(username, false);
+        Optional<UserEntity> result = userRepository.findByEmail(username);
 
         if (!result.isPresent()) {
             throw new UsernameNotFoundException("Check Email or Social");

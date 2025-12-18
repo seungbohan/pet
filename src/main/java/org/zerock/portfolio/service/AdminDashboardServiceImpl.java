@@ -50,9 +50,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService{
 
         Long userCount = userRepository.countByRole(UserRole.USER);
 
-        Long bizCount = userRepository.countByRole(UserRole.BIZ);
-
-        return new UserCountDTO(total, userCount, bizCount);
+        return new UserCountDTO(total, userCount);
     }
 
     @Transactional

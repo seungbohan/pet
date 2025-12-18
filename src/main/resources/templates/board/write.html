@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="naver-site-verification" content="878c81293bdfaf1f57c9394918d51e5100b6899e" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>글쓰기</title>
     <style>
@@ -440,33 +441,33 @@
 
         <!-- 글쓰기 폼 -->
         <form class="write-form" id="writeForm">
-<!--            <div class="form-group">-->
-<!--                <label class="form-label" for="category">-->
-<!--                    카테고리 <span class="required">*</span>-->
-<!--                </label>-->
-<!--                <div class="category-group">-->
-<!--                    <div class="category-item" data-category="cafe">카페</div>-->
-<!--                    <div class="category-item" data-category="restaurant">식당</div>-->
-<!--                    <div class="category-item" data-category="pension">펜션</div>-->
-<!--                    <div class="category-item" data-category="hospital">병원</div>-->
-<!--                    <div class="category-item" data-category="shop">쇼핑</div>-->
-<!--                    <div class="category-item" data-category="etc">기타</div>-->
-<!--                </div>-->
-<!--                <input type="hidden" id="category" name="category" required>-->
-<!--            </div>-->
+            <!--            <div class="form-group">-->
+            <!--                <label class="form-label" for="category">-->
+            <!--                    카테고리 <span class="required">*</span>-->
+            <!--                </label>-->
+            <!--                <div class="category-group">-->
+            <!--                    <div class="category-item" data-category="cafe">카페</div>-->
+            <!--                    <div class="category-item" data-category="restaurant">식당</div>-->
+            <!--                    <div class="category-item" data-category="pension">펜션</div>-->
+            <!--                    <div class="category-item" data-category="hospital">병원</div>-->
+            <!--                    <div class="category-item" data-category="shop">쇼핑</div>-->
+            <!--                    <div class="category-item" data-category="etc">기타</div>-->
+            <!--                </div>-->
+            <!--                <input type="hidden" id="category" name="category" required>-->
+            <!--            </div>-->
 
             <div class="form-group">
                 <label class="form-label" for="name">
                     📍 제목 <span class="required">*</span>
                 </label>
-                <input type="text" class="form-input" id="name" name="name" placeholder="매장 이름을 입력하세요" required>
+                <input type="text" class="form-input" id="name" name="name" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="content">
-                    📝 상세 설명
+                    📝 내용
                 </label>
-                <textarea class="form-input form-textarea" id="content" name="content" placeholder="매장에 대한 자세한 설명을 작성해주세요.&#10;&#10;- 반려동물 동반 가능 여부&#10;- 특별한 시설이나 서비스&#10;- 방문 시 주의사항&#10;- 추천 메뉴나 서비스 등"></textarea>
+                <textarea class="form-input form-textarea" id="content" name="content" maxlength="1000"></textarea>
                 <div class="char-counter">
                     <span id="charCount">0</span>/1000
                 </div>
@@ -474,7 +475,7 @@
 
             <div class="form-group">
                 <label class="form-label">
-                    📷 매장 사진
+                    📷 사진
                 </label>
                 <div class="image-upload-section" onclick="document.getElementById('imageInput').click()">
                     <div class="upload-icon">📸</div>
@@ -626,9 +627,36 @@
     }
 
     // 이미지 제거
-    function removeImage(button, fileName) {
-        // 배열에서 제거
+    async function removeImage(button, fileName) {
+        const imageToRemove = uploadImages.find(img => img.fileName === fileName);
+
+        if (imageToRemove) {
+            const fileName = `${imageToRemove.folderPath}/${imageToRemove.uuid}_${imageToRemove.fileName}`;
+
+            const formData = new FormData();
+            formData.append('fileName', fileName);
+
+            try {
+                const response = await fetch('/removeFile', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    console.log('서버에서 파일 삭제 완료:', fileName);
+                } else {
+                    console.error('파일 삭제 실패:', response.status);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
         selectedImages = selectedImages.filter(file => file.name !== fileName);
+        uploadImages = uploadImages.filter(img => img.fileName !== fileName);
 
         // 미리보기에서 제거
         button.parentElement.remove();

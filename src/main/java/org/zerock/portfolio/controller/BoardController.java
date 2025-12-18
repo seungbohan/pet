@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.zerock.portfolio.dto.*;
+import org.zerock.portfolio.repository.BoardRepository;
 import org.zerock.portfolio.repository.UserRepository;
 import org.zerock.portfolio.security.util.JWTUtil;
 import org.zerock.portfolio.service.ApiPetPlaceServiceImpl;
@@ -28,8 +29,9 @@ public class BoardController {
     private final UserService userService;
     private final ApiPetPlaceServiceImpl apiPetPlaceService;
     private final PetPlaceService petPlaceService;
+    private final BoardRepository boardRepository;
 
-    @GetMapping("/")
+    @GetMapping({"/", "/main"})
     public String index() {
         return "main";
     }
@@ -106,6 +108,61 @@ public class BoardController {
         Long id = boardService.register(boardDTO);
 
         return ResponseEntity.ok(id);
+    }
+
+    @GetMapping("/board/modify/{id}")
+    public String modify(@PathVariable("id") Long id, Model model) {
+
+        BoardDTO boardDTO = boardService.read(id);
+        model.addAttribute("item", boardDTO);
+
+        return "board/modify";
+    }
+
+    @PutMapping("/api/board/{id}")
+    @ResponseBody
+    public ResponseEntity<String> apiModify(@PathVariable("id") Long id, @RequestBody BoardDTO boardDTO) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication==null || authentication.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_USER") )) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음");
+        }
+
+        BoardDTO existingBoard = boardService.read(id);
+        String currentUserEmail = authentication.getName();
+
+        if (!existingBoard.getWriterEmail().equals(currentUserEmail)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("작성자만 수정 가능");
+        }
+
+        log.info("boardDTO: " + boardDTO);
+        boardDTO.setId(id);
+        boardService.modify(boardDTO);
+
+        return ResponseEntity.ok("수정 완료");
+    }
+
+    @DeleteMapping("/api/board/{id}")
+    @ResponseBody
+    public ResponseEntity<String> apiRemove(@PathVariable("id") Long id) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication==null || authentication.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_USER") )) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음");
+        }
+
+        BoardDTO existingBoard = boardService.read(id);
+        String currentUserEmail = authentication.getName();
+
+        if (!existingBoard.getWriterEmail().equals(currentUserEmail)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("작성자만 수정 가능");
+        }
+
+        boardService.remove(id);
+
+        return ResponseEntity.ok("삭제 완료");
     }
 
     @GetMapping("/board/mypage/user")

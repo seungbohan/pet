@@ -3,8 +3,10 @@ package org.zerock.portfolio.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.entity.BoardEntity;
 import org.zerock.portfolio.entity.ReviewEntity;
 
@@ -27,6 +29,13 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
             "left outer join BoardReviewEntity r on r.board = b " +
             " where b.id = :id group by bi")
     List<Object[]> getBoardWithReview(Long id);
+
+    @Modifying
+    @Transactional
+    @Query("delete from BoardEntity b where b.user.id = :id")
+    void deleteByUserId(@Param("id") Long id);
+
+    List<BoardEntity> findByUserId(Long id);
 
 //    @Query("select b, bi, avg(coalesce(r.rating,0)), count(distinct r) " +
 //            "from BoardEntity b " +

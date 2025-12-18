@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 public class UserCountDTO {
 
     private Long total;
-    private Long bizCount;
     private Long userCount;
 
 }

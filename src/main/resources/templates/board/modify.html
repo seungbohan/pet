@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="naver-site-verification" content="878c81293bdfaf1f57c9394918d51e5100b6899e" />
+  <title>게시글 수정</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .main-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      min-height: 100vh;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .top-bar {
+      padding: 20px 30px;
+      background: white;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .top-bar img {
+      height: 50px;
+    }
+
+    .breadcrumb {
+      font-size: 14px;
+      color: #6c757d;
+    }
+
+    .breadcrumb a {
+      color: #4169E1;
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .write-section {
+      padding: 40px 30px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 30px;
+      text-align: center;
+      position: relative;
+    }
+
+    .page-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #4169E1;
+      box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+    }
+
+    .form-textarea {
+      min-height: 300px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .upload-section {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+    }
+
+    .upload-area {
+      border: 2px dashed #dee2e6;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      background: white;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .upload-area:hover {
+      border-color: #4169E1;
+      background: #f8f9ff;
+    }
+
+    .upload-area i {
+      font-size: 48px;
+      color: #4169E1;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      font-size: 14px;
+      color: #999;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .image-preview-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .image-preview {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+    }
+
+    .image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(220, 53, 69, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .image-remove:hover {
+      background: #dc3545;
+      transform: scale(1.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 40px;
+    }
+
+    .btn {
+      padding: 15px 40px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(65, 105, 225, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(65, 105, 225, 0.4);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+      .write-section {
+        padding: 20px 15px;
+      }
+
+      .page-title {
+        font-size: 24px;
+      }
+
+      .upload-area {
+        padding: 30px 20px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="main-container">
+  <div class="top-bar">
+    <a th:href="@{/}"><img src="/images/KakaoTalk_20250908_145552894.png" alt="withpet logo"></a>
+    <div class="breadcrumb">
+      <a href="/">홈</a> > <a href="/board/main">게시판</a> > 수정하기
+    </div>
+  </div>
+
+  <div class="write-section">
+    <h2 class="page-title">게시글 수정</h2>
+
+    <form id="modifyForm">
+      <input type="hidden" id="boardId" th:value="${item.id}">
+
+      <div class="form-group">
+        <label class="form-label" for="title">제목</label>
+        <input type="text" id="title" class="form-input"
+               th:value="${item.name}" placeholder="제목을 입력하세요" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="content">내용</label>
+        <textarea id="content" class="form-input form-textarea"
+                  th:text="${item.content}" placeholder="내용을 입력하세요" required></textarea>
+      </div>
+
+      <div class="upload-section">
+        <label class="form-label">이미지 첨부</label>
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+          <i class="fa fa-cloud-upload"></i>
+          <div class="upload-text">클릭하여 이미지 업로드</div>
+          <div class="upload-hint">여러 장의 이미지를 선택할 수 있습니다</div>
+        </div>
+        <input type="file" id="fileInput" multiple accept="image/*">
+
+        <div class="image-preview-container" id="imagePreviewContainer">
+          <!-- 기존 이미지 표시 -->
+          <div class="image-preview" th:each="image : ${item.imageDTOList}"
+               th:data-path="${image.getImageURL()}">
+            <img th:src="|/display?fileName=${image.getImageURL()}|"
+                 th:alt="${image.fileName}">
+            <button type="button" class="image-remove" onclick="removeExistingImage(this)">×</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button type="submit" class="btn btn-primary">수정 완료</button>
+        <button type="button" class="btn btn-secondary" onclick="history.back()">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  const boardId = [[${item.id}]];
+  const token = localStorage.getItem('token');
+  let uploadedImages = [];
+  let existingImages = [];
+
+  // 기존 이미지 정보 저장
+  /*[# th:each="image : ${item.imageDTOList}"]*/
+  existingImages.push({
+    fileName: /*[[${image.fileName}]]*/ '',
+    uuid: /*[[${image.uuid}]]*/ '',
+    folderPath: /*[[${image.folderPath}]]*/ ''
+  });
+  /*[/]*/
+
+  $(document).ready(function() {
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "/join/login";
+      return;
+    }
+
+    // 파일 선택 이벤트
+    $('#fileInput').change(function(e) {
+      const files = e.target.files;
+      uploadFiles(files);
+    });
+
+    // 폼 제출
+    $('#modifyForm').submit(function(e) {
+      e.preventDefault();
+      modifyBoard();
+    });
+  });
+
+  function uploadFiles(files) {
+    const formData = new FormData();
+
+    for (let file of files) {
+      formData.append('uploadFiles', file);
+    }
+
+    console.log('Upload data:', formData);
+
+    $.ajax({
+      url: '/uploadAjax',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      headers: {
+        "Authorization": "Bearer " + token
+      },
+      success: function(result) {
+        console.log('Upload success:', result);
+
+        result.forEach(image => {
+          uploadedImages.push(image);
+          addImagePreview(image);
+        });
+      },
+      error: function(xhr) {
+        if (xhr.status === 403) {
+          alert("로그인이 필요합니다.");
+          window.location.href = "/join/login";
+        } else {
+          alert("이미지 업로드에 실패했습니다.");
+        }
+      }
+    });
+  }
+
+  function addImagePreview(image) {
+    const imageUrl = `/display?fileName=${image.imageURL}`;
+
+    const previewHtml = `
+            <div class="image-preview" data-uuid="${image.uuid}">
+                <img src="${imageUrl}" alt="${image.fileName}">
+                <button type="button" class="image-remove" onclick="removeNewImage(this, '${image.uuid}')">×</button>
+            </div>
+        `;
+
+    $('#imagePreviewContainer').append(previewHtml);
+  }
+
+  function removeExistingImage(button) {
+    const preview = $(button).closest('.image-preview');
+    const imagePath = preview.data('path');
+
+    // URL 디코딩 + 공백 정규화
+    let decodedPath = decodeURIComponent(imagePath);
+    decodedPath = decodedPath.replace(/\+/g, ' ');
+
+    const imageToRemove = existingImages.find(img => {
+      const imgPath = `${img.folderPath}/${img.uuid}_${img.fileName}`;
+      return imgPath === decodedPath;
+    });
+
+
+    if (imageToRemove) {
+      const fileName = `${imageToRemove.folderPath}/${imageToRemove.uuid}_${imageToRemove.fileName}`;
+
+      $.ajax({
+        url: '/removeFile',
+        type: "POST",
+        data: {fileName: fileName},
+        headers: {
+          Authorization: "Bearer " + token
+        },
+        success: function(result) {
+          existingImages = existingImages.filter(img => img.uuid !== imageToRemove.uuid);
+          preview.remove();
+        },
+        error: function(xhr) {
+          alert('파일 삭제에 실패했습니다.');
+        }
+      });
+    } else {
+      preview.remove();
+    }
+  }
+
+  function removeNewImage(button, uuid) {
+    const preview = $(button).closest('.image-preview');
+
+    // uploadedImages 배열에서 제거
+    const imageToRemove = uploadedImages.find(img => img.uuid === uuid);
+    if (imageToRemove) {
+      // 서버에서 파일 삭제
+      const fileName = `${imageToRemove.folderPath}/${imageToRemove.uuid}_${imageToRemove.fileName}`;
+      $.ajax({
+        url: '/removeFile',
+        type: "POST",
+        data: {fileName: fileName},
+        headers: {
+          Authorization: "Bearer " + token
+        },
+        success: function(result) {
+          console.log('파일 삭제 성공:', fileName, result);
+          uploadedImages = uploadedImages.filter(img => img.uuid !== uuid);
+          preview.remove();
+        },
+        error: function(xhr) {
+          console.error('파일 삭제 실패:', xhr.status, xhr.responseText);
+          alert('파일 삭제에 실패했습니다.');
+        }
+      });
+
+      uploadedImages = uploadedImages.filter(img => img.uuid !== uuid);
+    } else {
+      preview.remove();
+    }
+  }
+
+  function modifyBoard() {
+    const title = $('#title').val().trim();
+    const content = $('#content').val().trim();
+
+    if (!title) {
+      alert("제목을 입력해주세요.");
+      return;
+    }
+
+    if (!content) {
+      alert("내용을 입력해주세요.");
+      return;
+    }
+
+    // 기존 이미지 + 새로 업로드한 이미지 합치기
+    const allImages = [...existingImages, ...uploadedImages];
+
+    const data = {
+      id: boardId,
+      name: title,
+      content: content,
+      imageDTOList: allImages
+    };
+
+    console.log('Modify data:', data);
+
+    $.ajax({
+      url: `/api/board/${boardId}`,
+      type: 'PUT',
+      data: JSON.stringify(data),
+      contentType: 'application/json',
+      headers: {
+        "Authorization": "Bearer " + token
+      },
+      success: function(result) {
+        alert("게시글이 수정되었습니다.");
+        window.location.href = `/board/read?id=${boardId}`;
+      },
+      error: function(xhr) {
+        if (xhr.status === 403) {
+          alert("수정 권한이 없습니다.");
+        } else if (xhr.status === 401) {
+          alert("로그인이 필요합니다.");
+          window.location.href = "/join/login";
+        } else {
+          alert("수정에 실패했습니다.");
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>

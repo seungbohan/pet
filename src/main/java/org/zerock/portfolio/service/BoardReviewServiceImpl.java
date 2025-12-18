@@ -51,7 +51,7 @@ public class BoardReviewServiceImpl implements BoardReviewService {
 
         String email = authentication.getName();
 
-        Optional<UserEntity> user = userRepository.findByEmail(email, false);
+        Optional<UserEntity> user = userRepository.findByEmail(email);
 
         if(!user.isPresent()) {
 

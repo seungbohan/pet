@@ -2,6 +2,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
+    <meta name="naver-site-verification" content="878c81293bdfaf1f57c9394918d51e5100b6899e" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>게시판 메인</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" />
@@ -21,12 +22,6 @@
         <div class="search-container">
             <input type="text" placeholder="검색어를 입력해주세요." id="searchInput">
             <button class="search-btn" onclick="performSearch()">🔍</button>
-        </div>
-        <div class="auth-btns">
-            <a href="/join/signup"><button id="signupBtn" class="btn">회원가입</button></a>
-            <a href="/board/mypage/user"><button id="userBtn" class="btn hidden">마이페이지</button></a>
-            <a href="/join/login"><button id="loginBtn" class="btn primary">로그인</button></a>
-            <button id="logoutBtn" onclick="logout()" class="btn hidden">로그아웃</button>
         </div>
     </div>
 
@@ -95,57 +90,6 @@
 </div>
 
 <script>
-    // 페이지 로드 시 로그인 상태 확인
-    window.addEventListener('DOMContentLoaded', () => {
-        const token = localStorage.getItem('token');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const signupBtn = document.getElementById('signupBtn');
-
-        if (token) {
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const rolesJson = payload.roles;
-                let roles = [];
-
-                try {
-                    roles = JSON.parse(rolesJson);
-                } catch (error) {
-                    console.log("roles파싱 실패" + error);
-                }
-
-                console.log(payload);
-
-                loginBtn.classList.add('hidden');
-                signupBtn.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-
-                if (roles.includes('USER')) {
-                    userBtn.classList.remove('hidden');
-                } else {
-                    userBtn.classList.add('hidden');
-                }
-
-            } catch (error) {
-                console.error('토큰 파싱 에러:', error);
-                localStorage.removeItem('token');
-            }
-        } else {
-            loginBtn.classList.remove('hidden');
-            signupBtn.classList.remove('hidden');
-            logoutBtn.classList.add('hidden');
-        }
-    });
-
-    // 로그아웃 함수
-    function logout() {
-        if (confirm('로그아웃 하시겠습니까?')) {
-            localStorage.removeItem('token');
-            alert('로그아웃 되었습니다');
-            window.location.href = '/board/main';
-        }
-    }
-
     // 게시물 상세 페이지로 이동
     function goToDetail(row) {
         const id = row.getAttribute('data-id');

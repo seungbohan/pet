@@ -1,5 +1,6 @@
 package org.zerock.portfolio.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -23,7 +24,9 @@ public class PetPlaceReviewDTO {
 
     private int rating;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime regDate;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime modDate;
 }

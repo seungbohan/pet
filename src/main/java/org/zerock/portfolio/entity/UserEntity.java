@@ -25,10 +25,6 @@ public class UserEntity {
 
     private String name;
 
-    private String bizName;
-
-    private String phoneNumber;
-
     private boolean fromSocial;
 
     @ElementCollection(fetch = FetchType.LAZY)

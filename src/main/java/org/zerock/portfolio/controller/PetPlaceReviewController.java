@@ -40,6 +40,7 @@ public class PetPlaceReviewController {
     public ResponseEntity<Long> modify(@PathVariable("petPlaceId") Long petPlaceId,
                                        @PathVariable("id") Long id, @RequestBody PetPlaceReviewDTO petPlaceReviewDTO) {
 
+        log.info("petPlaceReviewDTO: " + petPlaceReviewDTO);
         petPlaceReviewService.modify(petPlaceReviewDTO);
 
         return ResponseEntity.ok(id);

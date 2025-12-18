@@ -50,7 +50,7 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService{
 
         String email = authentication.getName();
 
-        Optional<UserEntity> user = userRepository.findByEmail(email, false);
+        Optional<UserEntity> user = userRepository.findByEmail(email);
 
         if(!user.isPresent()) {
 
@@ -74,7 +74,6 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService{
         if(reviewEntity.isPresent()) {
             PetPlaceReviewEntity entity = reviewEntity.get();
             entity.changeContent(petPlaceReviewDTO.getContent());
-            entity.changeRating(petPlaceReviewDTO.getRating());
 
             petPlaceReviewRepository.save(entity);
         }

@@ -86,42 +86,6 @@ body {
     transform: scale(1.05);
 }
 
-.auth-btns {
-    display: flex;
-    gap: 10px;
-    flex-shrink: 0;
-}
-
-.btn {
-    padding: 12px 20px;
-    border: 2px solid #007bff;
-    border-radius: 20px;
-    background: white;
-    color: #007bff;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-.btn:hover {
-    background: #007bff;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,123,255,0.3);
-}
-
-.btn.primary {
-    background: #007bff;
-    color: white;
-}
-
-.btn.primary:hover {
-    background: #0056b3;
-}
-
 .hidden {
     display: none;
 }
@@ -408,11 +372,6 @@ body {
     .board-table th,
     .board-table td {
         padding: 10px 8px;
-    }
-
-    .auth-btns {
-        flex-wrap: wrap;
-        justify-content: center;
     }
 }
 
