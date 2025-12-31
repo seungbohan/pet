@@ -39,7 +39,6 @@ public class UserRepositoryTests {
                 .email("aa@aa.com")
                 .password(passwordEncoder.encode("qwer1234@@"))
                 .name("aaa")
-                .phoneNumber("01011111111")
                 .fromSocial(false)
                 .build();
 

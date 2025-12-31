@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
 import io.jsonwebtoken.impl.DefaultJws;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -16,9 +17,11 @@ import java.util.Map;
 @Log4j2
 public class JWTUtil {
 
-    private String secretKey = "12345678901234567890123456789012";
+    @Value("${jwt.secret}")
+    private String secretKey;
 
-    private long expire = 60 * 24 * 30;
+    @Value("${jwt.expiration}")
+    private long expireSeconds;
 
     public String generateToken(String content, List<String> roles) throws Exception {
 
@@ -27,7 +30,7 @@ public class JWTUtil {
 
         return Jwts.builder()
                 .setIssuedAt(new Date())
-                .setExpiration(Date.from(ZonedDateTime.now().plusSeconds(expire).toInstant()))
+                .setExpiration(Date.from(ZonedDateTime.now().plusSeconds(expireSeconds).toInstant()))
                 .claim("sub", content)
                 .claim("roles", rolesJson)
                 .signWith(SignatureAlgorithm.HS256, secretKey.getBytes("UTF-8"))

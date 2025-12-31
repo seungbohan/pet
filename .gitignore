@@ -38,3 +38,6 @@ out/
 
 ### OAuth ###
 application-oauth.properties
+
+### Environment ###
+.env
