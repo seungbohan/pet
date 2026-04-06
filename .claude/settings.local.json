@@ -39,7 +39,9 @@
       "Bash(curl -sL -A \"Mozilla/5.0\" \"https://withpet.shop/robots.txt\")",
       "Bash(curl -sL -A \"Mozilla/5.0\" \"https://withpet.shop/sitemap.xml\")",
       "Bash(grep -l \"SEOHead\" src/pages/*.jsx)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(curl -s -o /dev/null -w \"API places => %{http_code}\\\\n\" https://withpet.shop/api/v1/places)",
+      "Bash(curl -s -o /dev/null -w \"API areas => %{http_code}\\\\n\" https://withpet.shop/api/v1/places/areas)"
     ]
   }
 }

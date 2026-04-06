@@ -60,7 +60,7 @@ public class PetPlaceSyncService {
                         .areacode(dto.getAreacode())
                         .sigungucode(dto.getSigungucode())
                         .zipcode(dto.getZipcode())
-                        .category(PlaceCategory.fromContentTypeId(dto.getContenttypeid()))
+                        .category(PlaceCategory.classify(dto.getContenttypeid(), dto.getTitle()))
                         .build());
             }
         }
@@ -101,16 +101,28 @@ public class PetPlaceSyncService {
             Optional<PetPlaceEntity> existing = petPlaceRepository.findByContentid(dto.getContentid());
             if (existing.isPresent()) {
                 PetPlaceEntity entity = existing.get();
+                boolean changed = false;
+
+                // Update images/area if missing
                 if (entity.getFirstimage() == null && dto.getFirstimage() != null) {
                     entity.setFirstimage(dto.getFirstimage());
                     entity.setFirstimage2(dto.getFirstimage2());
                     entity.setAreacode(dto.getAreacode());
                     entity.setSigungucode(dto.getSigungucode());
                     entity.setZipcode(dto.getZipcode());
-                    updated++;
+                    changed = true;
                 }
+
+                // Always reclassify category based on title keywords
+                PlaceCategory newCategory = PlaceCategory.classify(dto.getContenttypeid(), dto.getTitle());
+                if (entity.getCategory() != newCategory) {
+                    entity.setCategory(newCategory);
+                    changed = true;
+                }
+
+                if (changed) updated++;
             }
         }
-        log.info("Updated {} existing places with new fields", updated);
+        log.info("Updated {} existing places", updated);
     }
 }

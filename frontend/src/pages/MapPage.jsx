@@ -13,13 +13,42 @@ import useAuthStore from '../store/authStore';
 /* ------------------------------------------------------------------ */
 const categories = [
   { key: '', label: '전체', icon: '📍' },
-  { key: 'RESTAURANT', label: '식당', icon: '🍽️' },
   { key: 'CAFE', label: '카페', icon: '☕' },
+  { key: 'RESTAURANT', label: '식당', icon: '🍽️' },
   { key: 'ACCOMMODATION', label: '숙소', icon: '🏨' },
+  { key: 'PARK', label: '공원', icon: '🌿' },
+  { key: 'HOSPITAL', label: '동물병원', icon: '🏥' },
   { key: 'TOURIST', label: '관광', icon: '🏖️' },
   { key: 'LEISURE', label: '레저', icon: '🎯' },
+  { key: 'CULTURE', label: '문화', icon: '🎭' },
   { key: 'SHOPPING', label: '쇼핑', icon: '🛍️' },
 ];
+
+const categoryColors = {
+  CAFE: 'bg-amber-100 text-amber-800',
+  RESTAURANT: 'bg-red-100 text-red-800',
+  ACCOMMODATION: 'bg-blue-100 text-blue-800',
+  PARK: 'bg-green-100 text-green-800',
+  HOSPITAL: 'bg-pink-100 text-pink-800',
+  TOURIST: 'bg-cyan-100 text-cyan-800',
+  LEISURE: 'bg-purple-100 text-purple-800',
+  CULTURE: 'bg-indigo-100 text-indigo-800',
+  SHOPPING: 'bg-orange-100 text-orange-800',
+  OTHER: 'bg-gray-100 text-gray-800',
+};
+
+const categoryLabels = {
+  CAFE: '☕ 카페',
+  RESTAURANT: '🍽️ 식당',
+  ACCOMMODATION: '🏨 숙소',
+  PARK: '🌿 공원',
+  HOSPITAL: '🏥 동물병원',
+  TOURIST: '🏖️ 관광',
+  LEISURE: '🎯 레저',
+  CULTURE: '🎭 문화',
+  SHOPPING: '🛍️ 쇼핑',
+  OTHER: '📍 기타',
+};
 
 /* ------------------------------------------------------------------ */
 /*  Region / area data                                                 */
@@ -548,8 +577,8 @@ export default function MapPage() {
           <p className="text-xs text-pet-brown/60 truncate mt-0.5">{place.addr1}</p>
           <div className="flex items-center gap-2 mt-1">
             {place.category && (
-              <span className="px-1.5 py-0.5 bg-pet-mint/60 text-pet-dark-brown rounded text-[10px] font-medium">
-                {place.category}
+              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${categoryColors[place.category] || categoryColors.OTHER}`}>
+                {categoryLabels[place.category] || place.category}
               </span>
             )}
             {place.avgRating > 0 && (
@@ -687,8 +716,8 @@ export default function MapPage() {
           {/* Rating & category */}
           <div className="flex items-center gap-3 mb-4">
             {placeDetail.category && (
-              <span className="px-2 py-0.5 bg-pet-mint text-pet-dark-brown rounded-full text-xs font-medium">
-                {placeDetail.category}
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${categoryColors[placeDetail.category] || categoryColors.OTHER}`}>
+                {categoryLabels[placeDetail.category] || placeDetail.category}
               </span>
             )}
             {placeDetail.avgRating > 0 && (

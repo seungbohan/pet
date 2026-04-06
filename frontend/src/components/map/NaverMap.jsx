@@ -1,5 +1,18 @@
 import { useEffect, useRef, useCallback } from 'react';
 
+const categoryMarkerColors = {
+  CAFE: '#D97706',
+  RESTAURANT: '#DC2626',
+  ACCOMMODATION: '#2563EB',
+  PARK: '#16A34A',
+  HOSPITAL: '#EC4899',
+  TOURIST: '#0891B2',
+  LEISURE: '#9333EA',
+  CULTURE: '#4F46E5',
+  SHOPPING: '#EA580C',
+  OTHER: '#6B7280',
+};
+
 export default function NaverMap({
   places = [],
   selectedId,
@@ -74,12 +87,13 @@ export default function NaverMap({
     const toRender = visiblePlaces.slice(0, maxMarkers);
 
     toRender.forEach((place) => {
+      const color = categoryMarkerColors[place.category] || '#FF8C42';
       const marker = new window.naver.maps.Marker({
         position: new window.naver.maps.LatLng(place.mapy, place.mapx),
         map: map,
         title: place.title,
         icon: {
-          content: `<div style="background:#FF8C42;color:white;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.2);border:2px solid white;">${place.title.length > 8 ? place.title.substring(0, 8) + '..' : place.title}</div>`,
+          content: `<div style="background:${color};color:white;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.2);border:2px solid white;">${place.title.length > 8 ? place.title.substring(0, 8) + '..' : place.title}</div>`,
           anchor: new window.naver.maps.Point(15, 15),
         },
       });
