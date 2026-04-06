@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.dto.PetPlaceDTO;
 import org.zerock.portfolio.dto.PetPlaceImgDTO;
+import org.zerock.portfolio.entity.AreaCodeUtil;
 import org.zerock.portfolio.entity.PlaceCategory;
 import org.zerock.portfolio.entity.PetPlaceEntity;
 import org.zerock.portfolio.entity.PetPlaceImgEntity;
@@ -47,6 +48,12 @@ public class PetPlaceSyncService {
 
         for (PetPlaceDTO dto : list) {
             if (!petPlaceRepository.existsByContentid(dto.getContentid())) {
+                // Derive areacode from address when the API returns it empty
+                String areacode = dto.getAreacode();
+                if (areacode == null || areacode.isEmpty()) {
+                    areacode = AreaCodeUtil.fromAddress(dto.getAddr1());
+                }
+
                 entityList.add(PetPlaceEntity.builder()
                         .contentid(dto.getContentid())
                         .contenttypeid(dto.getContenttypeid())
@@ -57,7 +64,7 @@ public class PetPlaceSyncService {
                         .mapy(dto.getMapy())
                         .firstimage(dto.getFirstimage())
                         .firstimage2(dto.getFirstimage2())
-                        .areacode(dto.getAreacode())
+                        .areacode(areacode)
                         .sigungucode(dto.getSigungucode())
                         .zipcode(dto.getZipcode())
                         .category(PlaceCategory.classify(dto.getContenttypeid(), dto.getTitle()))
@@ -111,6 +118,15 @@ public class PetPlaceSyncService {
                     entity.setSigungucode(dto.getSigungucode());
                     entity.setZipcode(dto.getZipcode());
                     changed = true;
+                }
+
+                // Fix empty areacode from address
+                if ((entity.getAreacode() == null || entity.getAreacode().isEmpty()) && entity.getAddr1() != null) {
+                    String derivedCode = AreaCodeUtil.fromAddress(entity.getAddr1());
+                    if (!derivedCode.isEmpty()) {
+                        entity.setAreacode(derivedCode);
+                        changed = true;
+                    }
                 }
 
                 // Always reclassify category based on title keywords
