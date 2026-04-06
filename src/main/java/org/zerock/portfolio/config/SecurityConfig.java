@@ -64,6 +64,7 @@ public class SecurityConfig {
             .httpBasic(basic -> basic.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/places/sync").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/feeds/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/places/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()

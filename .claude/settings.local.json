@@ -18,7 +18,10 @@
       "Bash(git push:*)",
       "Bash(aws ec2 describe-instances:*)",
       "Bash(ls /c/Users/computer/Downloads/withpet*)",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "Bash(nslookup withpet.shop)",
+      "Bash(dig withpet.shop +short)",
+      "Bash(nslookup:*)"
     ]
   }
 }
