@@ -1,0 +1,1 @@
+- [Map-first redesign](project_map_first_redesign.md) — WithPet redesigned to map-first UX, map is landing page, bottom sheet on mobile

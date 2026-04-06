@@ -1,15 +1,22 @@
-import { Outlet } from 'react-router-dom';
-import Header from './components/common/Header';
-import Footer from './components/common/Footer';
+import { Outlet, useLocation } from 'react-router-dom';
+import BottomNav from './components/common/BottomNav';
+import TopNav from './components/common/TopNav';
 
 function App() {
+  const location = useLocation();
+  const isMapPage = location.pathname === '/' || location.pathname === '/map';
+
   return (
-    <div className="min-h-screen flex flex-col bg-pet-cream">
-      <Header />
-      <main className="flex-1">
+    <div className="h-screen flex flex-col">
+      {/* TopNav only shown on non-map pages (desktop has its own map overlay nav) */}
+      {!isMapPage && <TopNav />}
+
+      <main className={isMapPage ? 'flex-1 relative overflow-hidden' : 'flex-1 bg-pet-cream overflow-auto pb-16 md:pb-0'}>
         <Outlet />
       </main>
-      <Footer />
+
+      {/* Mobile bottom tab bar - always visible */}
+      <BottomNav />
     </div>
   );
 }

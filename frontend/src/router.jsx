@@ -1,10 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
-import HomePage from './pages/HomePage';
+import MapPage from './pages/MapPage';
 import FeedPage from './pages/FeedPage';
 import FeedDetailPage from './pages/FeedDetailPage';
 import FeedWritePage from './pages/FeedWritePage';
-import MapPage from './pages/MapPage';
 import PlaceDetailPage from './pages/PlaceDetailPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -24,18 +23,27 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
-      { index: true, element: <HomePage /> },
+      /* Map is the landing page */
+      { index: true, element: <MapPage /> },
+      { path: 'map', element: <MapPage /> },
+
+      /* Feeds */
       { path: 'feeds', element: <FeedPage /> },
       { path: 'feeds/:id', element: <FeedDetailPage /> },
       {
         path: 'feeds/write',
         element: <ProtectedRoute><FeedWritePage /></ProtectedRoute>,
       },
-      { path: 'map', element: <MapPage /> },
+
+      /* Places (standalone detail page kept for deep links) */
       { path: 'places/:id', element: <PlaceDetailPage /> },
+
+      /* Auth */
       { path: 'login', element: <LoginPage /> },
       { path: 'signup', element: <SignupPage /> },
       { path: 'oauth2/callback', element: <OAuth2CallbackPage /> },
+
+      /* User pages */
       {
         path: 'mypage',
         element: <ProtectedRoute><MyPage /></ProtectedRoute>,
@@ -44,6 +52,8 @@ const router = createBrowserRouter([
         path: 'pets/register',
         element: <ProtectedRoute><PetRegisterPage /></ProtectedRoute>,
       },
+
+      /* Admin pages */
       {
         path: 'admin',
         element: <AdminRoute><AdminDashboardPage /></AdminRoute>,
@@ -60,6 +70,8 @@ const router = createBrowserRouter([
         path: 'admin/places',
         element: <AdminRoute><AdminPlacesPage /></AdminRoute>,
       },
+
+      /* 404 */
       { path: '*', element: <NotFoundPage /> },
     ],
   },
