@@ -2,6 +2,7 @@ package org.zerock.portfolio.security.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -19,12 +20,15 @@ import java.util.stream.Collectors;
 
 @Log4j2
 @Service
-@RequiredArgsConstructor
 public class OAuth2UserDetailsService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
+
+    public OAuth2UserDetailsService(UserRepository userRepository, @Lazy PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
