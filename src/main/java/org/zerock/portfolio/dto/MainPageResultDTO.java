@@ -1,6 +1,5 @@
 package org.zerock.portfolio.dto;
 
-import com.sun.tools.javac.Main;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,10 +18,8 @@ public class MainPageResultDTO<DTO, EN> {
 
     private List<DTO> popularDtoList;
 
-    public MainPageResultDTO(Page<EN> recent, Page<EN> popular, Function<EN, DTO> fn ) {
-
+    public MainPageResultDTO(Page<EN> recent, Page<EN> popular, Function<EN, DTO> fn) {
         recentDtoList = recent.stream().map(fn).collect(Collectors.toList());
-
         popularDtoList = popular.stream().map(fn).collect(Collectors.toList());
     }
 }

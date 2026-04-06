@@ -1,19 +1,20 @@
 package org.zerock.portfolio.security.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.DefaultClaims;
-import io.jsonwebtoken.impl.DefaultJws;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 @Log4j2
 public class JWTUtil {
 
@@ -23,48 +24,40 @@ public class JWTUtil {
     @Value("${jwt.expiration}")
     private long expireSeconds;
 
-    public String generateToken(String content, List<String> roles) throws Exception {
+    private Key getSigningKey() {
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        String rolesJson = objectMapper.writeValueAsString(roles);
+    public String generateToken(String email, List<String> roles) {
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + expireSeconds * 1000);
 
         return Jwts.builder()
-                .setIssuedAt(new Date())
-                .setExpiration(Date.from(ZonedDateTime.now().plusSeconds(expireSeconds).toInstant()))
-                .claim("sub", content)
-                .claim("roles", rolesJson)
-                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes("UTF-8"))
+                .setSubject(email)
+                .claim("roles", roles)
+                .setIssuedAt(now)
+                .setExpiration(expiration)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public Map<String ,String > validateAndExtract(String tokenStr) throws Exception {
-
-        Map<String ,String > contentValue = new HashMap<>();
-
+    public Map<String, String> validateAndExtract(String token) {
         try {
-            DefaultJws defaultJws = (DefaultJws) Jwts.parser().setSigningKey(secretKey.getBytes("UTF-8"))
-                    .parseClaimsJws(tokenStr);
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
 
-            log.info(defaultJws);
-            log.info(defaultJws.getBody().getClass());
+            String email = claims.getSubject();
+            Object rolesObj = claims.get("roles");
+            String roles = rolesObj != null ? rolesObj.toString() : "[]";
 
-            DefaultClaims claims = (DefaultClaims) defaultJws.getBody();
-
-            log.info("--------------------------");
-
-            String email = claims.get("sub", String.class);
-            String rolesJson = claims.get("roles", String.class);
-
-            contentValue.put("email", email);
-            contentValue.put("roles", rolesJson);
-            log.info("email: " + email);
-            log.info("role: " + rolesJson);
-
+            return Map.of("email", email, "roles", roles);
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage());
-            contentValue = null;
+            log.error("JWT validation error: {}", e.getMessage());
+            return null;
         }
-        return contentValue;
     }
 }

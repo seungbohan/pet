@@ -1,0 +1,9 @@
+INSERT INTO tag_definition (name, icon) VALUES ('주차가능', '🅿️') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO tag_definition (name, icon) VALUES ('넓은공간', '🏠') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO tag_definition (name, icon) VALUES ('물그릇제공', '💧') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO tag_definition (name, icon) VALUES ('대형견가능', '🐕') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO tag_definition (name, icon) VALUES ('소형견가능', '🐩') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO tag_definition (name, icon) VALUES ('야외테라스', '☀️') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO tag_definition (name, icon) VALUES ('실내동반', '🏪') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO tag_definition (name, icon) VALUES ('펜스있음', '🔒') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO tag_definition (name, icon) VALUES ('잔디마당', '🌿') ON DUPLICATE KEY UPDATE name=name;

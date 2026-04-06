@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.dto.PetPlaceDTO;
 import org.zerock.portfolio.dto.PetPlaceImgDTO;
+import org.zerock.portfolio.entity.PlaceCategory;
 import org.zerock.portfolio.entity.PetPlaceEntity;
 import org.zerock.portfolio.entity.PetPlaceImgEntity;
 import org.zerock.portfolio.entity.SyncLog;
@@ -50,6 +51,7 @@ public class PetPlaceSyncService {
                         .title(dto.getTitle())
                         .mapx(dto.getMapx())
                         .mapy(dto.getMapy())
+                        .category(PlaceCategory.fromContentTypeId(dto.getContenttypeid()))
                         .build());
             }
         }

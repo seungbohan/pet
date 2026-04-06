@@ -7,11 +7,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.dto.UserDTO;
-import org.zerock.portfolio.entity.BoardEntity;
+import org.zerock.portfolio.entity.FeedEntity;
 import org.zerock.portfolio.entity.UserEntity;
 import org.zerock.portfolio.entity.UserRole;
-import org.zerock.portfolio.repository.BoardRepository;
-import org.zerock.portfolio.repository.BoardReviewRepository;
+import org.zerock.portfolio.repository.FeedRepository;
+import org.zerock.portfolio.repository.FeedReviewRepository;
 import org.zerock.portfolio.repository.ImageRepository;
 import org.zerock.portfolio.repository.UserRepository;
 
@@ -21,13 +21,13 @@ import java.util.Optional;
 @Log4j2
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
     private final EntityManager entityManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final BoardRepository boardRepository;
+    private final FeedRepository feedRepository;
     private final ImageRepository imageRepository;
-    private final BoardReviewRepository boardReviewRepository;
+    private final FeedReviewRepository feedReviewRepository;
 
     @Override
     public void register(UserDTO dto) {
@@ -40,12 +40,11 @@ public class UserServiceImpl implements UserService{
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity.addUserRole(UserRole.USER);
 
-
         userRepository.save(userEntity);
     }
 
     @Override
-    public void modify(String email,UserDTO dto) {
+    public void modify(String email, UserDTO dto) {
 
         log.info("modify : " + email + " / " + dto);
         Optional<UserEntity> result = userRepository.findByEmail(email);
@@ -59,7 +58,6 @@ public class UserServiceImpl implements UserService{
             log.info("name : " + entity.getName());
             userRepository.save(entity);
         }
-
     }
 
     @Override
@@ -67,7 +65,7 @@ public class UserServiceImpl implements UserService{
 
         Optional<UserEntity> result = userRepository.findByEmail(email);
         log.info("findUser : " + result + " / email : " + email);
-        if(result.isPresent()) {
+        if (result.isPresent()) {
             UserEntity entity = result.get();
             log.info("findUser : " + entity);
             return entityTODto(entity);
@@ -85,12 +83,12 @@ public class UserServiceImpl implements UserService{
 
         entityManager.clear();
 
-        if(result.isPresent()) {
+        if (result.isPresent()) {
             UserEntity entity = result.get();
-            boardReviewRepository.deleteByUserId(entity.getId());
-            List<BoardEntity> boards = boardRepository.findByUserId(entity.getId());
+            feedReviewRepository.deleteByUserId(entity.getId());
+            List<FeedEntity> feeds = feedRepository.findByUserId(entity.getId());
             imageRepository.deleteByUserId(entity.getId());
-            boardRepository.deleteByUserId(entity.getId());
+            feedRepository.deleteByUserId(entity.getId());
             userRepository.deleteById(entity.getId());
         } else {
             log.info("delete : " + email + " / not found");

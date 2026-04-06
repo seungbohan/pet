@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-@ToString(exclude = "board")
+@ToString(exclude = "feed")
 public class ImageEntity {
 
     @Id
@@ -23,5 +23,5 @@ public class ImageEntity {
     private String uuid;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private BoardEntity board;
+    private FeedEntity feed;
 }

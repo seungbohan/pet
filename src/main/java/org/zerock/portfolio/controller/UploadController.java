@@ -6,12 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.zerock.portfolio.dto.ImageDTO;
 
@@ -29,30 +25,23 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/api/v1/upload")
 @Log4j2
 public class UploadController {
 
     @Value("${org.zerock.upload.path}")
     private String uploadPath;
 
-    @PostMapping("/uploadAjax")
+    @PostMapping
     public ResponseEntity<List<ImageDTO>> uploadFile(MultipartFile[] uploadFiles) {
 
-        log.info("uploadFiles" + uploadFiles);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth == null || auth.getAuthorities().stream()
-                .noneMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
-
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        }
+        log.info("uploadFiles: {}", (Object) uploadFiles);
 
         List<ImageDTO> list = new ArrayList<>();
 
         for (MultipartFile uploadFile : uploadFiles) {
 
-            if (uploadFile.getContentType().startsWith("image") == false) {
+            if (!uploadFile.getContentType().startsWith("image")) {
                 log.warn("this file is not image file.");
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
@@ -77,9 +66,9 @@ public class UploadController {
 
                 Thumbnailator.createThumbnail(savePath.toFile(), thumbnailFile, 100, 100);
 
-                list.add(new ImageDTO(fileName,uuid,folderPath));
+                list.add(new ImageDTO(fileName, uuid, folderPath));
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("File upload failed", e);
             }
         }
         return new ResponseEntity<>(list, HttpStatus.OK);
@@ -93,7 +82,7 @@ public class UploadController {
 
         File uploadPathFolder = new File(uploadPath, folderPath);
 
-        if (uploadPathFolder.exists() == false) {
+        if (!uploadPathFolder.exists()) {
             uploadPathFolder.mkdirs();
         }
 
@@ -106,7 +95,7 @@ public class UploadController {
         ResponseEntity<byte[]> result = null;
 
         try {
-            String srcFileName = URLDecoder.decode(fileName,"UTF-8");
+            String srcFileName = URLDecoder.decode(fileName, "UTF-8");
 
             File file = new File(uploadPath + File.separator + srcFileName);
 
@@ -114,31 +103,28 @@ public class UploadController {
 
             header.add("Content-Type", Files.probeContentType(file.toPath()));
 
-            result = new ResponseEntity<>(FileCopyUtils.copyToByteArray(file),header,HttpStatus.OK);
+            result = new ResponseEntity<>(FileCopyUtils.copyToByteArray(file), header, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return result;
     }
 
-    @PostMapping("/removeFile")
+    @DeleteMapping
     public ResponseEntity<Boolean> removeFile(String fileName) {
 
-        String srcFileName = null;
         try {
-
-            srcFileName = URLDecoder.decode(fileName,"UTF-8");
+            String srcFileName = URLDecoder.decode(fileName, "UTF-8");
             File file = new File(uploadPath + File.separator + srcFileName);
             boolean result = file.delete();
 
             File thumbnailFile = new File(file.getParent() + File.separator + "s_" + file.getName());
-
             result = thumbnailFile.delete();
 
-            return new ResponseEntity<>(result,HttpStatus.OK);
+            return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(false,HttpStatus.INTERNAL_SERVER_ERROR);
+            log.error("File removal failed", e);
+            return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

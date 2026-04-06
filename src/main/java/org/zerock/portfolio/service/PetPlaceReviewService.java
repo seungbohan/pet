@@ -3,6 +3,9 @@ package org.zerock.portfolio.service;
 import org.zerock.portfolio.dto.PageRequestDTO;
 import org.zerock.portfolio.dto.PageResultDTO;
 import org.zerock.portfolio.dto.PetPlaceReviewDTO;
+import org.zerock.portfolio.dto.request.ReviewRequest;
+import org.zerock.portfolio.dto.response.PageResponse;
+import org.zerock.portfolio.dto.response.ReviewResponse;
 import org.zerock.portfolio.entity.PetPlaceEntity;
 import org.zerock.portfolio.entity.PetPlaceReviewEntity;
 
@@ -15,6 +18,15 @@ public interface PetPlaceReviewService {
     void modify(PetPlaceReviewDTO petPlaceReviewDTO);
 
     void remove(Long id);
+
+    // New API-compatible methods
+    PageResponse<ReviewResponse> getListResponse(Long petPlaceId, int page);
+
+    Long registerWithResponse(Long placeId, ReviewRequest request, String email);
+
+    void modifyWithResponse(Long id, ReviewRequest request, String email);
+
+    void removeWithResponse(Long id, String email);
 
     default PetPlaceReviewEntity dtoToEntity(PetPlaceReviewDTO petPlaceReviewDTO) {
 

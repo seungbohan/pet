@@ -1,15 +1,7 @@
 package org.zerock.portfolio.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Data
@@ -29,4 +21,7 @@ public class PetPlaceEntity {
     private String tel;
     private double mapx;
     private double mapy;
+
+    @Enumerated(EnumType.STRING)
+    private PlaceCategory category;
 }

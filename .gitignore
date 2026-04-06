@@ -41,3 +41,10 @@ application-oauth.properties
 
 ### Environment ###
 .env
+
+### Frontend ###
+frontend/node_modules/
+frontend/dist/
+
+### Build artifacts ###
+app.jar

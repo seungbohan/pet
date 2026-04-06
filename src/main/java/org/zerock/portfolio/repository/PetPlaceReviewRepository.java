@@ -6,13 +6,16 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.zerock.portfolio.entity.BoardReviewEntity;
 import org.zerock.portfolio.entity.PetPlaceReviewEntity;
 import org.zerock.portfolio.entity.UserEntity;
+
+import java.util.List;
 
 public interface PetPlaceReviewRepository extends JpaRepository<PetPlaceReviewEntity, Long> {
     @EntityGraph(attributePaths = {"user"}, type = EntityGraph.EntityGraphType.FETCH)
     Page<PetPlaceReviewEntity> findByPetPlace_id(Long petPlaceId, Pageable pageable);
+
+    List<PetPlaceReviewEntity> findByPetPlaceId(Long petPlaceId);
 
     @Modifying
     @Query("delete from PetPlaceReviewEntity pr where pr.user = :user")

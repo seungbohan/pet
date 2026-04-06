@@ -1,62 +1,82 @@
 package org.zerock.portfolio.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.zerock.portfolio.dto.*;
-import org.zerock.portfolio.entity.BoardReviewEntity;
-import org.zerock.portfolio.entity.PetPlaceReviewEntity;
-import org.zerock.portfolio.service.BoardReviewService;
+import org.zerock.portfolio.dto.request.ReviewRequest;
+import org.zerock.portfolio.dto.response.PageResponse;
+import org.zerock.portfolio.dto.response.ReviewResponse;
+import org.zerock.portfolio.service.FeedReviewService;
 import org.zerock.portfolio.service.PetPlaceReviewService;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/review")
-@Log4j2
 @RequiredArgsConstructor
 public class ReviewController {
 
-    private final BoardReviewService boardReviewService;
+    private final FeedReviewService feedReviewService;
+    private final PetPlaceReviewService petPlaceReviewService;
 
-    @GetMapping("/{boardId}/all")
-    public ResponseEntity<?> getList(@PathVariable("boardId") Long boardId,
-                                     PageRequestDTO pageRequestDTO) {
-
-        PageResultDTO<BoardReviewDTO, BoardReviewEntity> result = boardReviewService.getList(boardId, pageRequestDTO);
-
-        return ResponseEntity.ok(result);
-
+    // Feed Reviews
+    @GetMapping("/api/v1/feeds/{feedId}/reviews")
+    public ResponseEntity<PageResponse<ReviewResponse>> getFeedReviews(
+            @PathVariable Long feedId,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(feedReviewService.getList(feedId, page));
     }
 
-    @PostMapping("/{boardId}")
-    public ResponseEntity<Long> register(@PathVariable("boardId") Long boardId,
-                                         @RequestBody BoardReviewDTO boardReviewDTO) {
-
-        Long id = boardReviewService.register(boardReviewDTO);
-
-        return ResponseEntity.ok(id);
-
+    @PostMapping("/api/v1/feeds/{feedId}/reviews")
+    public ResponseEntity<Map<String, Long>> createFeedReview(
+            @PathVariable Long feedId,
+            @Valid @RequestBody ReviewRequest request,
+            Authentication authentication) {
+        Long id = feedReviewService.register(feedId, request, authentication.getName());
+        return ResponseEntity.ok(Map.of("id", id));
     }
 
-    @PutMapping("/{boardId}/{id}")
-    public ResponseEntity<Long> modify(@PathVariable("boardId") Long boardId,
-                                       @PathVariable("id") Long id, @RequestBody BoardReviewDTO boardReviewDTO) {
-
-        boardReviewService.modify(boardReviewDTO);
-
-        return ResponseEntity.ok(id);
+    // Place Reviews
+    @GetMapping("/api/v1/places/{placeId}/reviews")
+    public ResponseEntity<PageResponse<ReviewResponse>> getPlaceReviews(
+            @PathVariable Long placeId,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(petPlaceReviewService.getListResponse(placeId, page));
     }
 
-    @DeleteMapping("/{boardId}/{id}")
-    public ResponseEntity<Long> remove(@PathVariable("boardId") Long boardId,
-                                       @PathVariable("id") Long id) {
+    @PostMapping("/api/v1/places/{placeId}/reviews")
+    public ResponseEntity<Map<String, Long>> createPlaceReview(
+            @PathVariable Long placeId,
+            @Valid @RequestBody ReviewRequest request,
+            Authentication authentication) {
+        Long id = petPlaceReviewService.registerWithResponse(placeId, request, authentication.getName());
+        return ResponseEntity.ok(Map.of("id", id));
+    }
 
-        boardReviewService.remove(id);
+    // Common
+    @PutMapping("/api/v1/reviews/{id}")
+    public ResponseEntity<Void> updateReview(
+            @PathVariable Long id,
+            @Valid @RequestBody ReviewRequest request,
+            Authentication authentication) {
+        try {
+            feedReviewService.modify(id, request, authentication.getName());
+        } catch (IllegalArgumentException e) {
+            petPlaceReviewService.modifyWithResponse(id, request, authentication.getName());
+        }
+        return ResponseEntity.ok().build();
+    }
 
-        return ResponseEntity.ok(id);
+    @DeleteMapping("/api/v1/reviews/{id}")
+    public ResponseEntity<Void> deleteReview(
+            @PathVariable Long id,
+            Authentication authentication) {
+        try {
+            feedReviewService.remove(id, authentication.getName());
+        } catch (IllegalArgumentException e) {
+            petPlaceReviewService.removeWithResponse(id, authentication.getName());
+        }
+        return ResponseEntity.ok().build();
     }
 }

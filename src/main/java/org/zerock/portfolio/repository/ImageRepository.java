@@ -4,18 +4,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
-import org.zerock.portfolio.entity.BoardEntity;
+import org.zerock.portfolio.entity.FeedEntity;
 import org.zerock.portfolio.entity.ImageEntity;
+
+import java.util.List;
 
 public interface ImageRepository extends JpaRepository<ImageEntity, Long> {
 
-    @Modifying
-    @Transactional
-    void deleteByBoard(BoardEntity boardEntity);
+    List<ImageEntity> findByFeedId(Long feedId);
 
     @Modifying
     @Transactional
-    @Query("delete from ImageEntity i where i.board.user.id = :userId")
+    void deleteByFeed(FeedEntity feedEntity);
+
+    @Modifying
+    @Transactional
+    @Query("delete from ImageEntity i where i.feed.user.id = :userId")
     void deleteByUserId(Long userId);
-
 }
