@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
 
     private final PetPlaceReviewRepository petPlaceReviewRepository;
@@ -61,6 +61,7 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
     }
 
     @Override
+    @Transactional
     public Long register(PetPlaceReviewDTO petPlaceReviewDTO) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -84,6 +85,7 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
     }
 
     @Override
+    @Transactional
     public void modify(PetPlaceReviewDTO petPlaceReviewDTO) {
 
         Optional<PetPlaceReviewEntity> reviewEntity = petPlaceReviewRepository.findById(petPlaceReviewDTO.getId());
@@ -97,6 +99,7 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
     }
 
     @Override
+    @Transactional
     public void remove(Long id) {
         petPlaceReviewRepository.deleteById(id);
     }
@@ -125,6 +128,7 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
     }
 
     @Override
+    @Transactional
     public Long registerWithResponse(Long placeId, ReviewRequest request, String email) {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -158,6 +162,7 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
     }
 
     @Override
+    @Transactional
     public void modifyWithResponse(Long id, ReviewRequest request, String email) {
         PetPlaceReviewEntity review = petPlaceReviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
@@ -170,6 +175,7 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
     }
 
     @Override
+    @Transactional
     public void removeWithResponse(Long id, String email) {
         PetPlaceReviewEntity review = petPlaceReviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));

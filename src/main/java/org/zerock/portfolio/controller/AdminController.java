@@ -26,6 +26,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminController {
 
+    // [SECURITY] 페이지 크기 상한 제한 (MEDIUM-3 수정)
+    private static final int MAX_PAGE_SIZE = 100;
+
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final FeedReviewRepository feedReviewRepository;
@@ -56,6 +59,8 @@ public class AdminController {
     public ResponseEntity<PageResponse<UserResponse>> getUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
         PageRequest pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<UserEntity> result = userRepository.findAll(pageable);
 
@@ -109,6 +114,8 @@ public class AdminController {
     public ResponseEntity<PageResponse<FeedResponse>> getFeeds(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
         return ResponseEntity.ok(feedService.getList(page, size));
     }
 
@@ -124,6 +131,8 @@ public class AdminController {
     public ResponseEntity<PageResponse<PetPlaceResponse>> getPlaces(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
         return ResponseEntity.ok(petPlaceService.getList(page, size, null, null));
     }
 }

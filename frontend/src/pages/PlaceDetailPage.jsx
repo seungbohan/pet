@@ -6,6 +6,7 @@ import { toggleFavorite } from '../api/favorites';
 import StarRating from '../components/common/StarRating';
 import Pagination from '../components/common/Pagination';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import SEOHead from '../components/common/SEOHead';
 import useAuthStore from '../store/authStore';
 
 export default function PlaceDetailPage() {
@@ -68,6 +69,23 @@ export default function PlaceDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
+      <SEOHead
+        title={`${place.title} - 반려동물 동반 장소`}
+        description={place.description?.substring(0, 155) || `${place.title} - 반려동물 동반 가능한 장소 정보, 리뷰, 위치를 확인하세요.`}
+        path={`/places/${id}`}
+        image={place.imageUrls?.[0] || undefined}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'LocalBusiness',
+          name: place.title,
+          description: place.description,
+          address: place.address ? { '@type': 'PostalAddress', streetAddress: place.address } : undefined,
+          geo: place.latitude && place.longitude ? { '@type': 'GeoCoordinates', latitude: place.latitude, longitude: place.longitude } : undefined,
+          image: place.imageUrls?.[0],
+          url: `https://withpet.shop/places/${id}`,
+          aggregateRating: place.avgRating ? { '@type': 'AggregateRating', ratingValue: place.avgRating, reviewCount: place.reviewCount || 1 } : undefined,
+        }}
+      />
       {/* Image Gallery */}
       {place.imageUrls?.length > 0 && (
         <div className="rounded-2xl overflow-hidden mb-6">

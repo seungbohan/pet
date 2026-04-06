@@ -38,6 +38,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 .collect(Collectors.toList());
 
         String token = jwtUtil.generateToken(email, roles);
-        response.sendRedirect(frontendUrl + "/oauth2/callback?token=" + token);
+        // [SECURITY] URL fragment (#)에 토큰 전달 - 서버 로그에 남지 않음 (HIGH-2 수정)
+        // fragment는 브라우저에서만 접근 가능하며 HTTP 요청에 포함되지 않음
+        response.sendRedirect(frontendUrl + "/oauth2/callback#token=" + token);
     }
 }

@@ -57,7 +57,7 @@ public class UserRepositoryTests {
         List<UserEntity> users = userRepository.findAll();
 
         for (UserEntity user : users) {
-            user.setPassword(passwordEncoder.encode("1111"));
+            user.changePassword(passwordEncoder.encode("1111"));
 
             user.addUserRole(UserRole.USER);
 

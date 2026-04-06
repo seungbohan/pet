@@ -1,3 +1,7 @@
+# [SECURITY] 주의: 프로덕션 환경에서는 시크릿을 이 파일에 직접 넣지 마세요.
+# Docker Secrets, .env 파일(gitignore 필수), 또는 환경변수 관리 도구를 사용하세요.
+# 아래 ${VARIABLE:-default} 패턴은 환경변수가 없을 때만 기본값을 사용합니다.
+# 프로덕션 배포 시 반드시 환경변수를 설정하세요.
 version: '3.8'
 
 services:
@@ -6,16 +10,17 @@ services:
     container_name: withpet-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: withpet2025!
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-changeme_root}
       MYSQL_DATABASE: withpet
-      MYSQL_USER: withpet
-      MYSQL_PASSWORD: withpet2025!
+      MYSQL_USER: ${DB_USER:-withpet}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-changeme_db}
     volumes:
       - withpet-db-data:/var/lib/mysql
     networks:
       - withpet-net
+    # [SECURITY] 내부 네트워크만 접근 가능 - 포트 노출 없음
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uwithpet", "-pwithpet2025!"]
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u${DB_USER:-withpet}", "-p${DB_PASSWORD:-changeme_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,11 +36,11 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:mariadb://withpet-db:3306/withpet?characterEncoding=UTF-8&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: withpet
-      SPRING_DATASOURCE_PASSWORD: withpet2025!
-      JWT_SECRET: WithPetSecretKeyForJWTTokenGeneration2025SecureKey!@
-      PET_API_KEY: IlkJkFOJkj30Uo%2Ff%2BD%2F%2Bu7n48Y70VJ4dyxdFVCT3ZBIxmaCsENVxtMX7NIEb%2FfSumNWj0ruIfaJyShTg97I22g%3D%3D
-      FRONTEND_URL: https://withpet.shop
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-withpet}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme_db}
+      JWT_SECRET: ${JWT_SECRET:-changeme_jwt_secret_at_least_32_chars}
+      PET_API_KEY: ${PET_API_KEY}
+      FRONTEND_URL: ${FRONTEND_URL:-https://withpet.shop}
       JAVA_OPTS: -Xms128m -Xmx256m
     volumes:
       - /home/ec2-user/upload:/app/upload

@@ -1,13 +1,136 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WithPet - 반려동물과 함께</title>
+
+    <!-- Primary Meta Tags -->
+    <title>위드펫 - 반려동물 동반 가능 장소 찾기 | 펫프렌들리 카페, 식당, 공원</title>
+    <meta name="description" content="반려동물과 함께 갈 수 있는 카페, 식당, 공원, 숙소를 지도에서 쉽게 찾아보세요. 전국 펫프렌들리 장소 정보와 반려인 커뮤니티 피드를 제공합니다." />
+    <meta name="keywords" content="반려동물 동반, 펫프렌들리, 애견동반카페, 애견동반식당, 반려동물 동반 가능, 강아지 동반, 고양이 동반, 반려동물 카페, 펫 카페, 위드펫" />
+    <meta name="author" content="WithPet" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://withpet.shop/" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Open Graph / Facebook / KakaoTalk -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://withpet.shop/" />
+    <meta property="og:title" content="위드펫 - 반려동물 동반 가능 장소 찾기" />
+    <meta property="og:description" content="반려동물과 함께 갈 수 있는 카페, 식당, 공원, 숙소를 지도에서 쉽게 찾아보세요. 전국 펫프렌들리 장소 정보를 제공합니다." />
+    <meta property="og:image" content="https://withpet.shop/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="위드펫 WithPet" />
+    <meta property="og:locale" content="ko_KR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://withpet.shop/" />
+    <meta name="twitter:title" content="위드펫 - 반려동물 동반 가능 장소 찾기" />
+    <meta name="twitter:description" content="반려동물과 함께 갈 수 있는 카페, 식당, 공원, 숙소를 지도에서 쉽게 찾아보세요." />
+    <meta name="twitter:image" content="https://withpet.shop/og-image.png" />
+
+    <!-- Naver -->
+    <meta name="naver-site-verification" content="NAVER_VERIFICATION_CODE_HERE" />
+
+    <!-- Google -->
+    <meta name="google-site-verification" content="GOOGLE_VERIFICATION_CODE_HERE" />
+
+    <!-- Theme Color (for mobile browser chrome) -->
+    <meta name="theme-color" content="#863bff" />
+    <meta name="msapplication-TileColor" content="#863bff" />
+
+    <!-- Preconnect to external origins for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "위드펫",
+      "alternateName": "WithPet",
+      "url": "https://withpet.shop/",
+      "description": "반려동물 동반 가능 장소를 지도에서 쉽게 찾아보세요.",
+      "inLanguage": "ko",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://withpet.shop/map?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "위드펫",
+      "alternateName": "WithPet",
+      "url": "https://withpet.shop/",
+      "logo": "https://withpet.shop/favicon.svg",
+      "description": "반려동물 동반 가능 장소 검색 서비스"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "위드펫",
+      "url": "https://withpet.shop/",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "KRW"
+      },
+      "description": "반려동물 동반 가능한 카페, 식당, 공원, 숙소를 지도에서 검색하고 커뮤니티 피드를 통해 정보를 공유하세요."
+    }
+    </script>
+
+    <!-- Noscript fallback for SEO crawlers that don't execute JS -->
+    <noscript>
+      <style>
+        .noscript-content { max-width: 800px; margin: 40px auto; padding: 20px; font-family: sans-serif; }
+        .noscript-content h1 { color: #863bff; }
+        .noscript-content a { color: #863bff; }
+      </style>
+    </noscript>
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Noscript fallback content for crawlers -->
+    <noscript>
+      <div class="noscript-content">
+        <h1>위드펫 - 반려동물 동반 가능 장소 찾기</h1>
+        <p>위드펫은 반려동물과 함께 갈 수 있는 카페, 식당, 공원, 숙소를 지도에서 쉽게 찾을 수 있는 서비스입니다.</p>
+        <h2>주요 기능</h2>
+        <ul>
+          <li><a href="/map">지도에서 반려동물 동반 장소 찾기</a></li>
+          <li><a href="/feeds">반려인 커뮤니티 피드</a></li>
+        </ul>
+        <h2>반려동물 동반 가능 장소 카테고리</h2>
+        <ul>
+          <li>애견동반 카페</li>
+          <li>애견동반 식당</li>
+          <li>반려동물 동반 공원</li>
+          <li>펫프렌들리 숙소</li>
+        </ul>
+        <p>JavaScript를 활성화하면 지도 기반의 풍부한 검색 경험을 이용하실 수 있습니다.</p>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

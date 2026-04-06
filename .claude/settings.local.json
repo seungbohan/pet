@@ -32,7 +32,14 @@
       "WebFetch(domain:richinfohub.com)",
       "WebFetch(domain:foxcg.com)",
       "WebFetch(domain:www.newsis.com)",
-      "WebFetch(domain:thinknection.idelighter.com)"
+      "WebFetch(domain:thinknection.idelighter.com)",
+      "Bash(curl -sIL -A \"Mozilla/5.0\" \"https://withpet.shop\")",
+      "Bash(curl -sL -A \"Mozilla/5.0\" -o /tmp/withpet_target.html \"https://withpet.shop\")",
+      "Read(//tmp/**)",
+      "Bash(curl -sL -A \"Mozilla/5.0\" \"https://withpet.shop/robots.txt\")",
+      "Bash(curl -sL -A \"Mozilla/5.0\" \"https://withpet.shop/sitemap.xml\")",
+      "Bash(grep -l \"SEOHead\" src/pages/*.jsx)",
+      "Bash(echo \"exit: $?\")"
     ]
   }
 }

@@ -5,6 +5,7 @@ import { getPlaceReviews, createPlaceReview } from '../api/reviews';
 import { toggleFavorite } from '../api/favorites';
 import NaverMap from '../components/map/NaverMap';
 import StarRating from '../components/common/StarRating';
+import SEOHead from '../components/common/SEOHead';
 import useAuthStore from '../store/authStore';
 
 /* ------------------------------------------------------------------ */
@@ -568,6 +569,11 @@ export default function MapPage() {
   /* ---------------------------------------------------------------- */
   return (
     <div className="h-full flex relative overflow-hidden">
+      <SEOHead
+        title="반려동물 동반 장소 지도"
+        description="내 주변 반려동물 동반 가능한 카페, 식당, 공원, 숙소를 지도에서 쉽게 찾아보세요. 위드펫에서 펫프렌들리 장소를 검색하세요."
+        path="/map"
+      />
       {/* ================================================================ */}
       {/* DESKTOP SIDEBAR (left) - place list                              */}
       {/* ================================================================ */}

@@ -40,4 +40,24 @@ public interface PetPlaceRepository extends JpaRepository<PetPlaceEntity, Long> 
             "left outer join PetPlaceReviewEntity r on r.petPlace = p " +
             " where p.id = :id group by pi")
     List<Object[]> getPetPlaceWithReview(Long id);
+
+    // Geo-proximity search: find places within a given radius (km) using Haversine formula
+    @Query("SELECT p FROM PetPlaceEntity p WHERE " +
+            "(:keyword IS NULL OR p.title LIKE %:keyword% OR p.addr1 LIKE %:keyword%) AND " +
+            "(:category IS NULL OR p.category = :category) AND " +
+            "(:lat IS NULL OR :lng IS NULL OR :radius IS NULL OR " +
+            "(6371 * ACOS(COS(RADIANS(:lat)) * COS(RADIANS(p.mapy)) * COS(RADIANS(p.mapx) - RADIANS(:lng)) + " +
+            "SIN(RADIANS(:lat)) * SIN(RADIANS(p.mapy)))) <= :radius)")
+    Page<PetPlaceEntity> searchWithFilters(
+            @Param("keyword") String keyword,
+            @Param("category") PlaceCategory category,
+            @Param("lat") Double lat,
+            @Param("lng") Double lng,
+            @Param("radius") Double radius,
+            Pageable pageable);
+
+    // Fetch places with images in a single query to avoid N+1
+    @Query("SELECT DISTINCT p FROM PetPlaceEntity p LEFT JOIN FETCH PetPlaceImgEntity pi ON pi.petPlace = p " +
+            "WHERE p IN :places")
+    List<PetPlaceEntity> findAllWithImages(@Param("places") List<PetPlaceEntity> places);
 }

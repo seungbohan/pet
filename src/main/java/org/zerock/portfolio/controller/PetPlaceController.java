@@ -22,13 +22,32 @@ public class PetPlaceController {
     private final PetPlaceService petPlaceService;
     private final PetPlaceSyncService petPlaceSyncService;
 
+    // [SECURITY] 페이지 크기 상한 제한 (MEDIUM-3 수정)
+    private static final int MAX_PAGE_SIZE = 50;
+
     @GetMapping
     public ResponseEntity<PageResponse<PetPlaceResponse>> getList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String keyword) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
         return ResponseEntity.ok(petPlaceService.getList(page, size, category, keyword));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<PageResponse<PetPlaceResponse>> search(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lng,
+            @RequestParam(required = false, defaultValue = "5") Double radius,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
+        return ResponseEntity.ok(petPlaceService.search(keyword, category, lat, lng, radius, page, size));
     }
 
     @GetMapping("/map")
@@ -52,8 +71,9 @@ public class PetPlaceController {
             return ResponseEntity.ok(Map.of("status", "success", "message", "장소 동기화 완료"));
         } catch (Exception e) {
             log.error("Sync failed: ", e);
+            // [SECURITY] 내부 에러 메시지를 클라이언트에 노출하지 않음
             return ResponseEntity.internalServerError()
-                    .body(Map.of("status", "error", "message", e.getMessage()));
+                    .body(Map.of("status", "error", "message", "동기화 중 오류가 발생했습니다."));
         }
     }
 
@@ -65,8 +85,9 @@ public class PetPlaceController {
             return ResponseEntity.ok(Map.of("status", "success", "message", "이미지 동기화 완료"));
         } catch (Exception e) {
             log.error("Sync failed: ", e);
+            // [SECURITY] 내부 에러 메시지를 클라이언트에 노출하지 않음
             return ResponseEntity.internalServerError()
-                    .body(Map.of("status", "error", "message", e.getMessage()));
+                    .body(Map.of("status", "error", "message", "이미지 동기화 중 오류가 발생했습니다."));
         }
     }
 }

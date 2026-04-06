@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class FavoriteServiceImpl implements FavoriteService {
 
     private final FavoriteRepository favoriteRepository;
@@ -33,6 +33,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final PetPlaceImgRepository petPlaceImgRepository;
 
     @Override
+    @Transactional
     public Map<String, Boolean> toggle(Long placeId, String email) {
         UserEntity user = findUser(email);
         PetPlaceEntity place = petPlaceRepository.findById(placeId)

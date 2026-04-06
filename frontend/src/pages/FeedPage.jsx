@@ -4,6 +4,7 @@ import { getFeeds, getPopularFeeds } from '../api/feed';
 import FeedList from '../components/feed/FeedList';
 import Pagination from '../components/common/Pagination';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import SEOHead from '../components/common/SEOHead';
 import useAuthStore from '../store/authStore';
 
 const TABS = [
@@ -38,6 +39,11 @@ export default function FeedPage() {
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      <SEOHead
+        title="반려동물 피드 - 반려인 커뮤니티"
+        description="반려동물과 함께한 일상을 공유하고, 다른 반려인들의 후기와 추천 장소를 확인하세요. 위드펫 커뮤니티 피드입니다."
+        path="/feeds"
+      />
       {/* ---- Page header ---- */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>

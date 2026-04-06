@@ -1,15 +1,22 @@
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { getMe } from '../api/auth';
 
 export default function OAuth2CallbackPage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    // [SECURITY] URL fragment(#)에서 토큰 읽기 - 서버 로그에 남지 않음 (HIGH-2 수���)
+    const hash = window.location.hash;
+    const token = hash.startsWith('#token=') ? hash.substring(7) : null;
+
+    // 사용 후 즉시 URL에서 토큰 제거
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+
     if (token) {
       localStorage.setItem('token', token);
       getMe()
@@ -18,12 +25,13 @@ export default function OAuth2CallbackPage() {
           navigate('/');
         })
         .catch(() => {
+          localStorage.removeItem('token');
           navigate('/login');
         });
     } else {
       navigate('/login');
     }
-  }, [searchParams, navigate, setAuth]);
+  }, [navigate, setAuth]);
 
   return (
     <div className="flex items-center justify-center min-h-[80vh]">

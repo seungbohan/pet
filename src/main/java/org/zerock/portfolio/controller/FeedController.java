@@ -19,10 +19,15 @@ public class FeedController {
 
     private final FeedService feedService;
 
+    // [SECURITY] 페이지 크기 상한 제한 (MEDIUM-3 수정)
+    private static final int MAX_PAGE_SIZE = 50;
+
     @GetMapping
     public ResponseEntity<PageResponse<FeedResponse>> getList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
         return ResponseEntity.ok(feedService.getList(page, size));
     }
 
@@ -30,6 +35,8 @@ public class FeedController {
     public ResponseEntity<PageResponse<FeedResponse>> getPopularList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
         return ResponseEntity.ok(feedService.getPopularList(page, size));
     }
 

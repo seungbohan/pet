@@ -21,6 +21,7 @@ import java.util.Optional;
 @Log4j2
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final EntityManager entityManager;
     private final UserRepository userRepository;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final FeedReviewRepository feedReviewRepository;
 
     @Override
+    @Transactional
     public void register(UserDTO dto) {
 
         if (userRepository.existsByEmail(dto.getEmail())) {
@@ -37,13 +39,15 @@ public class UserServiceImpl implements UserService {
         }
 
         UserEntity userEntity = dtoToEntity(dto);
-        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        // [SECURITY] setter 대신 명시적 변경 메서드 사용
+        userEntity.changePassword(passwordEncoder.encode(dto.getPassword()));
         userEntity.addUserRole(UserRole.USER);
 
         userRepository.save(userEntity);
     }
 
     @Override
+    @Transactional
     public void modify(String email, UserDTO dto) {
 
         log.info("modify : " + email + " / " + dto);
@@ -54,7 +58,7 @@ public class UserServiceImpl implements UserService {
 
             UserEntity entity = result.get();
 
-            entity.setName(dto.getName());
+            entity.changeName(dto.getName());
             log.info("name : " + entity.getName());
             userRepository.save(entity);
         }

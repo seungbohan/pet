@@ -1,0 +1,37 @@
+# WithPet - robots.txt
+# https://withpet.shop/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /oauth2/callback
+Disallow: /mypage
+Disallow: /pets/register
+Disallow: /login
+Disallow: /signup
+
+# Naver Yeti bot
+User-agent: Yeti
+Allow: /
+Allow: /feeds
+Allow: /map
+Allow: /places/*
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /oauth2/callback
+Disallow: /mypage
+Disallow: /pets/register
+
+# Google bot
+User-agent: Googlebot
+Allow: /
+Allow: /feeds
+Allow: /map
+Allow: /places/*
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /oauth2/callback
+
+# Sitemap
+Sitemap: https://withpet.shop/sitemap.xml

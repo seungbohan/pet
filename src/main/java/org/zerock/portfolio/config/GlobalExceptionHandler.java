@@ -1,5 +1,6 @@
 package org.zerock.portfolio.config;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,14 +31,24 @@ public class GlobalExceptionHandler {
                 .body(new ApiErrorResponse("VALIDATION_ERROR", errors.toString()));
     }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiErrorResponse("NOT_FOUND", ex.getMessage()));
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+        // [SECURITY] 로그인 실패 보안 로깅 (MEDIUM-2 수정)
+        log.warn("Authentication failure: bad credentials");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ApiErrorResponse("UNAUTHORIZED", "이메일 또는 비밀번호가 올바르지 않습니다."));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        // [SECURITY] 권한 거부 보안 로깅
+        log.warn("Access denied: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ApiErrorResponse("FORBIDDEN", "접근 권한이 없습니다."));
     }

@@ -20,7 +20,9 @@ import org.zerock.portfolio.repository.UserRepository;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -142,8 +144,12 @@ public class FeedServiceImpl implements FeedService {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<FeedEntity> feeds = feedRepository.findByUserId(user.getId(), pageable);
 
-        List<FeedResponse> content = feeds.getContent().stream()
-                .map(f -> toResponse(f, List.of(), 0L))
+        // Batch fetch images for all feeds to avoid N+1
+        List<FeedEntity> feedList = feeds.getContent();
+        Map<Long, List<ImageEntity>> imagesByFeedId = batchFetchImages(feedList);
+
+        List<FeedResponse> content = feedList.stream()
+                .map(f -> toResponse(f, imagesByFeedId.getOrDefault(f.getId(), Collections.emptyList()), 0L))
                 .collect(Collectors.toList());
 
         return PageResponse.<FeedResponse>builder()
@@ -155,6 +161,20 @@ public class FeedServiceImpl implements FeedService {
                 .first(feeds.isFirst())
                 .last(feeds.isLast())
                 .build();
+    }
+
+    /**
+     * Batch fetch images for a list of feeds in a single query to avoid the N+1 problem.
+     */
+    private Map<Long, List<ImageEntity>> batchFetchImages(List<FeedEntity> feeds) {
+        if (feeds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<Long> feedIds = feeds.stream()
+                .map(FeedEntity::getId)
+                .collect(Collectors.toList());
+        return imageRepository.findByFeedIdIn(feedIds).stream()
+                .collect(Collectors.groupingBy(img -> img.getFeed().getId()));
     }
 
     private PageResponse<FeedResponse> toPageResponse(Page<Object[]> result, int page, int size) {

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class FeedReviewServiceImpl implements FeedReviewService {
 
     private final FeedReviewRepository feedReviewRepository;
@@ -50,6 +50,7 @@ public class FeedReviewServiceImpl implements FeedReviewService {
     }
 
     @Override
+    @Transactional
     public Long register(Long feedId, ReviewRequest request, String email) {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -68,6 +69,7 @@ public class FeedReviewServiceImpl implements FeedReviewService {
     }
 
     @Override
+    @Transactional
     public void modify(Long id, ReviewRequest request, String email) {
         FeedReviewEntity review = feedReviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
@@ -80,6 +82,7 @@ public class FeedReviewServiceImpl implements FeedReviewService {
     }
 
     @Override
+    @Transactional
     public void remove(Long id, String email) {
         FeedReviewEntity review = feedReviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));

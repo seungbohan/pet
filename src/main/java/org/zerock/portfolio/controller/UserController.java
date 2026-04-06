@@ -55,15 +55,26 @@ public class UserController {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+        // [SECURITY] 허용된 필드만 업데이트 - Mass Assignment 방어 강화
         if (updates.containsKey("name")) {
-            user.changeName(updates.get("name"));
+            String name = updates.get("name");
+            if (name != null && name.length() <= 50) {
+                user.changeName(name.trim());
+            }
         }
         if (updates.containsKey("introduce")) {
-            user.changeIntroduce(updates.get("introduce"));
+            String introduce = updates.get("introduce");
+            if (introduce != null && introduce.length() <= 500) {
+                user.changeIntroduce(introduce.trim());
+            }
         }
         if (updates.containsKey("profileImageUrl")) {
-            user.changeProfileImageUrl(updates.get("profileImageUrl"));
+            String url = updates.get("profileImageUrl");
+            if (url != null && url.length() <= 500) {
+                user.changeProfileImageUrl(url.trim());
+            }
         }
+        // [SECURITY] email, password, role 등 민감 필드 변경 시도 무시 (명시적 거부)
         userRepository.save(user);
         return ResponseEntity.ok().build();
     }
@@ -79,6 +90,9 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             Authentication authentication) {
+        // [SECURITY] 페이지 크기 상한 제한 (MEDIUM-3 수정)
+        size = Math.min(Math.max(size, 1), 50);
+        page = Math.max(page, 0);
         return ResponseEntity.ok(feedService.getMyFeeds(authentication.getName(), page, size));
     }
 }

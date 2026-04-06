@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class PetProfileServiceImpl implements PetProfileService {
 
     private final PetProfileRepository petProfileRepository;
@@ -31,6 +31,7 @@ public class PetProfileServiceImpl implements PetProfileService {
     }
 
     @Override
+    @Transactional
     public Long register(PetProfileRequest request, String email) {
         UserEntity user = findUser(email);
         PetProfileEntity pet = PetProfileEntity.builder()
@@ -48,6 +49,7 @@ public class PetProfileServiceImpl implements PetProfileService {
     }
 
     @Override
+    @Transactional
     public void modify(Long id, PetProfileRequest request, String email) {
         UserEntity user = findUser(email);
         PetProfileEntity pet = petProfileRepository.findById(id)
@@ -61,6 +63,7 @@ public class PetProfileServiceImpl implements PetProfileService {
     }
 
     @Override
+    @Transactional
     public void remove(Long id, String email) {
         UserEntity user = findUser(email);
         PetProfileEntity pet = petProfileRepository.findById(id)

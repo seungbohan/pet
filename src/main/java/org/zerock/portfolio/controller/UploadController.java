@@ -13,8 +13,8 @@ import org.zerock.portfolio.dto.ImageDTO;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -32,22 +33,54 @@ public class UploadController {
     @Value("${org.zerock.upload.path}")
     private String uploadPath;
 
+    // [SECURITY] 허용된 이미지 확장자 화이트리스트
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
+            "jpg", "jpeg", "png", "gif", "webp", "bmp"
+    );
+
+    // [SECURITY] 최대 업로드 파일 개수
+    private static final int MAX_UPLOAD_FILES = 10;
+
     @PostMapping
     public ResponseEntity<List<ImageDTO>> uploadFile(MultipartFile[] uploadFiles) {
 
-        log.info("uploadFiles: {}", (Object) uploadFiles);
+        // [SECURITY] Null 체크 및 파일 개수 제한
+        if (uploadFiles == null || uploadFiles.length == 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (uploadFiles.length > MAX_UPLOAD_FILES) {
+            log.warn("Too many files uploaded: {}", uploadFiles.length);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         List<ImageDTO> list = new ArrayList<>();
 
         for (MultipartFile uploadFile : uploadFiles) {
 
-            if (!uploadFile.getContentType().startsWith("image")) {
-                log.warn("this file is not image file.");
+            // [SECURITY] Content-Type 검증
+            String contentType = uploadFile.getContentType();
+            if (contentType == null || !contentType.startsWith("image")) {
+                log.warn("Rejected non-image content type: {}", contentType);
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
 
             String originalFileName = uploadFile.getOriginalFilename();
+            if (originalFileName == null || originalFileName.isBlank()) {
+                log.warn("Empty original filename");
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
             String fileName = originalFileName.substring(originalFileName.lastIndexOf("\\") + 1);
+
+            // [SECURITY] 파일 확장자 화이트리스트 검증 (CRITICAL-4 수정)
+            String extension = getFileExtension(fileName).toLowerCase();
+            if (!ALLOWED_EXTENSIONS.contains(extension)) {
+                log.warn("Rejected file with disallowed extension: {}", extension);
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+
+            // [SECURITY] 파일명에서 위험 문자 제거
+            fileName = sanitizeFileName(fileName);
 
             String folderPath = makeFolder();
 
@@ -68,7 +101,7 @@ public class UploadController {
 
                 list.add(new ImageDTO(fileName, uuid, folderPath));
             } catch (IOException e) {
-                log.error("File upload failed", e);
+                log.error("File upload failed for file: {}", fileName);
             }
         }
         return new ResponseEntity<>(list, HttpStatus.OK);
@@ -90,41 +123,116 @@ public class UploadController {
     }
 
     @GetMapping("/display")
-    public ResponseEntity<byte[]> getFile(String fileName) {
-
-        ResponseEntity<byte[]> result = null;
+    public ResponseEntity<byte[]> getFile(@RequestParam String fileName) {
 
         try {
-            String srcFileName = URLDecoder.decode(fileName, "UTF-8");
+            String srcFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
 
-            File file = new File(uploadPath + File.separator + srcFileName);
+            // [SECURITY] Path Traversal 방어 (CRITICAL-1 수정)
+            if (!isValidFilePath(srcFileName)) {
+                log.warn("Path traversal attempt detected: {}", srcFileName);
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+
+            Path uploadRoot = Paths.get(uploadPath).toAbsolutePath().normalize();
+            Path filePath = uploadRoot.resolve(srcFileName).normalize();
+
+            // [SECURITY] 파일이 uploadPath 내에 있는지 재검증
+            if (!filePath.startsWith(uploadRoot)) {
+                log.warn("Path traversal attempt (resolved): {}", filePath);
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+
+            File file = filePath.toFile();
+
+            if (!file.exists() || !file.isFile()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
 
             HttpHeaders header = new HttpHeaders();
-
             header.add("Content-Type", Files.probeContentType(file.toPath()));
+            // [SECURITY] 캐시 및 보안 헤더 추가
+            header.add("X-Content-Type-Options", "nosniff");
 
-            result = new ResponseEntity<>(FileCopyUtils.copyToByteArray(file), header, HttpStatus.OK);
+            return new ResponseEntity<>(FileCopyUtils.copyToByteArray(file), header, HttpStatus.OK);
         } catch (Exception e) {
+            log.error("File display failed");
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return result;
     }
 
     @DeleteMapping
-    public ResponseEntity<Boolean> removeFile(String fileName) {
+    public ResponseEntity<Boolean> removeFile(@RequestParam String fileName) {
 
         try {
-            String srcFileName = URLDecoder.decode(fileName, "UTF-8");
-            File file = new File(uploadPath + File.separator + srcFileName);
+            String srcFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+
+            // [SECURITY] Path Traversal 방어 (CRITICAL-1 수정)
+            if (!isValidFilePath(srcFileName)) {
+                log.warn("Path traversal attempt on delete: {}", srcFileName);
+                return new ResponseEntity<>(false, HttpStatus.FORBIDDEN);
+            }
+
+            Path uploadRoot = Paths.get(uploadPath).toAbsolutePath().normalize();
+            Path filePath = uploadRoot.resolve(srcFileName).normalize();
+
+            if (!filePath.startsWith(uploadRoot)) {
+                log.warn("Path traversal attempt on delete (resolved): {}", filePath);
+                return new ResponseEntity<>(false, HttpStatus.FORBIDDEN);
+            }
+
+            File file = filePath.toFile();
+
+            if (!file.exists()) {
+                return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
+            }
+
             boolean result = file.delete();
 
             File thumbnailFile = new File(file.getParent() + File.separator + "s_" + file.getName());
-            result = thumbnailFile.delete();
+            if (thumbnailFile.exists()) {
+                thumbnailFile.delete();
+            }
 
             return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (UnsupportedEncodingException e) {
-            log.error("File removal failed", e);
+        } catch (Exception e) {
+            log.error("File removal failed");
             return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * [SECURITY] 파일 경로에 Path Traversal 패턴이 있는지 검증
+     */
+    private boolean isValidFilePath(String filePath) {
+        if (filePath == null || filePath.isBlank()) {
+            return false;
+        }
+        // ".." 경로 조작, null 바이트, 절대 경로 시도 차단
+        if (filePath.contains("..") || filePath.contains("\0")
+                || filePath.startsWith("/") || filePath.startsWith("\\")
+                || filePath.contains(":")) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * [SECURITY] 파일 확장자 추출
+     */
+    private String getFileExtension(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf(".");
+        if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
+            return "";
+        }
+        return fileName.substring(lastDotIndex + 1);
+    }
+
+    /**
+     * [SECURITY] 파일명에서 위험 문자 제거
+     */
+    private String sanitizeFileName(String fileName) {
+        // 허용: 알파벳, 숫자, 한글, 점, 하이픈, 밑줄
+        return fileName.replaceAll("[^a-zA-Z0-9가-힣._-]", "_");
     }
 }

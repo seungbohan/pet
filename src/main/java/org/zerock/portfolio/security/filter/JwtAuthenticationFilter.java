@@ -32,10 +32,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = extractToken(request);
 
         if (token != null) {
+            // [SECURITY] JWT 토큰 길이 검증 (비정상적으로 큰 토큰 차단)
+            if (token.length() > 2048) {
+                log.warn("Oversized JWT token rejected from IP: {}", request.getRemoteAddr());
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             Map<String, String> claims = jwtUtil.validateAndExtract(token);
             if (claims != null) {
                 String email = claims.get("email");
                 String rolesStr = claims.get("roles");
+
+                // [SECURITY] email null 체크
+                if (email == null || email.isBlank()) {
+                    log.warn("JWT token with empty email from IP: {}", request.getRemoteAddr());
+                    filterChain.doFilter(request, response);
+                    return;
+                }
 
                 List<SimpleGrantedAuthority> authorities = List.of();
                 if (rolesStr != null && !rolesStr.isEmpty()) {
@@ -50,6 +64,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(email, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                // [SECURITY] 유효하지 않은 JWT에 대한 보안 로깅 (MEDIUM-2 수정)
+                log.warn("Invalid JWT token from IP: {} for URI: {}",
+                        request.getRemoteAddr(), request.getRequestURI());
             }
         }
 
