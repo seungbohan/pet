@@ -10,8 +10,7 @@ import org.zerock.portfolio.dto.response.FeedResponse;
 import org.zerock.portfolio.dto.response.PageResponse;
 import org.zerock.portfolio.dto.response.PetPlaceResponse;
 import org.zerock.portfolio.dto.response.UserResponse;
-import org.zerock.portfolio.entity.UserEntity;
-import org.zerock.portfolio.entity.UserRole;
+import org.zerock.portfolio.entity.*;
 import org.zerock.portfolio.repository.*;
 import org.zerock.portfolio.service.FeedService;
 import org.zerock.portfolio.service.PetPlaceService;
@@ -37,6 +36,7 @@ public class AdminController {
     private final FeedService feedService;
     private final UserService userService;
     private final PetPlaceService petPlaceService;
+    private final UserPlaceRepository userPlaceRepository;
 
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Long>> getStats() {
@@ -134,5 +134,17 @@ public class AdminController {
         size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
         page = Math.max(page, 0);
         return ResponseEntity.ok(petPlaceService.getList(page, size, null, null, null));
+    }
+
+    @PutMapping("/places/{id}/status")
+    public ResponseEntity<Void> updatePlaceStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        UserPlaceEntity place = userPlaceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("제보를 찾을 수 없습니다."));
+        PlaceStatus status = PlaceStatus.valueOf(body.get("status"));
+        place.setStatus(status);
+        userPlaceRepository.save(place);
+        return ResponseEntity.ok().build();
     }
 }

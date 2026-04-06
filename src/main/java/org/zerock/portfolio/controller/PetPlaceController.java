@@ -1,17 +1,30 @@
 package org.zerock.portfolio.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.zerock.portfolio.dto.request.UserPlaceRequest;
 import org.zerock.portfolio.dto.response.PageResponse;
 import org.zerock.portfolio.dto.response.PetPlaceResponse;
+import org.zerock.portfolio.dto.response.UserPlaceResponse;
+import org.zerock.portfolio.entity.PlaceCategory;
+import org.zerock.portfolio.entity.PlaceStatus;
+import org.zerock.portfolio.entity.UserEntity;
+import org.zerock.portfolio.entity.UserPlaceEntity;
+import org.zerock.portfolio.repository.UserPlaceRepository;
+import org.zerock.portfolio.repository.UserRepository;
 import org.zerock.portfolio.service.PetPlaceService;
 import org.zerock.portfolio.service.PetPlaceSyncService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/places")
@@ -21,6 +34,8 @@ public class PetPlaceController {
 
     private final PetPlaceService petPlaceService;
     private final PetPlaceSyncService petPlaceSyncService;
+    private final UserPlaceRepository userPlaceRepository;
+    private final UserRepository userRepository;
 
     // [SECURITY] 페이지 크기 상한 제한 (MEDIUM-3 수정)
     private static final int MAX_PAGE_SIZE = 50;
@@ -62,6 +77,93 @@ public class PetPlaceController {
             Authentication authentication) {
         String email = authentication != null ? authentication.getName() : null;
         return ResponseEntity.ok(petPlaceService.read(id, email));
+    }
+
+    // Vote (추천/비추천)
+    @PostMapping("/{id}/vote")
+    public ResponseEntity<Map<String, Object>> vote(
+            @PathVariable Long id,
+            @RequestBody Map<String, Boolean> body,
+            Authentication authentication) {
+        boolean upvote = body.getOrDefault("upvote", true);
+        return ResponseEntity.ok(petPlaceService.vote(id, upvote, authentication.getName()));
+    }
+
+    // Popular places ranking (인기 장소 랭킹)
+    @GetMapping("/popular")
+    public ResponseEntity<List<PetPlaceResponse>> getPopularPlaces(
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(petPlaceService.getPopularPlaces(Math.min(limit, 50)));
+    }
+
+    // 장소 제보
+    @PostMapping("/submit")
+    public ResponseEntity<Map<String, Long>> submitPlace(
+            @Valid @RequestBody UserPlaceRequest request,
+            Authentication authentication) {
+        String email = authentication.getName();
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        PlaceCategory cat = PlaceCategory.OTHER;
+        if (request.getCategory() != null) {
+            try {
+                cat = PlaceCategory.valueOf(request.getCategory());
+            } catch (Exception ignored) {
+            }
+        }
+
+        UserPlaceEntity place = UserPlaceEntity.builder()
+                .user(user)
+                .title(request.getTitle())
+                .addr1(request.getAddr1())
+                .tel(request.getTel())
+                .mapx(request.getMapx())
+                .mapy(request.getMapy())
+                .category(cat)
+                .description(request.getDescription())
+                .imageUrl(request.getImageUrl())
+                .build();
+        userPlaceRepository.save(place);
+        return ResponseEntity.ok(Map.of("id", place.getId()));
+    }
+
+    // 제보된 장소 목록 (대기중인 것들) - 공개
+    @GetMapping("/submitted")
+    public ResponseEntity<PageResponse<UserPlaceResponse>> getSubmittedPlaces(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
+        Page<UserPlaceEntity> result = userPlaceRepository.findByStatus(
+                PlaceStatus.PENDING, PageRequest.of(page, size, Sort.by("id").descending()));
+
+        List<UserPlaceResponse> content = result.getContent().stream()
+                .map(e -> UserPlaceResponse.builder()
+                        .id(e.getId())
+                        .title(e.getTitle())
+                        .addr1(e.getAddr1())
+                        .tel(e.getTel())
+                        .mapx(e.getMapx())
+                        .mapy(e.getMapy())
+                        .category(e.getCategory() != null ? e.getCategory().name() : "OTHER")
+                        .description(e.getDescription())
+                        .imageUrl(e.getImageUrl())
+                        .status(e.getStatus().name())
+                        .submitterName(e.getUser() != null ? e.getUser().getName() : "")
+                        .regDate(e.getRegDate())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(PageResponse.<UserPlaceResponse>builder()
+                .content(content)
+                .page(page)
+                .size(size)
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .first(result.isFirst())
+                .last(result.isLast())
+                .build());
     }
 
     @PostMapping("/sync")

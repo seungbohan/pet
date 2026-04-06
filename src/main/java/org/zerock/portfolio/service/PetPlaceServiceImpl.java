@@ -10,19 +10,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.portfolio.dto.response.PageResponse;
 import org.zerock.portfolio.dto.response.PetPlaceResponse;
-import org.zerock.portfolio.entity.PlaceCategory;
-import org.zerock.portfolio.entity.PetPlaceEntity;
-import org.zerock.portfolio.entity.PetPlaceImgEntity;
-import org.zerock.portfolio.entity.PetPlaceReviewEntity;
+import org.zerock.portfolio.entity.*;
 import org.zerock.portfolio.repository.FavoriteRepository;
 import org.zerock.portfolio.repository.PetPlaceImgRepository;
 import org.zerock.portfolio.repository.PetPlaceRepository;
 import org.zerock.portfolio.repository.PetPlaceReviewRepository;
 import org.zerock.portfolio.repository.UserRepository;
+import org.zerock.portfolio.repository.VoteRepository;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +32,7 @@ public class PetPlaceServiceImpl implements PetPlaceService {
     private final PetPlaceReviewRepository petPlaceReviewRepository;
     private final FavoriteRepository favoriteRepository;
     private final UserRepository userRepository;
+    private final VoteRepository voteRepository;
 
     @Override
     public PetPlaceResponse read(Long id, String email) {
@@ -51,13 +48,27 @@ public class PetPlaceServiceImpl implements PetPlaceService {
                 .orElse(0);
 
         boolean favorited = false;
+        String userVote = null;
         if (email != null) {
-            favorited = userRepository.findByEmail(email)
-                    .map(user -> favoriteRepository.existsByUserIdAndPetPlaceId(user.getId(), place.getId()))
-                    .orElse(false);
+            Optional<UserEntity> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                UserEntity user = userOpt.get();
+                favorited = favoriteRepository.existsByUserIdAndPetPlaceId(user.getId(), place.getId());
+                Optional<VoteEntity> voteOpt = voteRepository.findByUserAndPetPlace(user, place);
+                if (voteOpt.isPresent()) {
+                    userVote = voteOpt.get().isUpvote() ? "up" : "down";
+                }
+            }
         }
 
-        return toResponse(place, imgs, avg, reviews.size(), favorited);
+        long upvotes = voteRepository.countUpvotes(place.getId());
+        long downvotes = voteRepository.countDownvotes(place.getId());
+
+        PetPlaceResponse response = toResponse(place, imgs, avg, reviews.size(), favorited);
+        response.setUpvotes(upvotes);
+        response.setDownvotes(downvotes);
+        response.setUserVote(userVote);
+        return response;
     }
 
     @Override
@@ -146,6 +157,62 @@ public class PetPlaceServiceImpl implements PetPlaceService {
                 .first(result.isFirst())
                 .last(result.isLast())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> vote(Long placeId, boolean upvote, String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        PetPlaceEntity place = petPlaceRepository.findById(placeId)
+                .orElseThrow(() -> new IllegalArgumentException("장소를 찾을 수 없습니다."));
+
+        Optional<VoteEntity> existing = voteRepository.findByUserAndPetPlace(user, place);
+        if (existing.isPresent()) {
+            VoteEntity vote = existing.get();
+            if (vote.isUpvote() == upvote) {
+                // Same vote again = cancel
+                voteRepository.delete(vote);
+            } else {
+                // Change vote
+                vote.changeVote(upvote);
+            }
+        } else {
+            VoteEntity vote = VoteEntity.builder()
+                    .user(user)
+                    .petPlace(place)
+                    .upvote(upvote)
+                    .build();
+            voteRepository.save(vote);
+        }
+
+        long ups = voteRepository.countUpvotes(placeId);
+        long downs = voteRepository.countDownvotes(placeId);
+        return Map.of("upvotes", ups, "downvotes", downs);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PetPlaceResponse> getPopularPlaces(int limit) {
+        List<PetPlaceEntity> all = petPlaceRepository.findAll();
+        return all.stream()
+                .map(p -> {
+                    long ups = voteRepository.countUpvotes(p.getId());
+                    if (ups == 0) return null;
+                    return PetPlaceResponse.builder()
+                            .id(p.getId())
+                            .title(p.getTitle())
+                            .addr1(p.getAddr1())
+                            .category(p.getCategory() != null ? p.getCategory().name() : "OTHER")
+                            .firstimage2(p.getFirstimage2())
+                            .upvotes(ups)
+                            .downvotes(voteRepository.countDownvotes(p.getId()))
+                            .build();
+                })
+                .filter(Objects::nonNull)
+                .sorted((a, b) -> Long.compare(b.getUpvotes(), a.getUpvotes()))
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 
     private PlaceCategory parseCategory(String category) {

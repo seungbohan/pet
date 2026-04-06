@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { getMapPlaces, getPlaces, getPlace } from '../api/places';
+import { getMapPlaces, getPlaces, getPlace, votePlace, submitPlace, getPopularPlaces, getSubmittedPlaces } from '../api/places';
 import { getPlaceReviews, createPlaceReview } from '../api/reviews';
 import { toggleFavorite } from '../api/favorites';
 import NaverMap from '../components/map/NaverMap';
@@ -49,6 +49,20 @@ const categoryLabels = {
   SHOPPING: '🛍️ 쇼핑',
   OTHER: '📍 기타',
 };
+
+/** Category options for the submit form dropdown */
+const submitCategories = [
+  { key: 'CAFE', label: '카페' },
+  { key: 'RESTAURANT', label: '식당' },
+  { key: 'ACCOMMODATION', label: '숙소' },
+  { key: 'PARK', label: '공원' },
+  { key: 'HOSPITAL', label: '동물병원' },
+  { key: 'TOURIST', label: '관광' },
+  { key: 'LEISURE', label: '레저' },
+  { key: 'CULTURE', label: '문화' },
+  { key: 'SHOPPING', label: '쇼핑' },
+  { key: 'OTHER', label: '기타' },
+];
 
 /* ------------------------------------------------------------------ */
 /*  Region / area data                                                 */
@@ -102,6 +116,15 @@ const SHEET_HALF = 50;      // vh
 const SHEET_FULL = 90;      // vh
 
 /* ------------------------------------------------------------------ */
+/*  Rank medal colors                                                  */
+/* ------------------------------------------------------------------ */
+const rankColors = {
+  1: 'text-yellow-500',   // gold
+  2: 'text-gray-400',     // silver
+  3: 'text-amber-600',    // bronze
+};
+
+/* ------------------------------------------------------------------ */
 /*  MapPage - main landing page                                        */
 /* ------------------------------------------------------------------ */
 export default function MapPage() {
@@ -144,6 +167,40 @@ export default function MapPage() {
   /* --- UI state --- */
   const [sheetState, setSheetState] = useState('half'); // 'peek' | 'half' | 'full'
   const [detailOpen, setDetailOpen] = useState(false);
+
+  /* ================================================================ */
+  /*  NEW: Vote state (Feature 1)                                      */
+  /* ================================================================ */
+  const [voteData, setVoteData] = useState({ upvotes: 0, downvotes: 0, userVote: null });
+  const [voteLoading, setVoteLoading] = useState(false);
+
+  /* ================================================================ */
+  /*  NEW: Submit modal state (Feature 2)                              */
+  /* ================================================================ */
+  const [submitModalOpen, setSubmitModalOpen] = useState(false);
+  const [submitForm, setSubmitForm] = useState({
+    title: '',
+    addr1: '',
+    tel: '',
+    category: '',
+    description: '',
+    latitude: '',
+    longitude: '',
+  });
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  /* ================================================================ */
+  /*  NEW: Popular places ranking state (Feature 3)                    */
+  /* ================================================================ */
+  const [popularPlaces, setPopularPlaces] = useState([]);
+  const [rankingOpen, setRankingOpen] = useState(true);
+
+  /* ================================================================ */
+  /*  NEW: Recent submissions state (Feature 4)                        */
+  /* ================================================================ */
+  const [recentSubmissions, setRecentSubmissions] = useState([]);
+  const [submissionsOpen, setSubmissionsOpen] = useState(true);
 
   const { isAuthenticated, user, logout } = useAuthStore();
   const sheetRef = useRef(null);
@@ -193,6 +250,7 @@ export default function MapPage() {
       setDetailOpen(false);
       setReviews([]);
       setReviewPage(0);
+      setVoteData({ upvotes: 0, downvotes: 0, userVote: null });
       return;
     }
     setDetailLoading(true);
@@ -202,6 +260,12 @@ export default function MapPage() {
       .then((res) => {
         setPlaceDetail(res.data);
         setFavorited(res.data.favorited || false);
+        /* Extract vote data from the place detail response */
+        setVoteData({
+          upvotes: res.data.upvotes || 0,
+          downvotes: res.data.downvotes || 0,
+          userVote: res.data.userVote ?? null,  // 'up', 'down', or null
+        });
       })
       .catch(() => setPlaceDetail(null))
       .finally(() => setDetailLoading(false));
@@ -217,6 +281,25 @@ export default function MapPage() {
       })
       .catch(() => { setReviews([]); setReviewTotalPages(0); });
   }, [selectedId, reviewPage]);
+
+  /* ================================================================ */
+  /*  NEW: Fetch popular places and recent submissions (Features 3+4)  */
+  /* ================================================================ */
+  useEffect(() => {
+    getPopularPlaces()
+      .then((res) => {
+        const data = res.data;
+        setPopularPlaces(Array.isArray(data) ? data.slice(0, 10) : (data.content || []).slice(0, 10));
+      })
+      .catch(() => setPopularPlaces([]));
+
+    getSubmittedPlaces(0)
+      .then((res) => {
+        const data = res.data;
+        setRecentSubmissions(Array.isArray(data) ? data.slice(0, 5) : (data.content || []).slice(0, 5));
+      })
+      .catch(() => setRecentSubmissions([]));
+  }, []);
 
   /* ---------------------------------------------------------------- */
   /*  Handlers                                                         */
@@ -334,6 +417,118 @@ export default function MapPage() {
     );
   };
 
+  /* ================================================================ */
+  /*  NEW: Vote handler (Feature 1)                                    */
+  /* ================================================================ */
+  const handleVote = async (isUpvote) => {
+    if (!isAuthenticated) {
+      alert('로그인이 필요합니다');
+      return;
+    }
+    if (!selectedId || voteLoading) return;
+
+    setVoteLoading(true);
+    try {
+      const res = await votePlace(selectedId, isUpvote);
+      setVoteData({
+        upvotes: res.data.upvotes ?? voteData.upvotes,
+        downvotes: res.data.downvotes ?? voteData.downvotes,
+        userVote: res.data.userVote ?? null,
+      });
+    } catch {
+      /* Optimistic fallback: toggle locally */
+      setVoteData((prev) => {
+        const wasUp = prev.userVote === 'up';
+        const wasDown = prev.userVote === 'down';
+
+        if (isUpvote) {
+          if (wasUp) {
+            // Cancel upvote
+            return { ...prev, upvotes: prev.upvotes - 1, userVote: null };
+          }
+          return {
+            upvotes: prev.upvotes + 1,
+            downvotes: wasDown ? prev.downvotes - 1 : prev.downvotes,
+            userVote: 'up',
+          };
+        } else {
+          if (wasDown) {
+            // Cancel downvote
+            return { ...prev, downvotes: prev.downvotes - 1, userVote: null };
+          }
+          return {
+            upvotes: wasUp ? prev.upvotes - 1 : prev.upvotes,
+            downvotes: prev.downvotes + 1,
+            userVote: 'down',
+          };
+        }
+      });
+    } finally {
+      setVoteLoading(false);
+    }
+  };
+
+  /* ================================================================ */
+  /*  NEW: Submit place handler (Feature 2)                            */
+  /* ================================================================ */
+  const handleSubmitPlace = async (e) => {
+    e.preventDefault();
+    if (!submitForm.title.trim() || !submitForm.addr1.trim()) {
+      alert('장소명과 주소는 필수 입력입니다.');
+      return;
+    }
+    setSubmitLoading(true);
+    try {
+      await submitPlace({
+        title: submitForm.title,
+        addr1: submitForm.addr1,
+        tel: submitForm.tel || undefined,
+        category: submitForm.category || undefined,
+        description: submitForm.description || undefined,
+        latitude: submitForm.latitude ? parseFloat(submitForm.latitude) : undefined,
+        longitude: submitForm.longitude ? parseFloat(submitForm.longitude) : undefined,
+      });
+      setSubmitSuccess(true);
+      setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '' });
+      // Refresh recent submissions
+      getSubmittedPlaces(0)
+        .then((res) => {
+          const data = res.data;
+          setRecentSubmissions(Array.isArray(data) ? data.slice(0, 5) : (data.content || []).slice(0, 5));
+        })
+        .catch(() => {});
+    } catch {
+      alert('장소 제보에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  const handleCloseSubmitModal = () => {
+    setSubmitModalOpen(false);
+    setSubmitSuccess(false);
+    setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '' });
+  };
+
+  /** Use current map center as submit coordinates */
+  const handleUseMapCenter = () => {
+    const map = mapInstanceRef.current;
+    if (map) {
+      const center = map.getCenter();
+      setSubmitForm((prev) => ({
+        ...prev,
+        latitude: center.lat().toFixed(6),
+        longitude: center.lng().toFixed(6),
+      }));
+    } else if (mapCenter) {
+      setSubmitForm((prev) => ({
+        ...prev,
+        latitude: mapCenter.lat.toFixed(6),
+        longitude: mapCenter.lng.toFixed(6),
+      }));
+    }
+  };
+
   /* --- Mobile sheet touch handling --- */
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY;
@@ -371,6 +566,24 @@ export default function MapPage() {
     `${SHEET_FULL}vh`;
 
   const selectedRegionLabel = regions.find((r) => r.code === areacode)?.label || '지역';
+
+  /* ---------------------------------------------------------------- */
+  /*  Helper: time-ago string                                          */
+  /* ---------------------------------------------------------------- */
+  const timeAgo = (dateStr) => {
+    if (!dateStr) return '';
+    const now = new Date();
+    const then = new Date(dateStr);
+    const diffMs = now - then;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return '방금 전';
+    if (diffMin < 60) return `${diffMin}분 전`;
+    const diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return `${diffHour}시간 전`;
+    const diffDay = Math.floor(diffHour / 24);
+    if (diffDay < 30) return `${diffDay}일 전`;
+    return then.toLocaleDateString('ko-KR');
+  };
 
   /* ---------------------------------------------------------------- */
   /*  Sub-renders                                                      */
@@ -603,6 +816,387 @@ export default function MapPage() {
     </div>
   );
 
+  /* ================================================================ */
+  /*  NEW: Vote buttons render (Feature 1)                             */
+  /* ================================================================ */
+  const renderVoteButtons = () => (
+    <div className="flex gap-2 mb-4">
+      {/* Upvote button */}
+      <button
+        onClick={() => handleVote(true)}
+        disabled={voteLoading}
+        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 disabled:opacity-60 ${
+          voteData.userVote === 'up'
+            ? 'bg-green-500 text-white shadow-lg shadow-green-500/25'
+            : 'bg-green-50 text-green-600 hover:bg-green-100'
+        }`}
+        aria-label="추천"
+      >
+        <span className="text-base">👍</span>
+        <span>추천</span>
+        <span className="font-bold">{voteData.upvotes}</span>
+      </button>
+
+      {/* Downvote button */}
+      <button
+        onClick={() => handleVote(false)}
+        disabled={voteLoading}
+        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 disabled:opacity-60 ${
+          voteData.userVote === 'down'
+            ? 'bg-red-500 text-white shadow-lg shadow-red-500/25'
+            : 'bg-red-50 text-red-600 hover:bg-red-100'
+        }`}
+        aria-label="비추천"
+      >
+        <span className="text-base">👎</span>
+        <span>비추천</span>
+        <span className="font-bold">{voteData.downvotes}</span>
+      </button>
+    </div>
+  );
+
+  /* ================================================================ */
+  /*  NEW: Popular places ranking render (Feature 3)                   */
+  /* ================================================================ */
+  const renderPopularRanking = () => {
+    if (popularPlaces.length === 0) return null;
+
+    return (
+      <div className="border-b border-pet-gray/40">
+        {/* Collapsible header */}
+        <button
+          onClick={() => setRankingOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-pet-cream/40 transition-colors"
+        >
+          <h3 className="text-sm font-bold text-pet-dark-brown flex items-center gap-1.5">
+            <span>🏆</span> 인기 장소
+          </h3>
+          <svg
+            className={`w-4 h-4 text-pet-brown/50 transition-transform duration-200 ${rankingOpen ? '' : '-rotate-90'}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {/* Ranking list */}
+        {rankingOpen && (
+          <div className="px-2 pb-2 space-y-0.5">
+            {popularPlaces.map((place, index) => {
+              const rank = index + 1;
+              const medalColor = rankColors[rank] || 'text-pet-brown/50';
+
+              return (
+                <div
+                  key={place.id}
+                  onClick={() => handlePlaceClick(place.id)}
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer transition-all duration-150 ${
+                    selectedId === place.id
+                      ? 'bg-pet-orange/10'
+                      : 'hover:bg-pet-cream/80'
+                  }`}
+                >
+                  {/* Rank number */}
+                  <span className={`w-5 text-center font-extrabold text-sm ${medalColor}`}>
+                    {rank}
+                  </span>
+
+                  {/* Place info */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-pet-dark-brown truncate">{place.title}</h4>
+                      <span className="flex items-center gap-0.5 text-[10px] text-green-600 font-semibold flex-shrink-0">
+                        👍 {place.upvotes || 0}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {place.category && (
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${categoryColors[place.category] || categoryColors.OTHER}`}>
+                          {categoryLabels[place.category] || place.category}
+                        </span>
+                      )}
+                      {place.addr1 && (
+                        <span className="text-[10px] text-pet-brown/40 truncate">
+                          {/* Show city name only */}
+                          {place.addr1.split(' ').slice(0, 2).join(' ')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  /* ================================================================ */
+  /*  NEW: Recent submissions render (Feature 4)                       */
+  /* ================================================================ */
+  const renderRecentSubmissions = () => {
+    if (recentSubmissions.length === 0) return null;
+
+    return (
+      <div className="border-b border-pet-gray/40">
+        {/* Collapsible header */}
+        <button
+          onClick={() => setSubmissionsOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-pet-cream/40 transition-colors"
+        >
+          <h3 className="text-sm font-bold text-pet-dark-brown flex items-center gap-1.5">
+            <span>📌</span> 최근 제보
+          </h3>
+          <svg
+            className={`w-4 h-4 text-pet-brown/50 transition-transform duration-200 ${submissionsOpen ? '' : '-rotate-90'}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {/* Submissions list */}
+        {submissionsOpen && (
+          <div className="px-2 pb-2 space-y-0.5">
+            {recentSubmissions.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-pet-cream/80 transition-colors"
+              >
+                {/* Place info */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-pet-dark-brown truncate">{item.title}</h4>
+                    {/* Status badge */}
+                    {item.status === 'APPROVED' ? (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-green-100 text-green-700 flex-shrink-0">
+                        승인
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-yellow-100 text-yellow-700 flex-shrink-0">
+                        대기중
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {item.submitterName && (
+                      <span className="text-[10px] text-pet-brown/50">{item.submitterName}</span>
+                    )}
+                    {item.createdAt && (
+                      <span className="text-[10px] text-pet-brown/30">{timeAgo(item.createdAt)}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  /* ================================================================ */
+  /*  NEW: Submit place modal render (Feature 2)                       */
+  /* ================================================================ */
+  const renderSubmitModal = () => {
+    if (!submitModalOpen) return null;
+
+    return (
+      <>
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 bg-black/40 z-50 transition-opacity"
+          onClick={handleCloseSubmitModal}
+        />
+
+        {/* Modal panel */}
+        <div
+          className={`
+            fixed z-50 bg-white shadow-xl overflow-y-auto
+            /* Mobile: slide up from bottom */
+            inset-x-0 bottom-0 max-h-[90vh] rounded-t-2xl
+            /* Desktop: slide in from right */
+            md:inset-y-0 md:right-0 md:left-auto md:bottom-auto md:w-[420px] md:max-h-full md:rounded-t-none md:rounded-l-2xl
+            animate-in
+          `}
+          style={{
+            animation: 'slideIn 0.3s ease-out',
+          }}
+        >
+          {/* Header */}
+          <div className="sticky top-0 bg-white border-b border-pet-gray/40 px-5 py-4 flex items-center justify-between z-10">
+            <h2 className="text-base font-bold text-pet-dark-brown flex items-center gap-2">
+              <span className="text-lg">🐾</span> 장소 제보
+            </h2>
+            <button
+              onClick={handleCloseSubmitModal}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-pet-gray transition-colors"
+              aria-label="닫기"
+            >
+              <svg className="w-5 h-5 text-pet-brown/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-5">
+            {submitSuccess ? (
+              /* Success message */
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-pet-dark-brown mb-2">제보 완료!</h3>
+                <p className="text-sm text-pet-brown/60 leading-relaxed">
+                  제보해주셔서 감사합니다!<br />
+                  관리자 검토 후 등록됩니다.
+                </p>
+                <button
+                  onClick={handleCloseSubmitModal}
+                  className="mt-6 px-6 py-2.5 bg-pet-orange text-white rounded-xl text-sm font-bold hover:bg-pet-orange/90 transition-colors"
+                >
+                  확인
+                </button>
+              </div>
+            ) : (
+              /* Submit form */
+              <form onSubmit={handleSubmitPlace} className="space-y-4">
+                {/* 장소명 */}
+                <div>
+                  <label className="block text-xs font-semibold text-pet-brown mb-1.5">
+                    장소명 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={submitForm.title}
+                    onChange={(e) => setSubmitForm((f) => ({ ...f, title: e.target.value }))}
+                    placeholder="예: 멍멍카페 서울점"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-pet-gray/80 bg-white text-sm text-pet-dark-brown placeholder:text-pet-brown/30 focus:outline-none focus:border-pet-orange focus:ring-1 focus:ring-pet-orange/30 transition-all"
+                    required
+                  />
+                </div>
+
+                {/* 주소 */}
+                <div>
+                  <label className="block text-xs font-semibold text-pet-brown mb-1.5">
+                    주소 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={submitForm.addr1}
+                    onChange={(e) => setSubmitForm((f) => ({ ...f, addr1: e.target.value }))}
+                    placeholder="예: 서울특별시 강남구 역삼동 123-45"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-pet-gray/80 bg-white text-sm text-pet-dark-brown placeholder:text-pet-brown/30 focus:outline-none focus:border-pet-orange focus:ring-1 focus:ring-pet-orange/30 transition-all"
+                    required
+                  />
+                </div>
+
+                {/* 전화번호 */}
+                <div>
+                  <label className="block text-xs font-semibold text-pet-brown mb-1.5">전화번호</label>
+                  <input
+                    type="tel"
+                    value={submitForm.tel}
+                    onChange={(e) => setSubmitForm((f) => ({ ...f, tel: e.target.value }))}
+                    placeholder="예: 02-1234-5678"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-pet-gray/80 bg-white text-sm text-pet-dark-brown placeholder:text-pet-brown/30 focus:outline-none focus:border-pet-orange focus:ring-1 focus:ring-pet-orange/30 transition-all"
+                  />
+                </div>
+
+                {/* 카테고리 */}
+                <div>
+                  <label className="block text-xs font-semibold text-pet-brown mb-1.5">카테고리</label>
+                  <select
+                    value={submitForm.category}
+                    onChange={(e) => setSubmitForm((f) => ({ ...f, category: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-pet-gray/80 bg-white text-sm text-pet-dark-brown focus:outline-none focus:border-pet-orange focus:ring-1 focus:ring-pet-orange/30 transition-all"
+                  >
+                    <option value="">카테고리 선택</option>
+                    {submitCategories.map((cat) => (
+                      <option key={cat.key} value={cat.key}>{cat.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 설명 */}
+                <div>
+                  <label className="block text-xs font-semibold text-pet-brown mb-1.5">설명</label>
+                  <textarea
+                    value={submitForm.description}
+                    onChange={(e) => setSubmitForm((f) => ({ ...f, description: e.target.value }))}
+                    placeholder="장소에 대한 설명을 입력해주세요 (반려동물 관련 정보 등)"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-pet-gray/80 bg-white text-sm text-pet-dark-brown placeholder:text-pet-brown/30 focus:outline-none focus:border-pet-orange focus:ring-1 focus:ring-pet-orange/30 transition-all resize-none h-24"
+                  />
+                </div>
+
+                {/* 좌표 (latitude / longitude) */}
+                <div>
+                  <label className="block text-xs font-semibold text-pet-brown mb-1.5">좌표</label>
+                  <div className="flex gap-2 mb-1.5">
+                    <input
+                      type="text"
+                      value={submitForm.latitude}
+                      onChange={(e) => setSubmitForm((f) => ({ ...f, latitude: e.target.value }))}
+                      placeholder="위도"
+                      className="flex-1 px-3 py-2 rounded-xl border border-pet-gray/80 bg-white text-xs text-pet-dark-brown placeholder:text-pet-brown/30 focus:outline-none focus:border-pet-orange transition-all"
+                    />
+                    <input
+                      type="text"
+                      value={submitForm.longitude}
+                      onChange={(e) => setSubmitForm((f) => ({ ...f, longitude: e.target.value }))}
+                      placeholder="경도"
+                      className="flex-1 px-3 py-2 rounded-xl border border-pet-gray/80 bg-white text-xs text-pet-dark-brown placeholder:text-pet-brown/30 focus:outline-none focus:border-pet-orange transition-all"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleUseMapCenter}
+                    className="text-xs text-pet-orange font-medium hover:underline flex items-center gap-1"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    현재 지도 중심 좌표 사용
+                  </button>
+                </div>
+
+                {/* Submit button */}
+                <button
+                  type="submit"
+                  disabled={submitLoading}
+                  className="w-full py-3 bg-pet-orange text-white rounded-xl text-sm font-bold hover:bg-pet-orange/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {submitLoading ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      제보 중...
+                    </>
+                  ) : (
+                    '장소 제보하기'
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  };
+
   /** Detail panel content (shared between desktop panel and mobile sheet) */
   const renderDetailContent = () => {
     if (detailLoading) {
@@ -728,6 +1322,12 @@ export default function MapPage() {
               </div>
             )}
           </div>
+
+          {/* ====================================================== */}
+          {/*  NEW: Vote buttons (Feature 1) - below info, above     */}
+          {/*  action buttons                                         */}
+          {/* ====================================================== */}
+          {renderVoteButtons()}
 
           {/* Action buttons */}
           <div className="flex gap-2 mb-6">
@@ -912,6 +1512,12 @@ export default function MapPage() {
           </div>
         </div>
 
+        {/* ============================================================ */}
+        {/*  NEW: Popular ranking (Feature 3) + Recent submissions (4)    */}
+        {/* ============================================================ */}
+        {renderPopularRanking()}
+        {renderRecentSubmissions()}
+
         {/* Place list */}
         <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
           {listPlaces.length === 0 ? renderEmptyList() : listPlaces.map(renderPlaceCard)}
@@ -930,6 +1536,25 @@ export default function MapPage() {
 
         {/* GPS button */}
         {renderGpsButton()}
+
+        {/* ============================================================ */}
+        {/*  NEW: "장소 제보" floating button (Feature 2)                  */}
+        {/* ============================================================ */}
+        <button
+          onClick={() => {
+            if (!isAuthenticated) {
+              alert('로그인이 필요합니다');
+              return;
+            }
+            setSubmitModalOpen(true);
+          }}
+          className="absolute bottom-24 md:bottom-6 left-4 z-10 flex items-center gap-1.5 px-4 py-2.5 bg-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 border border-pet-gray/60 text-sm font-bold text-pet-orange"
+          aria-label="장소 제보"
+          title="새 장소 제보하기"
+        >
+          <span className="text-base">➕</span>
+          <span className="hidden sm:inline">장소 제보</span>
+        </button>
 
         {/* Map itself */}
         {loading ? (
@@ -1017,6 +1642,37 @@ export default function MapPage() {
           )}
         </div>
       </div>
+
+      {/* ================================================================ */}
+      {/*  NEW: Submit place modal (Feature 2)                             */}
+      {/* ================================================================ */}
+      {renderSubmitModal()}
+
+      {/* Inline keyframe animation for the submit modal */}
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateY(100%);
+            opacity: 0.5;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        @media (min-width: 768px) {
+          @keyframes slideIn {
+            from {
+              transform: translateX(100%);
+              opacity: 0.5;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+        }
+      `}</style>
     </div>
   );
 }

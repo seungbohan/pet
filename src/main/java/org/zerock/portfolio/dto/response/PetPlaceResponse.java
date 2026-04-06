@@ -26,4 +26,7 @@ public class PetPlaceResponse {
     private int reviewCount;
     private boolean favorited;
     private List<String> imageUrls;
+    private long upvotes;
+    private long downvotes;
+    private String userVote; // "up", "down", or null
 }
