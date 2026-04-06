@@ -33,16 +33,17 @@ public class PetPlaceSyncService {
     @Transactional
     @Scheduled(cron = "0 0 12 1 * *")
     public void sync() throws Exception {
+        syncPlaces();
+        syncImages();
+    }
 
+    @Transactional
+    public void syncPlaces() throws Exception {
         List<PetPlaceDTO> list = apiPetPlaceService.fetchAllPetPlace();
-        List<PetPlaceImgDTO> imgList = apiPetPlaceService.fetchAllPetPlaceImg(list);
         List<PetPlaceEntity> entityList = new ArrayList<>();
-        List<PetPlaceImgEntity> imgEntityList = new ArrayList<>();
 
         for (PetPlaceDTO dto : list) {
-
             if (!petPlaceRepository.existsByContentid(dto.getContentid())) {
-
                 entityList.add(PetPlaceEntity.builder()
                         .contentid(dto.getContentid())
                         .contenttypeid(dto.getContenttypeid())
@@ -58,13 +59,18 @@ public class PetPlaceSyncService {
         if (!entityList.isEmpty()) {
             petPlaceRepository.saveAll(entityList);
         }
+    }
+
+    @Transactional
+    public void syncImages() throws Exception {
+        List<PetPlaceDTO> list = apiPetPlaceService.fetchAllPetPlace();
+        List<PetPlaceImgDTO> imgList = apiPetPlaceService.fetchAllPetPlaceImg(list);
+        List<PetPlaceImgEntity> imgEntityList = new ArrayList<>();
 
         for (PetPlaceImgDTO dto : imgList) {
-
             if (!petPlaceImgRepository.existsByContentidAndOriginimgurl(dto.getContentid(), dto.getOriginimgurl())) {
                 Optional<PetPlaceEntity> entity = petPlaceRepository.findByContentid(dto.getContentid());
                 if (entity.isPresent()) {
-
                     imgEntityList.add(PetPlaceImgEntity.builder()
                             .contentid(dto.getContentid())
                             .originimgurl(dto.getOriginimgurl())
@@ -75,7 +81,6 @@ public class PetPlaceSyncService {
             }
         }
         if (!imgEntityList.isEmpty()) {
-
             petPlaceImgRepository.saveAll(imgEntityList);
         }
     }

@@ -45,11 +45,24 @@ public class PetPlaceController {
     }
 
     @PostMapping("/sync")
-    public ResponseEntity<Map<String, String>> sync() {
+    public ResponseEntity<Map<String, String>> syncPlaces() {
         try {
-            log.info("Manual sync triggered");
-            petPlaceSyncService.sync();
-            return ResponseEntity.ok(Map.of("status", "success"));
+            log.info("Manual places sync triggered");
+            petPlaceSyncService.syncPlaces();
+            return ResponseEntity.ok(Map.of("status", "success", "message", "장소 동기화 완료"));
+        } catch (Exception e) {
+            log.error("Sync failed: ", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("status", "error", "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/sync/images")
+    public ResponseEntity<Map<String, String>> syncImages() {
+        try {
+            log.info("Manual images sync triggered");
+            petPlaceSyncService.syncImages();
+            return ResponseEntity.ok(Map.of("status", "success", "message", "이미지 동기화 완료"));
         } catch (Exception e) {
             log.error("Sync failed: ", e);
             return ResponseEntity.internalServerError()
