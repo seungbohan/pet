@@ -21,7 +21,12 @@
       "Bash(ssh:*)",
       "Bash(nslookup withpet.shop)",
       "Bash(dig withpet.shop +short)",
-      "Bash(nslookup:*)"
+      "Bash(nslookup:*)",
+      "Bash(curl -s -o /dev/null -w \"http://withpet.shop => %{http_code}\\\\n\" http://withpet.shop/)",
+      "Bash(curl -s -o /dev/null -w \"http://withpet.shop/api/v1/tags => %{http_code}\\\\n\" http://withpet.shop/api/v1/tags)",
+      "Bash(curl -s -o /dev/null -w \"https://withpet.shop => %{http_code}\\\\n\" https://withpet.shop/)",
+      "Bash(curl -s -o /dev/null -w \"https://withpet.shop/api/v1/tags => %{http_code}\\\\n\" https://withpet.shop/api/v1/tags)",
+      "Bash(curl -s -o /dev/null -w \"http -> https redirect => %{http_code}\\\\n\" -L http://withpet.shop/)"
     ]
   }
 }
