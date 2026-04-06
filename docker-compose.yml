@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  withpet-db:
+    image: mariadb:10.11
+    container_name: withpet-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: withpet2025!
+      MYSQL_DATABASE: withpet
+      MYSQL_USER: withpet
+      MYSQL_PASSWORD: withpet2025!
+    volumes:
+      - withpet-db-data:/var/lib/mysql
+    networks:
+      - withpet-net
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uwithpet", "-pwithpet2025!"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  withpet-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: withpet-backend
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mariadb://withpet-db:3306/withpet?characterEncoding=UTF-8&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: withpet
+      SPRING_DATASOURCE_PASSWORD: withpet2025!
+      JWT_SECRET: WithPetSecretKeyForJWTTokenGeneration2025SecureKey!@
+      PET_API_KEY: IlkJkFOJkj30Uo%2Ff%2BD%2F%2Bu7n48Y70VJ4dyxdFVCT3ZBIxmaCsENVxtMX7NIEb%2FfSumNWj0ruIfaJyShTg97I22g%3D%3D
+      FRONTEND_URL: https://withpet.shop
+      JAVA_OPTS: -Xms128m -Xmx256m
+    volumes:
+      - /home/ec2-user/upload:/app/upload
+    depends_on:
+      withpet-db:
+        condition: service_healthy
+    networks:
+      - withpet-net
+
+volumes:
+  withpet-db-data:
+
+networks:
+  withpet-net:
+    driver: bridge
