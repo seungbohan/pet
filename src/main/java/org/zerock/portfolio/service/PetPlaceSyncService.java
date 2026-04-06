@@ -15,12 +15,15 @@ import org.zerock.portfolio.repository.PetPlaceImgRepository;
 import org.zerock.portfolio.repository.PetPlaceRepository;
 import org.zerock.portfolio.repository.SyncLogRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PetPlaceSyncService {
@@ -52,6 +55,11 @@ public class PetPlaceSyncService {
                         .title(dto.getTitle())
                         .mapx(dto.getMapx())
                         .mapy(dto.getMapy())
+                        .firstimage(dto.getFirstimage())
+                        .firstimage2(dto.getFirstimage2())
+                        .areacode(dto.getAreacode())
+                        .sigungucode(dto.getSigungucode())
+                        .zipcode(dto.getZipcode())
                         .category(PlaceCategory.fromContentTypeId(dto.getContenttypeid()))
                         .build());
             }
@@ -83,5 +91,26 @@ public class PetPlaceSyncService {
         if (!imgEntityList.isEmpty()) {
             petPlaceImgRepository.saveAll(imgEntityList);
         }
+    }
+
+    @Transactional
+    public void updateExistingPlaces() throws Exception {
+        List<PetPlaceDTO> list = apiPetPlaceService.fetchAllPetPlace();
+        int updated = 0;
+        for (PetPlaceDTO dto : list) {
+            Optional<PetPlaceEntity> existing = petPlaceRepository.findByContentid(dto.getContentid());
+            if (existing.isPresent()) {
+                PetPlaceEntity entity = existing.get();
+                if (entity.getFirstimage() == null && dto.getFirstimage() != null) {
+                    entity.setFirstimage(dto.getFirstimage());
+                    entity.setFirstimage2(dto.getFirstimage2());
+                    entity.setAreacode(dto.getAreacode());
+                    entity.setSigungucode(dto.getSigungucode());
+                    entity.setZipcode(dto.getZipcode());
+                    updated++;
+                }
+            }
+        }
+        log.info("Updated {} existing places with new fields", updated);
     }
 }

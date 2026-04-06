@@ -30,10 +30,11 @@ public class PetPlaceController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String areacode) {
         size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
         page = Math.max(page, 0);
-        return ResponseEntity.ok(petPlaceService.getList(page, size, category, keyword));
+        return ResponseEntity.ok(petPlaceService.getList(page, size, category, keyword, areacode));
     }
 
     @GetMapping("/search")
@@ -77,6 +78,30 @@ public class PetPlaceController {
         }
     }
 
+    @GetMapping("/areas")
+    public ResponseEntity<List<Map<String, String>>> getAreaCodes() {
+        List<Map<String, String>> areas = List.of(
+                Map.of("code", "1", "name", "서울"),
+                Map.of("code", "2", "name", "인천"),
+                Map.of("code", "3", "name", "대전"),
+                Map.of("code", "4", "name", "대구"),
+                Map.of("code", "5", "name", "광주"),
+                Map.of("code", "6", "name", "부산"),
+                Map.of("code", "7", "name", "울산"),
+                Map.of("code", "8", "name", "세종"),
+                Map.of("code", "31", "name", "경기도"),
+                Map.of("code", "32", "name", "강원도"),
+                Map.of("code", "33", "name", "충청북도"),
+                Map.of("code", "34", "name", "충청남도"),
+                Map.of("code", "35", "name", "경상북도"),
+                Map.of("code", "36", "name", "경상남도"),
+                Map.of("code", "37", "name", "전북특별자치도"),
+                Map.of("code", "38", "name", "전라남도"),
+                Map.of("code", "39", "name", "제주도")
+        );
+        return ResponseEntity.ok(areas);
+    }
+
     @PostMapping("/sync/images")
     public ResponseEntity<Map<String, String>> syncImages() {
         try {
@@ -88,6 +113,19 @@ public class PetPlaceController {
             // [SECURITY] 내부 에러 메시지를 클라이언트에 노출하지 않음
             return ResponseEntity.internalServerError()
                     .body(Map.of("status", "error", "message", "이미지 동기화 중 오류가 발생했습니다."));
+        }
+    }
+
+    @PostMapping("/sync/update")
+    public ResponseEntity<Map<String, String>> updateExistingPlaces() {
+        try {
+            log.info("Manual update sync triggered");
+            petPlaceSyncService.updateExistingPlaces();
+            return ResponseEntity.ok(Map.of("status", "success", "message", "기존 장소 업데이트 완료"));
+        } catch (Exception e) {
+            log.error("Update sync failed: ", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("status", "error", "message", "업데이트 동기화 중 오류가 발생했습니다."));
         }
     }
 }

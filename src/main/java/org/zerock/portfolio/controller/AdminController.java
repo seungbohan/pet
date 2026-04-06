@@ -133,6 +133,6 @@ public class AdminController {
             @RequestParam(defaultValue = "20") int size) {
         size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
         page = Math.max(page, 0);
-        return ResponseEntity.ok(petPlaceService.getList(page, size, null, null));
+        return ResponseEntity.ok(petPlaceService.getList(page, size, null, null, null));
     }
 }

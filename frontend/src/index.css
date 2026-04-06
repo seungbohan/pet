@@ -136,3 +136,9 @@ body {
 /* Hide scrollbar utility (alternate class name) */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* User location pulse animation for Naver Map marker */
+@keyframes userPulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(2.2); opacity: 0; }
+}

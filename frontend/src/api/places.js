@@ -11,3 +11,6 @@ export const getPlace = (id) =>
 
 export const searchPlaces = (keyword, category) =>
   client.get('/places/search', { params: { keyword, category } });
+
+export const getAreaCodes = () =>
+  client.get('/places/areas');

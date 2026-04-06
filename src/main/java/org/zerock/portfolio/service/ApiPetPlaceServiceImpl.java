@@ -386,6 +386,11 @@ public class ApiPetPlaceServiceImpl implements ApiPetPlaceService {
                 .tel(node.path("tel").asText(""))
                 .mapx(node.path("mapx").asDouble(0.0))
                 .mapy(node.path("mapy").asDouble(0.0))
+                .firstimage(node.path("firstimage").asText(null))
+                .firstimage2(node.path("firstimage2").asText(null))
+                .areacode(node.path("areacode").asText(null))
+                .sigungucode(node.path("sigungucode").asText(null))
+                .zipcode(node.path("zipcode").asText(null))
                 .modifiedtime(LocalDateTime.parse
                         (node.path("modifiedtime").asText(""), DateTimeFormatter.ofPattern("yyyyMMddHHmmss")))
                 .build();

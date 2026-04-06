@@ -61,13 +61,16 @@ public class PetPlaceServiceImpl implements PetPlaceService {
     }
 
     @Override
-    public PageResponse<PetPlaceResponse> getList(int page, int size, String category, String keyword) {
+    public PageResponse<PetPlaceResponse> getList(int page, int size, String category, String keyword, String areacode) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<PetPlaceEntity> result;
 
         PlaceCategory cat = parseCategory(category);
 
-        if (keyword != null && !keyword.isEmpty() && cat != null) {
+        // Use the unified filter query when areacode is provided
+        if (areacode != null && !areacode.isEmpty()) {
+            result = petPlaceRepository.findByFilters(areacode, cat, keyword, pageable);
+        } else if (keyword != null && !keyword.isEmpty() && cat != null) {
             result = petPlaceRepository.searchByKeywordAndCategory(keyword, cat, pageable);
         } else if (keyword != null && !keyword.isEmpty()) {
             result = petPlaceRepository.searchByKeyword(keyword, pageable);
@@ -111,6 +114,7 @@ public class PetPlaceServiceImpl implements PetPlaceService {
                         .mapx(p.getMapx())
                         .mapy(p.getMapy())
                         .category(p.getCategory() != null ? p.getCategory().name() : "OTHER")
+                        .firstimage2(p.getFirstimage2())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -189,6 +193,8 @@ public class PetPlaceServiceImpl implements PetPlaceService {
                 .mapx(entity.getMapx())
                 .mapy(entity.getMapy())
                 .category(entity.getCategory() != null ? entity.getCategory().name() : "OTHER")
+                .firstimage(entity.getFirstimage())
+                .firstimage2(entity.getFirstimage2())
                 .avgRating(avgRating)
                 .reviewCount(reviewCount)
                 .favorited(favorited)

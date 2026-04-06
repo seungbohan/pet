@@ -23,6 +23,11 @@ public class PetPlaceDTO{
     private LocalDateTime modifiedtime;
     private double mapx;
     private double mapy;
+    private String firstimage;
+    private String firstimage2;
+    private String areacode;
+    private String sigungucode;
+    private String zipcode;
     private double avg;
     private int reviewCnt;
 

@@ -22,6 +22,50 @@ const categories = [
 ];
 
 /* ------------------------------------------------------------------ */
+/*  Region / area data                                                 */
+/* ------------------------------------------------------------------ */
+const regions = [
+  { code: '', label: '전체' },
+  { code: '1', label: '서울' },
+  { code: '2', label: '인천' },
+  { code: '3', label: '대전' },
+  { code: '4', label: '대구' },
+  { code: '5', label: '광주' },
+  { code: '6', label: '부산' },
+  { code: '7', label: '울산' },
+  { code: '8', label: '세종' },
+  { code: '31', label: '경기' },
+  { code: '32', label: '강원' },
+  { code: '33', label: '충북' },
+  { code: '34', label: '충남' },
+  { code: '35', label: '경북' },
+  { code: '36', label: '경남' },
+  { code: '37', label: '전북' },
+  { code: '38', label: '전남' },
+  { code: '39', label: '제주' },
+];
+
+const regionCenters = {
+  '1':  { lat: 37.5665, lng: 126.978,  zoom: 11 },
+  '2':  { lat: 37.4563, lng: 126.7052, zoom: 11 },
+  '3':  { lat: 36.3504, lng: 127.3845, zoom: 12 },
+  '4':  { lat: 35.8714, lng: 128.6014, zoom: 12 },
+  '5':  { lat: 35.1595, lng: 126.8526, zoom: 12 },
+  '6':  { lat: 35.1796, lng: 129.0756, zoom: 11 },
+  '7':  { lat: 35.5384, lng: 129.3114, zoom: 12 },
+  '8':  { lat: 36.4800, lng: 127.2890, zoom: 12 },
+  '31': { lat: 37.4138, lng: 127.5183, zoom: 9 },
+  '32': { lat: 37.8228, lng: 128.1555, zoom: 9 },
+  '33': { lat: 36.6357, lng: 127.4917, zoom: 9 },
+  '34': { lat: 36.5184, lng: 126.8000, zoom: 9 },
+  '35': { lat: 36.4919, lng: 128.8889, zoom: 9 },
+  '36': { lat: 35.4606, lng: 128.2132, zoom: 9 },
+  '37': { lat: 35.7175, lng: 127.1530, zoom: 9 },
+  '38': { lat: 34.8679, lng: 126.9910, zoom: 9 },
+  '39': { lat: 33.4890, lng: 126.4983, zoom: 10 },
+};
+
+/* ------------------------------------------------------------------ */
 /*  Bottom sheet states (mobile)                                       */
 /* ------------------------------------------------------------------ */
 const SHEET_PEEK = 80;      // px - just drag handle + preview
@@ -41,6 +85,19 @@ export default function MapPage() {
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [loading, setLoading] = useState(true);
+
+  /* --- Region filter state --- */
+  const [areacode, setAreacode] = useState('');
+  const [regionDropdownOpen, setRegionDropdownOpen] = useState(false);
+
+  /* --- GPS / user location state --- */
+  const [userLocation, setUserLocation] = useState(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
+
+  /* --- Map control state --- */
+  const [mapCenter, setMapCenter] = useState(null);
+  const [mapZoom, setMapZoom] = useState(null);
+  const mapInstanceRef = useRef(null);
 
   /* --- Detail state --- */
   const [placeDetail, setPlaceDetail] = useState(null);
@@ -62,6 +119,20 @@ export default function MapPage() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const sheetRef = useRef(null);
   const touchStartY = useRef(0);
+  const regionDropdownRef = useRef(null);
+
+  /* ---------------------------------------------------------------- */
+  /*  Close region dropdown on outside click                           */
+  /* ---------------------------------------------------------------- */
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (regionDropdownRef.current && !regionDropdownRef.current.contains(e.target)) {
+        setRegionDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   /* ---------------------------------------------------------------- */
   /*  Data fetching                                                    */
@@ -74,10 +145,17 @@ export default function MapPage() {
   }, []);
 
   useEffect(() => {
-    getPlaces({ page: 0, size: 50, category: category || undefined, keyword: keyword || undefined })
+    const params = {
+      page: 0,
+      size: 50,
+      category: category || undefined,
+      keyword: keyword || undefined,
+      areacode: areacode || undefined,
+    };
+    getPlaces(params)
       .then((res) => setListPlaces(res.data.content || []))
       .catch(() => setListPlaces([]));
-  }, [category, keyword]);
+  }, [category, keyword, areacode]);
 
   /* Fetch detail when a place is selected */
   useEffect(() => {
@@ -117,6 +195,17 @@ export default function MapPage() {
   const handleCategoryChange = (cat) => {
     setCategory(cat);
     setSelectedId(null);
+  };
+
+  const handleRegionChange = (code) => {
+    setAreacode(code);
+    setRegionDropdownOpen(false);
+    setSelectedId(null);
+    if (code && regionCenters[code]) {
+      const rc = regionCenters[code];
+      setMapCenter({ lat: rc.lat, lng: rc.lng });
+      setMapZoom(rc.zoom);
+    }
   };
 
   const handleSearch = (e) => {
@@ -168,6 +257,54 @@ export default function MapPage() {
     }
   };
 
+  const handleMapReady = useCallback((map) => {
+    mapInstanceRef.current = map;
+  }, []);
+
+  /* --- GPS location handler --- */
+  const handleGpsClick = () => {
+    if (!navigator.geolocation) {
+      alert('이 브라우저에서는 위치 서비스를 지원하지 않습니다.');
+      return;
+    }
+
+    setGpsLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const loc = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(loc);
+        setMapCenter(loc);
+        setMapZoom(14);
+        setGpsLoading(false);
+      },
+      (error) => {
+        setGpsLoading(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            alert('위치 접근 권한이 거부되었습니다.\n브라우저 설정에서 위치 권한을 허용해주세요.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert('위치 정보를 사용할 수 없습니다.');
+            break;
+          case error.TIMEOUT:
+            alert('위치 요청 시간이 초과되었습니다.');
+            break;
+          default:
+            alert('알 수 없는 오류가 발생했습니다.');
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
+  };
+
   /* --- Mobile sheet touch handling --- */
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY;
@@ -204,9 +341,54 @@ export default function MapPage() {
     sheetState === 'half' ? `${SHEET_HALF}vh` :
     `${SHEET_FULL}vh`;
 
+  const selectedRegionLabel = regions.find((r) => r.code === areacode)?.label || '지역';
+
   /* ---------------------------------------------------------------- */
   /*  Sub-renders                                                      */
   /* ---------------------------------------------------------------- */
+
+  /** Region dropdown selector */
+  const renderRegionSelector = () => (
+    <div ref={regionDropdownRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setRegionDropdownOpen((v) => !v)}
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 shadow-sm border ${
+          areacode
+            ? 'bg-pet-orange text-white border-pet-orange shadow-pet-orange/30'
+            : 'bg-white/90 backdrop-blur-lg text-pet-brown border-transparent hover:bg-white'
+        }`}
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span>{selectedRegionLabel}</span>
+        <svg className={`w-3 h-3 transition-transform duration-200 ${regionDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Dropdown menu */}
+      {regionDropdownOpen && (
+        <div className="absolute top-full left-0 mt-1.5 w-48 bg-white rounded-xl shadow-lg border border-pet-gray/60 py-1.5 z-50 max-h-64 overflow-y-auto">
+          {regions.map((region) => (
+            <button
+              key={region.code}
+              onClick={() => handleRegionChange(region.code)}
+              className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                areacode === region.code
+                  ? 'bg-pet-orange/10 text-pet-orange font-bold'
+                  : 'text-pet-brown hover:bg-pet-cream/80'
+              }`}
+            >
+              {region.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   /** Search bar overlay (positioned on top of the map) */
   const renderSearchOverlay = () => (
@@ -234,8 +416,15 @@ export default function MapPage() {
         </button>
       </form>
 
-      {/* Category pills */}
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+      {/* Category pills + region selector row */}
+      <div className="flex gap-1.5 items-center overflow-x-auto scrollbar-hide pb-1">
+        {/* Region selector */}
+        {renderRegionSelector()}
+
+        {/* Divider */}
+        <div className="w-px h-5 bg-pet-brown/15 flex-shrink-0 mx-0.5" />
+
+        {/* Category pills */}
         {categories.map((cat) => (
           <button
             key={cat.key}
@@ -286,48 +475,95 @@ export default function MapPage() {
     </div>
   );
 
-  /** Place list card (used in sidebar and bottom sheet) */
-  const renderPlaceCard = (place) => (
-    <div
-      key={place.id}
-      onClick={() => handlePlaceClick(place.id)}
-      className={`flex gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
-        selectedId === place.id
-          ? 'bg-pet-orange/8 border-l-[3px] border-pet-orange'
-          : 'hover:bg-pet-cream/80 border-l-[3px] border-transparent'
-      }`}
+  /** GPS "내 위치" button */
+  const renderGpsButton = () => (
+    <button
+      onClick={handleGpsClick}
+      disabled={gpsLoading}
+      className="absolute bottom-24 md:bottom-6 right-4 z-10 w-11 h-11 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 border border-pet-gray/60 disabled:opacity-60 disabled:cursor-not-allowed group"
+      aria-label="내 위치로 이동"
+      title="내 위치"
     >
-      {place.imageUrls?.[0] ? (
-        <img
-          src={place.imageUrls[0]}
-          alt={place.title}
-          className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-        />
+      {gpsLoading ? (
+        /* Loading spinner */
+        <svg className="w-5 h-5 text-pet-orange animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
       ) : (
-        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-pet-peach to-pet-cream flex items-center justify-center flex-shrink-0">
+        /* Crosshair / target icon */
+        <svg
+          className={`w-5 h-5 transition-colors duration-200 ${
+            userLocation ? 'text-[#4285F4]' : 'text-pet-brown/70 group-hover:text-pet-orange'
+          }`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v4m0 12v4m10-10h-4M6 12H2" />
+          <circle cx="12" cy="12" r="8" strokeDasharray="2 2" />
+        </svg>
+      )}
+    </button>
+  );
+
+  /** Place list card (used in sidebar and bottom sheet) */
+  const renderPlaceCard = (place) => {
+    /* Determine the thumbnail: prefer firstimage2 (thumbnail), then imageUrls, then fallback */
+    const thumbnailSrc = place.firstimage2 || place.imageUrls?.[0] || null;
+
+    return (
+      <div
+        key={place.id}
+        onClick={() => handlePlaceClick(place.id)}
+        className={`flex gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
+          selectedId === place.id
+            ? 'bg-pet-orange/8 border-l-[3px] border-pet-orange'
+            : 'hover:bg-pet-cream/80 border-l-[3px] border-transparent'
+        }`}
+      >
+        {thumbnailSrc ? (
+          <img
+            src={thumbnailSrc}
+            alt={place.title}
+            className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+            loading="lazy"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextElementSibling && (e.target.nextElementSibling.style.display = 'flex');
+            }}
+          />
+        ) : null}
+        <div
+          className={`w-14 h-14 rounded-lg bg-gradient-to-br from-pet-peach to-pet-cream flex items-center justify-center flex-shrink-0 ${
+            thumbnailSrc ? 'hidden' : ''
+          }`}
+        >
           <span className="text-lg">🐾</span>
         </div>
-      )}
-      <div className="min-w-0 flex-1">
-        <h3 className="font-bold text-sm text-pet-dark-brown truncate">{place.title}</h3>
-        <p className="text-xs text-pet-brown/60 truncate mt-0.5">{place.addr1}</p>
-        <div className="flex items-center gap-2 mt-1">
-          {place.category && (
-            <span className="px-1.5 py-0.5 bg-pet-mint/60 text-pet-dark-brown rounded text-[10px] font-medium">
-              {place.category}
-            </span>
-          )}
-          {place.avgRating > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] text-pet-brown/50">
-              <span className="text-pet-yellow">★</span>
-              {place.avgRating.toFixed(1)}
-              <span>({place.reviewCount})</span>
-            </span>
-          )}
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-sm text-pet-dark-brown truncate">{place.title}</h3>
+          <p className="text-xs text-pet-brown/60 truncate mt-0.5">{place.addr1}</p>
+          <div className="flex items-center gap-2 mt-1">
+            {place.category && (
+              <span className="px-1.5 py-0.5 bg-pet-mint/60 text-pet-dark-brown rounded text-[10px] font-medium">
+                {place.category}
+              </span>
+            )}
+            {place.avgRating > 0 && (
+              <span className="flex items-center gap-0.5 text-[10px] text-pet-brown/50">
+                <span className="text-pet-yellow">★</span>
+                {place.avgRating.toFixed(1)}
+                <span>({place.reviewCount})</span>
+              </span>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   /** Empty list state */
   const renderEmptyList = () => (
@@ -353,20 +589,37 @@ export default function MapPage() {
 
     if (!placeDetail) return null;
 
+    /* Build the image list: firstimage first, then imageUrls (deduplicated) */
+    const allImages = [];
+    if (placeDetail.firstimage) {
+      allImages.push(placeDetail.firstimage);
+    }
+    if (placeDetail.imageUrls?.length > 0) {
+      placeDetail.imageUrls.forEach((url) => {
+        if (!allImages.includes(url)) {
+          allImages.push(url);
+        }
+      });
+    }
+
     return (
       <div>
         {/* Image carousel */}
-        {placeDetail.imageUrls?.length > 0 ? (
+        {allImages.length > 0 ? (
           <div className="relative">
             <img
-              src={placeDetail.imageUrls[currentImg]}
+              src={allImages[currentImg] || allImages[0]}
               alt={placeDetail.title}
               className="w-full h-52 object-cover"
+              onError={(e) => {
+                e.target.src = '';
+                e.target.classList.add('hidden');
+              }}
             />
-            {placeDetail.imageUrls.length > 1 && (
+            {allImages.length > 1 && (
               <>
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                  {placeDetail.imageUrls.map((_, i) => (
+                  {allImages.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => setCurrentImg(i)}
@@ -388,7 +641,7 @@ export default function MapPage() {
                     </svg>
                   </button>
                 )}
-                {currentImg < placeDetail.imageUrls.length - 1 && (
+                {currentImg < allImages.length - 1 && (
                   <button
                     onClick={() => setCurrentImg((p) => p + 1)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors"
@@ -404,7 +657,7 @@ export default function MapPage() {
           </div>
         ) : (
           <div className="w-full h-36 bg-gradient-to-br from-pet-peach to-pet-cream flex items-center justify-center">
-            <span className="text-5xl">📍</span>
+            <span className="text-5xl">🐾</span>
           </div>
         )}
 
@@ -596,6 +849,38 @@ export default function MapPage() {
               <span className="text-xs font-normal text-pet-brown/40 ml-1">({listPlaces.length})</span>
             )}
           </h2>
+
+          {/* Sidebar region filter (desktop) */}
+          <div className="mt-3 flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+            {regions.slice(0, 9).map((region) => (
+              <button
+                key={region.code}
+                onClick={() => handleRegionChange(region.code)}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all duration-200 ${
+                  areacode === region.code
+                    ? 'bg-pet-orange text-white'
+                    : 'bg-pet-gray text-pet-brown/70 hover:bg-pet-peach/50'
+                }`}
+              >
+                {region.label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-1 flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+            {regions.slice(9).map((region) => (
+              <button
+                key={region.code}
+                onClick={() => handleRegionChange(region.code)}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all duration-200 ${
+                  areacode === region.code
+                    ? 'bg-pet-orange text-white'
+                    : 'bg-pet-gray text-pet-brown/70 hover:bg-pet-peach/50'
+                }`}
+              >
+                {region.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Place list */}
@@ -614,6 +899,9 @@ export default function MapPage() {
         {/* Desktop auth overlay */}
         {renderDesktopAuthOverlay()}
 
+        {/* GPS button */}
+        {renderGpsButton()}
+
         {/* Map itself */}
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-pet-cream">
@@ -627,6 +915,10 @@ export default function MapPage() {
             places={filteredMapPlaces}
             selectedId={selectedId}
             onMarkerClick={handleMarkerClick}
+            userLocation={userLocation}
+            center={mapCenter}
+            zoom={mapZoom}
+            onMapReady={handleMapReady}
           />
         )}
       </div>

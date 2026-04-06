@@ -24,6 +24,18 @@ public interface PetPlaceRepository extends JpaRepository<PetPlaceEntity, Long> 
     @Query("SELECT p FROM PetPlaceEntity p WHERE (:category IS NULL OR p.category = :category) AND (p.title LIKE %:keyword% OR p.addr1 LIKE %:keyword%)")
     Page<PetPlaceEntity> searchByKeywordAndCategory(@Param("keyword") String keyword, @Param("category") PlaceCategory category, Pageable pageable);
 
+    Page<PetPlaceEntity> findByAreacode(String areacode, Pageable pageable);
+
+    @Query("SELECT p FROM PetPlaceEntity p WHERE " +
+            "(:areacode IS NULL OR p.areacode = :areacode) AND " +
+            "(:category IS NULL OR p.category = :category) AND " +
+            "(:keyword IS NULL OR p.title LIKE %:keyword% OR p.addr1 LIKE %:keyword%)")
+    Page<PetPlaceEntity> findByFilters(
+            @Param("areacode") String areacode,
+            @Param("category") PlaceCategory category,
+            @Param("keyword") String keyword,
+            Pageable pageable);
+
     @Query("select p, pi, avg(coalesce(r.rating,0)), count(distinct r) from PetPlaceEntity p "
             + "left outer join PetPlaceImgEntity pi on pi.petPlace = p "
             + "left outer join PetPlaceReviewEntity r on r.petPlace = p group by p")

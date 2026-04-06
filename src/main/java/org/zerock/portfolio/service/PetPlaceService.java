@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PetPlaceService {
     PetPlaceResponse read(Long id, String email);
-    PageResponse<PetPlaceResponse> getList(int page, int size, String category, String keyword);
+    PageResponse<PetPlaceResponse> getList(int page, int size, String category, String keyword, String areacode);
     List<PetPlaceResponse> getMapList();
     PageResponse<PetPlaceResponse> search(String keyword, String category, Double lat, Double lng, Double radius, int page, int size);
 }

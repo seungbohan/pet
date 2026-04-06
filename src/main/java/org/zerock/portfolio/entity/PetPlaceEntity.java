@@ -22,6 +22,12 @@ public class PetPlaceEntity {
     private double mapx;
     private double mapy;
 
+    private String firstimage;    // Representative image URL
+    private String firstimage2;   // Thumbnail image URL
+    private String areacode;      // Area code (1=Seoul, 2=Incheon, etc.)
+    private String sigungucode;   // District code
+    private String zipcode;       // Zip code
+
     @Enumerated(EnumType.STRING)
     private PlaceCategory category;
 }

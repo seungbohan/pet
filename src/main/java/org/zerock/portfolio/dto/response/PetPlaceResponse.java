@@ -20,6 +20,8 @@ public class PetPlaceResponse {
     private double mapx;
     private double mapy;
     private String category;
+    private String firstimage;
+    private String firstimage2;
     private Double avgRating;
     private int reviewCount;
     private boolean favorited;

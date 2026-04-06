@@ -1,9 +1,18 @@
 import { useEffect, useRef, useCallback } from 'react';
 
-export default function NaverMap({ places = [], selectedId, onMarkerClick }) {
+export default function NaverMap({
+  places = [],
+  selectedId,
+  onMarkerClick,
+  userLocation,
+  center,
+  zoom,
+  onMapReady,
+}) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
+  const userMarkerRef = useRef(null);
   const placesRef = useRef(places);
 
   placesRef.current = places;
@@ -32,6 +41,9 @@ export default function NaverMap({ places = [], selectedId, onMarkerClick }) {
     });
     mapInstanceRef.current = map;
 
+    // Notify parent that map is ready
+    onMapReady?.(map);
+
     // Update visible markers on map move/zoom
     window.naver.maps.Event.addListener(map, 'idle', () => {
       updateVisibleMarkers();
@@ -45,7 +57,7 @@ export default function NaverMap({ places = [], selectedId, onMarkerClick }) {
     if (!map || !window.naver) return;
 
     const bounds = map.getBounds();
-    const zoom = map.getZoom();
+    const currentZoom = map.getZoom();
 
     // Clear old markers
     markersRef.current.forEach((m) => m.setMap(null));
@@ -58,7 +70,7 @@ export default function NaverMap({ places = [], selectedId, onMarkerClick }) {
     });
 
     // Limit markers based on zoom level
-    const maxMarkers = zoom >= 13 ? 200 : zoom >= 10 ? 100 : 50;
+    const maxMarkers = currentZoom >= 13 ? 200 : currentZoom >= 10 ? 100 : 50;
     const toRender = visiblePlaces.slice(0, maxMarkers);
 
     toRender.forEach((place) => {
@@ -101,6 +113,46 @@ export default function NaverMap({ places = [], selectedId, onMarkerClick }) {
       }
     }
   }, [selectedId, places]);
+
+  // Update map center/zoom when props change
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !center || !window.naver) return;
+    map.setCenter(new window.naver.maps.LatLng(center.lat, center.lng));
+    if (zoom) {
+      map.setZoom(zoom);
+    }
+  }, [center, zoom]);
+
+  // Manage user location marker (blue pulsing dot)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+
+    // Remove old user marker
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setMap(null);
+      userMarkerRef.current = null;
+    }
+
+    if (!map || !userLocation || !window.naver) return;
+
+    const marker = new window.naver.maps.Marker({
+      position: new window.naver.maps.LatLng(userLocation.lat, userLocation.lng),
+      map: map,
+      icon: {
+        content: [
+          '<div style="position:relative;width:22px;height:22px;">',
+          '  <div style="position:absolute;inset:0;background:rgba(66,133,244,0.15);border-radius:50%;animation:userPulse 2s ease-in-out infinite;"></div>',
+          '  <div style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#4285F4;border:3px solid white;border-radius:50%;box-shadow:0 0 0 2px rgba(66,133,244,0.3);"></div>',
+          '</div>',
+        ].join(''),
+        anchor: new window.naver.maps.Point(11, 11),
+      },
+      zIndex: 1000,
+    });
+
+    userMarkerRef.current = marker;
+  }, [userLocation]);
 
   return <div ref={mapRef} className="w-full h-full" />;
 }
