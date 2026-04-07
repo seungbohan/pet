@@ -140,13 +140,8 @@ export default function NaverMap({
       },
     });
 
-    // 클러스터 클릭 시 확대
-    window.naver.maps.Event.addListener(cluster, 'clusterclick', (clusterObj) => {
-      const clusterCenter = clusterObj.getCenter();
-      const currentZoom = map.getZoom();
-      map.setCenter(clusterCenter);
-      map.setZoom(currentZoom + 3);
-    });
+    // 클러스터 클릭 시 확대 활성화
+    cluster.enableClickZoom();
 
     clusterRef.current = cluster;
   }, [onMarkerClick]);
