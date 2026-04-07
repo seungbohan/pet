@@ -1240,12 +1240,12 @@ export default function MapPage() {
         {allImages.length > 0 ? (
           <div className="relative">
             <img
+              key={`${placeDetail.id}-${currentImg}`}
               src={allImages[currentImg] || allImages[0]}
               alt={placeDetail.title}
               className="w-full h-52 object-cover"
               onError={(e) => {
-                e.target.src = '';
-                e.target.classList.add('hidden');
+                e.target.style.display = 'none';
               }}
             />
             {allImages.length > 1 && (
