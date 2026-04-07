@@ -189,7 +189,7 @@ export default function MapPage() {
     description: '',
     latitude: '',
     longitude: '',
-    imageUrl: '',
+    imageUrls: [],
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -563,10 +563,10 @@ export default function MapPage() {
         description: submitForm.description || undefined,
         latitude: submitForm.latitude ? parseFloat(submitForm.latitude) : undefined,
         longitude: submitForm.longitude ? parseFloat(submitForm.longitude) : undefined,
-        imageUrl: submitForm.imageUrl || undefined,
+        imageUrl: submitForm.imageUrls?.[0] || undefined,
       });
       setSubmitSuccess(true);
-      setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '', imageUrl: '' });
+      setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '', imageUrls: [] });
       // Refresh recent submissions
       getSubmittedPlaces(0)
         .then((res) => {
@@ -584,7 +584,7 @@ export default function MapPage() {
   const handleCloseSubmitModal = () => {
     setSubmitModalOpen(false);
     setSubmitSuccess(false);
-    setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '', imageUrl: '' });
+    setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '', imageUrls: [] });
   };
 
   /** Use current map center as submit coordinates */
@@ -1223,28 +1223,36 @@ export default function MapPage() {
                 {/* 이미지 */}
                 <div>
                   <label className="block text-xs font-semibold text-pet-brown mb-1.5">이미지</label>
-                  {submitForm.imageUrl ? (
-                    <div className="flex items-center gap-3">
-                      <img src={submitForm.imageUrl} alt="" className="w-20 h-20 rounded-xl object-cover" />
-                      <button type="button" onClick={() => setSubmitForm((f) => ({ ...f, imageUrl: '' }))} className="text-xs text-red-500 hover:underline">삭제</button>
+                  {submitForm.imageUrls.length > 0 && (
+                    <div className="flex gap-2 flex-wrap mb-2">
+                      {submitForm.imageUrls.map((url, i) => (
+                        <div key={i} className="relative">
+                          <img src={url} alt="" className="w-16 h-16 rounded-lg object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setSubmitForm((f) => ({ ...f, imageUrls: f.imageUrls.filter((_, idx) => idx !== i) }))}
+                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"
+                          >×</button>
+                        </div>
+                      ))}
                     </div>
-                  ) : (
-                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-pet-cream text-pet-brown rounded-xl text-xs font-semibold cursor-pointer hover:bg-pet-peach transition-colors">
-                      {submitImgUploading ? '업로드 중...' : '📷 사진 추가'}
-                      <input type="file" accept="image/*" className="hidden" disabled={submitImgUploading} onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setSubmitImgUploading(true);
-                        try {
-                          const res = await uploadImages([file]);
-                          const uploaded = res.data?.[0];
-                          if (!uploaded) { alert('이미지 업로드 실패'); return; }
-                          setSubmitForm((f) => ({ ...f, imageUrl: getImageUrl(uploaded.imageURL || uploaded.fileName) }));
-                        } catch { alert('이미지 업로드 실패'); }
-                        finally { setSubmitImgUploading(false); }
-                      }} />
-                    </label>
                   )}
+                  <label className="inline-flex items-center gap-2 px-4 py-2 bg-pet-cream text-pet-brown rounded-xl text-xs font-semibold cursor-pointer hover:bg-pet-peach transition-colors">
+                    {submitImgUploading ? '업로드 중...' : '📷 사진 추가'}
+                    <input type="file" accept="image/*" className="hidden" disabled={submitImgUploading} onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      e.target.value = '';
+                      setSubmitImgUploading(true);
+                      try {
+                        const res = await uploadImages([file]);
+                        const uploaded = res.data?.[0];
+                        if (!uploaded) { alert('이미지 업로드 실패'); return; }
+                        setSubmitForm((f) => ({ ...f, imageUrls: [...f.imageUrls, getImageUrl(uploaded.imageURL || uploaded.fileName)] }));
+                      } catch { alert('이미지 업로드 실패'); }
+                      finally { setSubmitImgUploading(false); }
+                    }} />
+                  </label>
                 </div>
 
                 {/* Submit button */}
