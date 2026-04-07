@@ -722,7 +722,7 @@ export default function MapPage() {
     <button
       onClick={handleGpsClick}
       disabled={gpsLoading}
-      className="absolute bottom-24 md:bottom-6 right-4 z-10 w-11 h-11 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 border border-pet-gray/60 disabled:opacity-60 disabled:cursor-not-allowed group"
+      className="absolute bottom-44 md:bottom-6 right-4 z-10 w-11 h-11 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 border border-pet-gray/60 disabled:opacity-60 disabled:cursor-not-allowed group"
       aria-label="내 위치로 이동"
       title="내 위치"
     >

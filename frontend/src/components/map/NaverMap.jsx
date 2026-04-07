@@ -60,10 +60,7 @@ export default function NaverMap({
     const map = new window.naver.maps.Map(mapRef.current, {
       center: new window.naver.maps.LatLng(36.5, 127.5),
       zoom: 7,
-      zoomControl: true,
-      zoomControlOptions: {
-        position: window.naver.maps.Position.TOP_RIGHT,
-      },
+      zoomControl: false,
     });
     mapInstanceRef.current = map;
 
