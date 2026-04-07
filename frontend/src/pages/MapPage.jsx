@@ -1237,7 +1237,8 @@ export default function MapPage() {
                         setSubmitImgUploading(true);
                         try {
                           const res = await uploadImages([file]);
-                          const uploaded = res.data[0];
+                          const uploaded = res.data?.[0];
+                          if (!uploaded) { alert('이미지 업로드 실패'); return; }
                           setSubmitForm((f) => ({ ...f, imageUrl: getImageUrl(uploaded.imageURL || uploaded.fileName) }));
                         } catch { alert('이미지 업로드 실패'); }
                         finally { setSubmitImgUploading(false); }

@@ -77,7 +77,8 @@ export default function MyPage() {
     setImageUploading(true);
     try {
       const res = await uploadImages([file]);
-      const uploaded = res.data[0];
+      const uploaded = res.data?.[0];
+      if (!uploaded) { alert('이미지 업로드에 실패했습니다.'); return; }
       const url = getImageUrl(uploaded.imageURL || uploaded.fileName);
       setEditProfileImage(url);
     } catch {
