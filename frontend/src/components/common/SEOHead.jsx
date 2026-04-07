@@ -19,7 +19,7 @@ const SITE_URL = 'https://withpet.shop';
 const DEFAULT_TITLE = '위드펫 - 반려동물 동반 가능 장소 찾기 | 펫프렌들리 카페, 식당, 공원';
 const DEFAULT_DESCRIPTION =
   '반려동물과 함께 갈 수 있는 카페, 식당, 공원, 숙소를 지도에서 쉽게 찾아보세요. 전국 펫프렌들리 장소 정보와 반려인 커뮤니티 피드를 제공합니다.';
-const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/og-image.svg`;
 const THEME_COLOR = '#863bff';
 
 function setMetaTag(attr, key, content) {
@@ -86,17 +86,21 @@ export default function SEOHead({
 
     // Dynamic JSON-LD
     if (jsonLd) {
-      let script = document.querySelector('script[data-seo-jsonld]');
-      if (!script) {
-        script = document.createElement('script');
+      // Remove old dynamic JSON-LD scripts
+      document.querySelectorAll('script[data-seo-jsonld]').forEach((s) => s.remove());
+
+      const items = Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+      const scripts = items.map((ld) => {
+        const script = document.createElement('script');
         script.setAttribute('type', 'application/ld+json');
         script.setAttribute('data-seo-jsonld', 'true');
+        script.textContent = JSON.stringify(ld);
         document.head.appendChild(script);
-      }
-      script.textContent = JSON.stringify(jsonLd);
+        return script;
+      });
 
       return () => {
-        script.remove();
+        scripts.forEach((s) => s.remove());
       };
     }
   }, [fullTitle, fullDescription, fullUrl, fullImage, type, noindex, jsonLd, title]);

@@ -104,17 +104,28 @@ export default function FeedDetailPage() {
         path={`/feeds/${id}`}
         image={feed.images?.[0]?.imageURL ? `/api/v1/upload/display?fileName=${feed.images[0].imageURL}` : undefined}
         type="article"
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'Article',
-          headline: feed.title,
-          description: feed.content?.substring(0, 155),
-          author: { '@type': 'Person', name: feed.writerNickname || feed.writerEmail },
-          publisher: { '@type': 'Organization', name: '위드펫', url: 'https://withpet.shop/' },
-          datePublished: feed.createdAt,
-          dateModified: feed.updatedAt || feed.createdAt,
-          mainEntityOfPage: `https://withpet.shop/feeds/${id}`,
-        }}
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: feed.title,
+            description: feed.content?.substring(0, 155),
+            author: { '@type': 'Person', name: feed.writerNickname || feed.writerEmail },
+            publisher: { '@type': 'Organization', name: '위드펫', url: 'https://withpet.shop/', logo: { '@type': 'ImageObject', url: 'https://withpet.shop/favicon.svg' } },
+            datePublished: feed.createdAt,
+            dateModified: feed.updatedAt || feed.createdAt,
+            mainEntityOfPage: `https://withpet.shop/feeds/${id}`,
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: '홈', item: 'https://withpet.shop/' },
+              { '@type': 'ListItem', position: 2, name: '피드', item: 'https://withpet.shop/feeds' },
+              { '@type': 'ListItem', position: 3, name: feed.title },
+            ],
+          },
+        ]}
       />
       {/* Full-width Image Carousel */}
       {feed.images?.length > 0 && (

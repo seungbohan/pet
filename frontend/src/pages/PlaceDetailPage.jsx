@@ -111,17 +111,28 @@ export default function PlaceDetailPage() {
         description={place.description?.substring(0, 155) || `${place.title} - 반려동물 동반 가능한 장소 정보, 리뷰, 위치를 확인하세요.`}
         path={`/places/${id}`}
         image={place.imageUrls?.[0] || undefined}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'LocalBusiness',
-          name: place.title,
-          description: place.description,
-          address: place.address ? { '@type': 'PostalAddress', streetAddress: place.address } : undefined,
-          geo: place.latitude && place.longitude ? { '@type': 'GeoCoordinates', latitude: place.latitude, longitude: place.longitude } : undefined,
-          image: place.imageUrls?.[0],
-          url: `https://withpet.shop/places/${id}`,
-          aggregateRating: place.avgRating ? { '@type': 'AggregateRating', ratingValue: place.avgRating, reviewCount: place.reviewCount || 1 } : undefined,
-        }}
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'LocalBusiness',
+            name: place.title,
+            description: place.description,
+            address: place.addr1 ? { '@type': 'PostalAddress', streetAddress: place.addr1 } : undefined,
+            geo: place.mapx && place.mapy ? { '@type': 'GeoCoordinates', latitude: place.mapy, longitude: place.mapx } : undefined,
+            image: place.firstimage || place.imageUrls?.[0],
+            url: `https://withpet.shop/places/${id}`,
+            aggregateRating: place.avgRating ? { '@type': 'AggregateRating', ratingValue: place.avgRating, reviewCount: place.reviewCount || 1 } : undefined,
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: '홈', item: 'https://withpet.shop/' },
+              { '@type': 'ListItem', position: 2, name: '장소 찾기', item: 'https://withpet.shop/map' },
+              { '@type': 'ListItem', position: 3, name: place.title },
+            ],
+          },
+        ]}
       />
       {/* Image Gallery */}
       {(() => {

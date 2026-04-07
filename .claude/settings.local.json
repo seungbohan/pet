@@ -41,7 +41,25 @@
       "Bash(grep -l \"SEOHead\" src/pages/*.jsx)",
       "Bash(echo \"exit: $?\")",
       "Bash(curl -s -o /dev/null -w \"API places => %{http_code}\\\\n\" https://withpet.shop/api/v1/places)",
-      "Bash(curl -s -o /dev/null -w \"API areas => %{http_code}\\\\n\" https://withpet.shop/api/v1/places/areas)"
+      "Bash(curl -s -o /dev/null -w \"API areas => %{http_code}\\\\n\" https://withpet.shop/api/v1/places/areas)",
+      "WebFetch(domain:navermaps.github.io)",
+      "WebFetch(domain:www.georgimap.com)",
+      "WebFetch(domain:georgimap.com)",
+      "Bash(curl -s \"https://withpet.shop/api/v1/places/1\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('firstimage:', d.get\\('firstimage'\\)\\); print\\('firstimage2:', d.get\\('firstimage2'\\)\\); print\\('imageUrls:', d.get\\('imageUrls'\\)\\)\")",
+      "Bash(curl -s \"https://withpet.shop/api/v1/places/2\")",
+      "Bash(curl -s \"https://withpet.shop/api/v1/places/9827\")",
+      "Bash(dig TXT withpet.shop +short)",
+      "Bash(curl -sL -A \"Mozilla/5.0\" -o /tmp/target.html \"https://withpet.shop\")",
+      "Bash(python3 -c ':*)",
+      "Bash(curl -sI \"https://withpet.shop/og-image.png\")",
+      "Read(//c/Users/computer/Desktop/project/withpet/**)",
+      "Bash(curl -sI \"https://withpet.shop/favicon.svg\")",
+      "Bash(curl -sI \"http://withpet.shop\")",
+      "Bash(curl -s \"https://withpet.shop/api/v1/places/map\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(len\\(d\\)\\)\")",
+      "Bash(curl -s \"https://withpet.shop/api/v1/places/map\" -o /tmp/places.json)",
+      "Bash(curl -s --max-time 20 \"https://withpet.shop/api/v1/places/map\")"
     ]
   }
 }
