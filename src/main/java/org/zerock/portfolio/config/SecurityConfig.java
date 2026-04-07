@@ -78,6 +78,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/places/sync/images").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/feeds/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/places/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/places/submit").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/places/*/reviews").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/tags/**").permitAll()

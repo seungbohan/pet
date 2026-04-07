@@ -1657,13 +1657,7 @@ export default function MapPage() {
         {/*  NEW: "장소 제보" floating button (Feature 2)                  */}
         {/* ============================================================ */}
         <button
-          onClick={() => {
-            if (!isAuthenticated) {
-              alert('로그인이 필요합니다');
-              return;
-            }
-            setSubmitModalOpen(true);
-          }}
+          onClick={() => setSubmitModalOpen(true)}
           className="absolute bottom-24 md:bottom-6 left-4 z-10 flex items-center gap-1.5 px-4 py-2.5 bg-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 border border-pet-gray/60 text-sm font-bold text-pet-orange"
           aria-label="장소 제보"
           title="새 장소 제보하기"

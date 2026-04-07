@@ -128,9 +128,10 @@ public class PetPlaceController {
     public ResponseEntity<Map<String, Long>> submitPlace(
             @Valid @RequestBody UserPlaceRequest request,
             Authentication authentication) {
-        String email = authentication.getName();
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        UserEntity user = null;
+        if (authentication != null) {
+            user = userRepository.findByEmail(authentication.getName()).orElse(null);
+        }
 
         PlaceCategory cat = PlaceCategory.OTHER;
         if (request.getCategory() != null) {
