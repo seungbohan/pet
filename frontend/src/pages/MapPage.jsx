@@ -1640,6 +1640,7 @@ export default function MapPage() {
             places={filteredMapPlaces}
             selectedId={selectedId}
             onMarkerClick={handleMarkerClick}
+            onBoundsChange={(visiblePlaces) => setListPlaces(visiblePlaces)}
             userLocation={userLocation}
             center={mapCenter}
             zoom={mapZoom}

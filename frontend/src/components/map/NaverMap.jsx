@@ -17,6 +17,7 @@ export default function NaverMap({
   places = [],
   selectedId,
   onMarkerClick,
+  onBoundsChange,
   userLocation,
   center,
   zoom,
@@ -66,6 +67,17 @@ export default function NaverMap({
 
     // Notify parent that map is ready
     onMapReady?.(map);
+
+    // Notify parent of visible places when map moves/zooms
+    window.naver.maps.Event.addListener(map, 'idle', () => {
+      if (!onBoundsChange) return;
+      const bounds = map.getBounds();
+      const visible = placesRef.current.filter((p) => {
+        if (!p.mapx || !p.mapy) return false;
+        return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
+      });
+      onBoundsChange(visible);
+    });
 
     updateVisibleMarkers();
   };
