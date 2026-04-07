@@ -1218,10 +1218,13 @@ export default function MapPage() {
 
     if (!placeDetail) return null;
 
-    /* Build the image list: firstimage first, then imageUrls (deduplicated) */
+    /* Build the image list: firstimage, firstimage2, then imageUrls (deduplicated) */
     const allImages = [];
     if (placeDetail.firstimage) {
       allImages.push(placeDetail.firstimage);
+    }
+    if (placeDetail.firstimage2 && !allImages.includes(placeDetail.firstimage2)) {
+      allImages.push(placeDetail.firstimage2);
     }
     if (placeDetail.imageUrls?.length > 0) {
       placeDetail.imageUrls.forEach((url) => {
