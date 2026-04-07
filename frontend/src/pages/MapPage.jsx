@@ -1476,12 +1476,20 @@ export default function MapPage() {
       <div className="hidden md:flex flex-col w-[340px] flex-shrink-0 bg-white border-r border-pet-gray/60 z-20">
         {/* Sidebar header with logo */}
         <div className="p-4 pb-2 border-b border-pet-gray/40">
-          <Link to="/" className="flex items-center gap-1.5 mb-3">
-            <span className="text-xl">🐾</span>
-            <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-pet-orange to-pet-pink bg-clip-text text-transparent">
-              WithPet
-            </span>
-          </Link>
+          <div className="flex items-center justify-between mb-3">
+            <Link to="/" className="flex items-center gap-1.5">
+              <span className="text-xl">🐾</span>
+              <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-pet-orange to-pet-pink bg-clip-text text-transparent">
+                WithPet
+              </span>
+            </Link>
+            <Link
+              to="/feeds"
+              className="px-3 py-1.5 text-xs font-semibold text-pet-brown hover:text-pet-orange hover:bg-pet-cream rounded-lg transition-colors"
+            >
+              피드
+            </Link>
+          </div>
           {/* Desktop search bar inside sidebar */}
           <div className="mb-3">{renderSearchForm()}</div>
           {/* Desktop category pills */}
