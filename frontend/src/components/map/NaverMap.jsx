@@ -29,8 +29,10 @@ export default function NaverMap({
   const clusterRef = useRef(null);
   const userMarkerRef = useRef(null);
   const placesRef = useRef(places);
+  const onBoundsChangeRef = useRef(onBoundsChange);
 
   placesRef.current = places;
+  onBoundsChangeRef.current = onBoundsChange;
 
   useEffect(() => {
     const loadClusterScript = (callback) => {
@@ -73,14 +75,14 @@ export default function NaverMap({
 
     // Notify parent of visible places when map moves/zooms
     window.naver.maps.Event.addListener(map, 'idle', () => {
-      if (!onBoundsChange) return;
+      if (!onBoundsChangeRef.current) return;
       const bounds = map.getBounds();
-      const center = map.getCenter();
+      const c = map.getCenter();
       const visible = placesRef.current.filter((p) => {
         if (!p.mapx || !p.mapy) return false;
         return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
       });
-      onBoundsChange(visible, { lat: center.lat(), lng: center.lng() });
+      onBoundsChangeRef.current(visible, { lat: c.lat(), lng: c.lng() });
     });
 
     updateVisibleMarkers();
@@ -166,14 +168,14 @@ export default function NaverMap({
     if (map) {
       updateVisibleMarkers();
       // Also update bounds list when places load
-      if (onBoundsChange && window.naver) {
+      if (onBoundsChangeRef.current && window.naver) {
         const bounds = map.getBounds();
-        const center = map.getCenter();
+        const c = map.getCenter();
         const visible = placesRef.current.filter((p) => {
           if (!p.mapx || !p.mapy) return false;
           return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
         });
-        onBoundsChange(visible, { lat: center.lat(), lng: center.lng() });
+        onBoundsChangeRef.current(visible, { lat: c.lat(), lng: c.lng() });
       }
     }
   }, [places, updateVisibleMarkers]);

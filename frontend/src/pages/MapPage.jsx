@@ -254,7 +254,17 @@ export default function MapPage() {
   /* ---------------------------------------------------------------- */
   useEffect(() => {
     getMapPlaces()
-      .then((res) => setPlaces(res.data))
+      .then((res) => {
+        setPlaces(res.data);
+        // Set initial list if empty (fallback before bounds kicks in)
+        if (res.data.length > 0 && userLocation) {
+          const dist = (p) => Math.pow((p.mapy || 0) - userLocation.lat, 2) + Math.pow((p.mapx || 0) - userLocation.lng, 2);
+          const nearest = [...res.data].filter(p => p.mapx && p.mapy).sort((a, b) => dist(a) - dist(b)).slice(0, 30);
+          setListPlaces(nearest);
+        } else if (res.data.length > 0) {
+          setListPlaces(res.data.slice(0, 30));
+        }
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
