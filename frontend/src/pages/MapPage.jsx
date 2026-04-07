@@ -1145,38 +1145,6 @@ export default function MapPage() {
                   />
                 </div>
 
-                {/* 좌표 (latitude / longitude) */}
-                <div>
-                  <label className="block text-xs font-semibold text-pet-brown mb-1.5">좌표</label>
-                  <div className="flex gap-2 mb-1.5">
-                    <input
-                      type="text"
-                      value={submitForm.latitude}
-                      onChange={(e) => setSubmitForm((f) => ({ ...f, latitude: e.target.value }))}
-                      placeholder="위도"
-                      className="flex-1 px-3 py-2 rounded-xl border border-pet-gray/80 bg-white text-xs text-pet-dark-brown placeholder:text-pet-brown/30 focus:outline-none focus:border-pet-orange transition-all"
-                    />
-                    <input
-                      type="text"
-                      value={submitForm.longitude}
-                      onChange={(e) => setSubmitForm((f) => ({ ...f, longitude: e.target.value }))}
-                      placeholder="경도"
-                      className="flex-1 px-3 py-2 rounded-xl border border-pet-gray/80 bg-white text-xs text-pet-dark-brown placeholder:text-pet-brown/30 focus:outline-none focus:border-pet-orange transition-all"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleUseMapCenter}
-                    className="text-xs text-pet-orange font-medium hover:underline flex items-center gap-1"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    현재 지도 중심 좌표 사용
-                  </button>
-                </div>
-
                 {/* Submit button */}
                 <button
                   type="submit"
