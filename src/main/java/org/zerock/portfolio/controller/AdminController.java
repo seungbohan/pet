@@ -145,6 +145,57 @@ public class AdminController {
         PlaceStatus status = PlaceStatus.valueOf(body.get("status"));
         place.setStatus(status);
         userPlaceRepository.save(place);
+
+        // 승인 시 PetPlaceEntity로 변환하여 실제 지도에 추가
+        if (status == PlaceStatus.APPROVED) {
+            PetPlaceEntity petPlace = PetPlaceEntity.builder()
+                    .title(place.getTitle())
+                    .addr1(place.getAddr1())
+                    .tel(place.getTel())
+                    .mapx(place.getMapx())
+                    .mapy(place.getMapy())
+                    .category(place.getCategory() != null ? place.getCategory() : PlaceCategory.OTHER)
+                    .firstimage(place.getImageUrl())
+                    .build();
+            petPlaceRepository.save(petPlace);
+        }
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/submissions")
+    public ResponseEntity<PageResponse<Map<String, Object>>> getSubmissions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "PENDING") String status) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
+        PlaceStatus placeStatus = PlaceStatus.valueOf(status);
+        Page<UserPlaceEntity> result = userPlaceRepository.findByStatus(
+                placeStatus, PageRequest.of(page, size, Sort.by("id").descending()));
+
+        List<Map<String, Object>> content = result.getContent().stream()
+                .map(e -> Map.<String, Object>of(
+                        "id", e.getId(),
+                        "title", e.getTitle(),
+                        "addr1", e.getAddr1() != null ? e.getAddr1() : "",
+                        "tel", e.getTel() != null ? e.getTel() : "",
+                        "category", e.getCategory() != null ? e.getCategory().name() : "OTHER",
+                        "description", e.getDescription() != null ? e.getDescription() : "",
+                        "imageUrl", e.getImageUrl() != null ? e.getImageUrl() : "",
+                        "status", e.getStatus().name(),
+                        "submitterName", e.getUser() != null ? e.getUser().getName() : "비회원",
+                        "regDate", e.getRegDate() != null ? e.getRegDate().toString() : ""
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(PageResponse.<Map<String, Object>>builder()
+                .content(content)
+                .page(page)
+                .size(size)
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .first(result.isFirst())
+                .last(result.isLast())
+                .build());
     }
 }
