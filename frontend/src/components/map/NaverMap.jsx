@@ -129,6 +129,7 @@ export default function NaverMap({
     const cluster = new window.MarkerClustering({
       map: map,
       markers: allMarkers,
+      disableClickZoom: false,
       minClusterSize: 2,
       maxZoom: 16,
       gridSize: 120,
