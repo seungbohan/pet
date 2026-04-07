@@ -1,4 +1,5 @@
-import { createBrowserRouter, lazy, Suspense } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
 import MapPage from './pages/MapPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
