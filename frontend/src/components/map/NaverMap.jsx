@@ -58,9 +58,12 @@ export default function NaverMap({
 
   const initMap = () => {
     if (!mapRef.current || mapInstanceRef.current) return;
+    const initCenter = center
+      ? new window.naver.maps.LatLng(center.lat, center.lng)
+      : new window.naver.maps.LatLng(36.5, 127.5);
     const map = new window.naver.maps.Map(mapRef.current, {
-      center: new window.naver.maps.LatLng(36.5, 127.5),
-      zoom: 7,
+      center: initCenter,
+      zoom: zoom || 7,
       zoomControl: false,
     });
     mapInstanceRef.current = map;

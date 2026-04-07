@@ -150,6 +150,7 @@ export default function MapPage() {
   /* --- Map control state --- */
   const [mapCenter, setMapCenter] = useState(null);
   const [mapZoom, setMapZoom] = useState(null);
+  const [gpsReady, setGpsReady] = useState(false);
   const mapInstanceRef = useRef(null);
 
   /* --- Detail state --- */
@@ -228,7 +229,10 @@ export default function MapPage() {
   /*  Auto-detect user location on mount                               */
   /* ---------------------------------------------------------------- */
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setGpsReady(true);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const loc = {
@@ -238,8 +242,9 @@ export default function MapPage() {
         setUserLocation(loc);
         setMapCenter(loc);
         setMapZoom(14);
+        setGpsReady(true);
       },
-      () => {},
+      () => { setGpsReady(true); },
       { enableHighAccuracy: true, timeout: 5000 }
     );
   }, []);
@@ -1628,7 +1633,7 @@ export default function MapPage() {
         </button>
 
         {/* Map itself */}
-        {loading ? (
+        {(loading || !gpsReady) ? (
           <div className="absolute inset-0 flex items-center justify-center bg-pet-cream">
             <div className="flex flex-col items-center gap-3">
               <div className="text-4xl animate-bounce">🐾</div>
