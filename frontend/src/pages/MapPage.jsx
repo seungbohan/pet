@@ -1482,6 +1482,18 @@ export default function MapPage() {
               WithPet
             </span>
           </Link>
+          {/* Mode toggle tabs */}
+          <nav className="flex mb-3 bg-pet-gray rounded-xl p-1">
+            <button className="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-pet-orange shadow-sm transition-all">
+              지도
+            </button>
+            <Link to="/feeds" className="flex-1 py-2 text-xs font-bold rounded-lg text-pet-brown/60 hover:text-pet-orange text-center transition-all">
+              피드
+            </Link>
+            <Link to="/mypage" className="flex-1 py-2 text-xs font-bold rounded-lg text-pet-brown/60 hover:text-pet-orange text-center transition-all">
+              마이
+            </Link>
+          </nav>
           {/* Desktop search bar inside sidebar */}
           <div className="mb-3">{renderSearchForm()}</div>
           {/* Desktop category pills */}
