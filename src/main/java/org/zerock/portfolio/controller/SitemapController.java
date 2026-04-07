@@ -33,16 +33,13 @@ public class SitemapController {
 
         // Place detail pages
         petPlaceRepository.findAll().forEach(place -> {
-            String lastmod = place.getModDate() != null
-                    ? place.getModDate().format(DateTimeFormatter.ISO_DATE)
-                    : today;
-            sb.append(url("https://withpet.shop/places/" + place.getId(), lastmod, "weekly", "0.7"));
+            sb.append(url("https://withpet.shop/places/" + place.getId(), today, "weekly", "0.7"));
         });
 
         // Feed detail pages
         feedRepository.findAll().forEach(feed -> {
-            String lastmod = feed.getModDate() != null
-                    ? feed.getModDate().format(DateTimeFormatter.ISO_DATE)
+            String lastmod = feed.getRegDate() != null
+                    ? feed.getRegDate().format(DateTimeFormatter.ISO_DATE)
                     : today;
             sb.append(url("https://withpet.shop/feeds/" + feed.getId(), lastmod, "weekly", "0.6"));
         });
