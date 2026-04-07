@@ -259,7 +259,20 @@ export default function MapPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // When places load and we have user location, sort by distance
   useEffect(() => {
+    if (places.length === 0) return;
+    if (userLocation) {
+      const dist = (p) => Math.pow((p.mapy || 0) - userLocation.lat, 2) + Math.pow((p.mapx || 0) - userLocation.lng, 2);
+      const sorted = [...places].filter(p => p.mapx && p.mapy).sort((a, b) => dist(a) - dist(b)).slice(0, 50);
+      setListPlaces(sorted);
+    } else {
+      setListPlaces(places.slice(0, 50));
+    }
+  }, [places, userLocation]);
+
+  useEffect(() => {
+    if (!category && !keyword && !areacode) return;
     const params = {
       page: 0,
       size: 50,
