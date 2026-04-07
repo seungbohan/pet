@@ -1647,7 +1647,16 @@ export default function MapPage() {
             places={filteredMapPlaces}
             selectedId={selectedId}
             onMarkerClick={handleMarkerClick}
-            onBoundsChange={(visiblePlaces) => setListPlaces(visiblePlaces)}
+            onBoundsChange={(visiblePlaces, mapCenter) => {
+              if (visiblePlaces.length > 0) {
+                setListPlaces(visiblePlaces);
+              } else if (mapCenter && places.length > 0) {
+                // No places in bounds — show nearest places sorted by distance
+                const dist = (p) => Math.pow(p.mapy - mapCenter.lat, 2) + Math.pow(p.mapx - mapCenter.lng, 2);
+                const nearest = [...places].filter(p => p.mapx && p.mapy).sort((a, b) => dist(a) - dist(b)).slice(0, 30);
+                setListPlaces(nearest);
+              }
+            }}
             userLocation={userLocation}
             center={mapCenter}
             zoom={mapZoom}
