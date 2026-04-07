@@ -50,7 +50,8 @@ public class ReviewController {
             @PathVariable Long placeId,
             @Valid @RequestBody ReviewRequest request,
             Authentication authentication) {
-        Long id = petPlaceReviewService.registerWithResponse(placeId, request, authentication.getName());
+        String email = (authentication != null) ? authentication.getName() : null;
+        Long id = petPlaceReviewService.registerWithResponse(placeId, request, email);
         return ResponseEntity.ok(Map.of("id", id));
     }
 

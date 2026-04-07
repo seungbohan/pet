@@ -130,8 +130,10 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
     @Override
     @Transactional
     public Long registerWithResponse(Long placeId, ReviewRequest request, String email) {
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        UserEntity user = null;
+        if (email != null) {
+            user = userRepository.findByEmail(email).orElse(null);
+        }
         PetPlaceEntity place = petPlaceRepository.findById(placeId)
                 .orElseThrow(() -> new IllegalArgumentException("장소를 찾을 수 없습니다."));
 
@@ -139,6 +141,7 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
                 .content(request.getContent())
                 .rating(request.getRating())
                 .user(user)
+                .guestName(user == null ? request.getGuestName() : null)
                 .petPlace(place)
                 .build();
 
@@ -197,7 +200,7 @@ public class PetPlaceReviewServiceImpl implements PetPlaceReviewService {
                 .id(entity.getId())
                 .content(entity.getContent())
                 .rating(entity.getRating())
-                .writerName(entity.getUser() != null ? entity.getUser().getName() : "")
+                .writerName(entity.getUser() != null ? entity.getUser().getName() : (entity.getGuestName() != null ? entity.getGuestName() : "비회원"))
                 .writerEmail(entity.getUser() != null ? entity.getUser().getEmail() : "")
                 .tags(tagNames)
                 .regDate(entity.getRegDate())

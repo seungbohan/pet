@@ -163,6 +163,7 @@ export default function MapPage() {
   /* --- Review form state --- */
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(5);
+  const [guestName, setGuestName] = useState('');
 
   /* --- UI state --- */
   const [sheetState, setSheetState] = useState('half'); // 'peek' | 'half' | 'full'
@@ -354,9 +355,10 @@ export default function MapPage() {
     e.preventDefault();
     if (!newReview.trim() || !selectedId) return;
     try {
-      await createPlaceReview(selectedId, { content: newReview, rating: newRating });
+      await createPlaceReview(selectedId, { content: newReview, rating: newRating, guestName: !isAuthenticated ? (guestName || '비회원') : undefined });
       setNewReview('');
       setNewRating(5);
+      setGuestName('');
       const res = await getPlaceReviews(selectedId, 0);
       setReviews(res.data.content || []);
       setReviewTotalPages(res.data.totalPages || 0);
@@ -1370,26 +1372,34 @@ export default function MapPage() {
             </h3>
 
             {/* Write review form */}
-            {isAuthenticated && (
-              <form onSubmit={handleReviewSubmit} className="mb-4 p-3 bg-pet-cream/80 rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs text-pet-brown font-medium">별점</span>
-                  <StarRating rating={newRating} onChange={setNewRating} size="text-base" />
-                </div>
-                <textarea
-                  value={newReview}
-                  onChange={(e) => setNewReview(e.target.value)}
-                  placeholder="방문 후기를 남겨주세요..."
-                  className="w-full p-2.5 rounded-lg border border-pet-gray/80 bg-white text-xs resize-none h-16 focus:outline-none focus:border-pet-orange transition-colors"
+            <form onSubmit={handleReviewSubmit} className="mb-4 p-3 bg-pet-cream/80 rounded-xl">
+              {!isAuthenticated && (
+                <input
+                  type="text"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="닉네임 (선택)"
+                  maxLength={20}
+                  className="w-full p-2 mb-2 rounded-lg border border-pet-gray/80 bg-white text-xs focus:outline-none focus:border-pet-orange transition-colors"
                 />
-                <button
-                  type="submit"
-                  className="mt-2 px-3 py-1.5 bg-pet-orange text-white rounded-lg text-xs font-semibold hover:bg-pet-orange/90 transition-colors"
-                >
-                  리뷰 작성
-                </button>
-              </form>
-            )}
+              )}
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs text-pet-brown font-medium">별점</span>
+                <StarRating rating={newRating} onChange={setNewRating} size="text-base" />
+              </div>
+              <textarea
+                value={newReview}
+                onChange={(e) => setNewReview(e.target.value)}
+                placeholder="방문 후기를 남겨주세요..."
+                className="w-full p-2.5 rounded-lg border border-pet-gray/80 bg-white text-xs resize-none h-16 focus:outline-none focus:border-pet-orange transition-colors"
+              />
+              <button
+                type="submit"
+                className="mt-2 px-3 py-1.5 bg-pet-orange text-white rounded-lg text-xs font-semibold hover:bg-pet-orange/90 transition-colors"
+              >
+                리뷰 작성
+              </button>
+            </form>
 
             {/* Review list */}
             <div className="space-y-3">

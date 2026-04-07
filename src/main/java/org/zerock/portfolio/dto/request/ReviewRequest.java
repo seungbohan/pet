@@ -17,5 +17,7 @@ public class ReviewRequest {
     @Max(value = 5, message = "평점은 5점 이하여야 합니다")
     private int rating = 5;
 
+    private String guestName;
+
     private List<Long> tagIds;
 }

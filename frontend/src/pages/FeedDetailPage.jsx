@@ -17,7 +17,7 @@ export default function FeedDetailPage() {
   const [reviewPage, setReviewPage] = useState(0);
   const [reviewTotalPages, setReviewTotalPages] = useState(0);
   const [newReview, setNewReview] = useState('');
-  const [newRating, setNewRating] = useState(5);
+  const [newRating] = useState(5);
   const [loading, setLoading] = useState(true);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [currentImg, setCurrentImg] = useState(0);
@@ -252,10 +252,6 @@ export default function FeedDetailPage() {
                 </div>
                 <div className="flex-1">
                   <span className="text-sm font-medium text-pet-dark-brown">{user?.name}</span>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-pet-brown/60">별점</span>
-                    <StarRating rating={newRating} onChange={setNewRating} size="text-base" />
-                  </div>
                 </div>
               </div>
               <div className="relative">
@@ -313,7 +309,6 @@ export default function FeedDetailPage() {
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-sm text-pet-dark-brown">{review.writerName}</span>
-                          <StarRating rating={review.rating} readOnly size="text-xs" />
                         </div>
                         {user?.email === review.writerEmail && (
                           <button

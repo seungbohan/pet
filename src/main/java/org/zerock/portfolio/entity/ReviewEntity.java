@@ -23,6 +23,8 @@ public abstract class ReviewEntity extends BaseEntity {
 
     private int rating;
 
+    private String guestName;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity user;
 
