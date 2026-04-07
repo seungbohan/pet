@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPlace } from '../api/places';
-import { getPlaceReviews, createPlaceReview } from '../api/reviews';
+import { getPlaceReviews, createPlaceReview, deleteReview } from '../api/reviews';
 import { toggleFavorite } from '../api/favorites';
 import { uploadImages, getImageUrl } from '../api/upload';
 import client from '../api/client';
@@ -48,6 +48,21 @@ export default function PlaceDetailPage() {
       const res = await toggleFavorite(id);
       setFavorited(res.data.favorited);
     } catch {}
+  };
+
+  const handleReviewDelete = async (reviewId) => {
+    if (!confirm('리뷰를 삭제하시겠습니까?')) return;
+    try {
+      await deleteReview(reviewId);
+      const res = await getPlaceReviews(id, 0);
+      setReviews(res.data.content || []);
+      setReviewTotalPages(res.data.totalPages || 0);
+      setReviewPage(0);
+      const placeRes = await getPlace(id);
+      setPlace(placeRes.data);
+    } catch {
+      alert('삭제에 실패했습니다.');
+    }
   };
 
   const handleImageUpload = async (e) => {
@@ -232,6 +247,14 @@ export default function PlaceDetailPage() {
                 <span className="text-xs text-pet-brown/40 ml-auto">
                   {new Date(review.regDate).toLocaleDateString('ko-KR')}
                 </span>
+                {user?.email === review.writerEmail && (
+                  <button
+                    onClick={() => handleReviewDelete(review.id)}
+                    className="text-xs text-pet-brown/40 hover:text-red-500 transition-colors px-2 py-1 rounded-md hover:bg-red-50"
+                  >
+                    삭제
+                  </button>
+                )}
               </div>
               <p className="text-sm text-pet-brown/80">{review.content}</p>
               {review.tags?.length > 0 && (

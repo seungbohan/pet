@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getMapPlaces, getPlaces, getPlace, votePlace, submitPlace, getPopularPlaces, getSubmittedPlaces } from '../api/places';
-import { getPlaceReviews, createPlaceReview } from '../api/reviews';
+import { getPlaceReviews, createPlaceReview, deleteReview } from '../api/reviews';
 import { toggleFavorite } from '../api/favorites';
 import NaverMap from '../components/map/NaverMap';
 import StarRating from '../components/common/StarRating';
@@ -371,6 +371,21 @@ export default function MapPage() {
       setPlaceDetail(placeRes.data);
     } catch {
       alert('리뷰 작성에 실패했습니다.');
+    }
+  };
+
+  const handleReviewDelete = async (reviewId) => {
+    if (!confirm('리뷰를 삭제하시겠습니까?')) return;
+    try {
+      await deleteReview(reviewId);
+      const res = await getPlaceReviews(selectedId, 0);
+      setReviews(res.data.content || []);
+      setReviewTotalPages(res.data.totalPages || 0);
+      setReviewPage(0);
+      const placeRes = await getPlace(selectedId);
+      setPlaceDetail(placeRes.data);
+    } catch {
+      alert('삭제에 실패했습니다.');
     }
   };
 
@@ -1416,6 +1431,14 @@ export default function MapPage() {
                       <span className="text-[10px] text-pet-brown/40 ml-auto">
                         {new Date(review.regDate).toLocaleDateString('ko-KR')}
                       </span>
+                      {user?.email === review.writerEmail && (
+                        <button
+                          onClick={() => handleReviewDelete(review.id)}
+                          className="text-[10px] text-pet-brown/40 hover:text-red-500 transition-colors px-1.5 py-0.5 rounded hover:bg-red-50"
+                        >
+                          삭제
+                        </button>
+                      )}
                     </div>
                     <p className="text-xs text-pet-brown/80 leading-relaxed">{review.content}</p>
                     {review.tags?.length > 0 && (
