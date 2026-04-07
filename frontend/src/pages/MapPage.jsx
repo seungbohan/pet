@@ -1223,9 +1223,6 @@ export default function MapPage() {
     if (placeDetail.firstimage) {
       allImages.push(placeDetail.firstimage);
     }
-    if (placeDetail.firstimage2 && !allImages.includes(placeDetail.firstimage2)) {
-      allImages.push(placeDetail.firstimage2);
-    }
     if (placeDetail.imageUrls?.length > 0) {
       placeDetail.imageUrls.forEach((url) => {
         if (!allImages.includes(url)) {

@@ -90,7 +90,6 @@ export default function PlaceDetailPage() {
       {(() => {
         const allImages = [];
         if (place.firstimage) allImages.push(place.firstimage);
-        if (place.firstimage2 && !allImages.includes(place.firstimage2)) allImages.push(place.firstimage2);
         if (place.imageUrls?.length > 0) {
           place.imageUrls.forEach((url) => { if (!allImages.includes(url)) allImages.push(url); });
         }
