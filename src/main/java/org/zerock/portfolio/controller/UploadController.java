@@ -35,7 +35,7 @@ public class UploadController {
 
     // [SECURITY] 허용된 이미지 확장자 화이트리스트
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
-            "jpg", "jpeg", "png", "gif", "webp", "bmp"
+            "jpg", "jpeg", "png", "gif", "webp", "bmp", "jfif", "svg", "heic", "heif"
     );
 
     // [SECURITY] 최대 업로드 파일 개수
