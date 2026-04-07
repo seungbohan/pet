@@ -7,6 +7,7 @@ import NaverMap from '../components/map/NaverMap';
 import StarRating from '../components/common/StarRating';
 import SEOHead from '../components/common/SEOHead';
 import useAuthStore from '../store/authStore';
+import { uploadImages, getImageUrl } from '../api/upload';
 
 /* ------------------------------------------------------------------ */
 /*  Category data                                                      */
@@ -187,9 +188,11 @@ export default function MapPage() {
     description: '',
     latitude: '',
     longitude: '',
+    imageUrl: '',
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitImgUploading, setSubmitImgUploading] = useState(false);
 
   /* ================================================================ */
   /*  NEW: Popular places ranking state (Feature 3)                    */
@@ -489,9 +492,10 @@ export default function MapPage() {
         description: submitForm.description || undefined,
         latitude: submitForm.latitude ? parseFloat(submitForm.latitude) : undefined,
         longitude: submitForm.longitude ? parseFloat(submitForm.longitude) : undefined,
+        imageUrl: submitForm.imageUrl || undefined,
       });
       setSubmitSuccess(true);
-      setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '' });
+      setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '', imageUrl: '' });
       // Refresh recent submissions
       getSubmittedPlaces(0)
         .then((res) => {
@@ -509,7 +513,7 @@ export default function MapPage() {
   const handleCloseSubmitModal = () => {
     setSubmitModalOpen(false);
     setSubmitSuccess(false);
-    setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '' });
+    setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '', imageUrl: '' });
   };
 
   /** Use current map center as submit coordinates */
@@ -1143,6 +1147,32 @@ export default function MapPage() {
                     placeholder="장소에 대한 설명을 입력해주세요 (반려동물 관련 정보 등)"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-pet-gray/80 bg-white text-sm text-pet-dark-brown placeholder:text-pet-brown/30 focus:outline-none focus:border-pet-orange focus:ring-1 focus:ring-pet-orange/30 transition-all resize-none h-24"
                   />
+                </div>
+
+                {/* 이미지 */}
+                <div>
+                  <label className="block text-xs font-semibold text-pet-brown mb-1.5">이미지</label>
+                  {submitForm.imageUrl ? (
+                    <div className="flex items-center gap-3">
+                      <img src={submitForm.imageUrl} alt="" className="w-20 h-20 rounded-xl object-cover" />
+                      <button type="button" onClick={() => setSubmitForm((f) => ({ ...f, imageUrl: '' }))} className="text-xs text-red-500 hover:underline">삭제</button>
+                    </div>
+                  ) : (
+                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-pet-cream text-pet-brown rounded-xl text-xs font-semibold cursor-pointer hover:bg-pet-peach transition-colors">
+                      {submitImgUploading ? '업로드 중...' : '📷 사진 추가'}
+                      <input type="file" accept="image/*" className="hidden" disabled={submitImgUploading} onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setSubmitImgUploading(true);
+                        try {
+                          const res = await uploadImages([file]);
+                          const uploaded = res.data[0];
+                          setSubmitForm((f) => ({ ...f, imageUrl: getImageUrl(uploaded.imageURL || uploaded.fileName) }));
+                        } catch { alert('이미지 업로드 실패'); }
+                        finally { setSubmitImgUploading(false); }
+                      }} />
+                    </label>
+                  )}
                 </div>
 
                 {/* Submit button */}

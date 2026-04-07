@@ -1,22 +1,27 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, lazy, Suspense } from 'react-router-dom';
 import App from './App';
 import MapPage from './pages/MapPage';
-import FeedPage from './pages/FeedPage';
-import FeedDetailPage from './pages/FeedDetailPage';
-import FeedWritePage from './pages/FeedWritePage';
-import PlaceDetailPage from './pages/PlaceDetailPage';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import OAuth2CallbackPage from './pages/OAuth2CallbackPage';
-import MyPage from './pages/MyPage';
-import PetRegisterPage from './pages/PetRegisterPage';
-import AdminDashboardPage from './pages/admin/AdminDashboardPage';
-import AdminUsersPage from './pages/admin/AdminUsersPage';
-import AdminFeedsPage from './pages/admin/AdminFeedsPage';
-import AdminPlacesPage from './pages/admin/AdminPlacesPage';
-import NotFoundPage from './pages/NotFoundPage';
+import LoadingSpinner from './components/common/LoadingSpinner';
+
+const FeedPage = lazy(() => import('./pages/FeedPage'));
+const FeedDetailPage = lazy(() => import('./pages/FeedDetailPage'));
+const FeedWritePage = lazy(() => import('./pages/FeedWritePage'));
+const PlaceDetailPage = lazy(() => import('./pages/PlaceDetailPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const OAuth2CallbackPage = lazy(() => import('./pages/OAuth2CallbackPage'));
+const MyPage = lazy(() => import('./pages/MyPage'));
+const PetRegisterPage = lazy(() => import('./pages/PetRegisterPage'));
+const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
+const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminFeedsPage = lazy(() => import('./pages/admin/AdminFeedsPage'));
+const AdminPlacesPage = lazy(() => import('./pages/admin/AdminPlacesPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+
 import ProtectedRoute from './components/common/ProtectedRoute';
 import AdminRoute from './components/common/AdminRoute';
+
+const L = ({ children }) => <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>;
 
 const router = createBrowserRouter([
   {
@@ -28,51 +33,51 @@ const router = createBrowserRouter([
       { path: 'map', element: <MapPage /> },
 
       /* Feeds */
-      { path: 'feeds', element: <FeedPage /> },
-      { path: 'feeds/:id', element: <FeedDetailPage /> },
+      { path: 'feeds', element: <L><FeedPage /></L> },
+      { path: 'feeds/:id', element: <L><FeedDetailPage /></L> },
       {
         path: 'feeds/write',
-        element: <ProtectedRoute><FeedWritePage /></ProtectedRoute>,
+        element: <ProtectedRoute><L><FeedWritePage /></L></ProtectedRoute>,
       },
 
       /* Places (standalone detail page kept for deep links) */
-      { path: 'places/:id', element: <PlaceDetailPage /> },
+      { path: 'places/:id', element: <L><PlaceDetailPage /></L> },
 
       /* Auth */
-      { path: 'login', element: <LoginPage /> },
-      { path: 'signup', element: <SignupPage /> },
-      { path: 'oauth2/callback', element: <OAuth2CallbackPage /> },
+      { path: 'login', element: <L><LoginPage /></L> },
+      { path: 'signup', element: <L><SignupPage /></L> },
+      { path: 'oauth2/callback', element: <L><OAuth2CallbackPage /></L> },
 
       /* User pages */
       {
         path: 'mypage',
-        element: <ProtectedRoute><MyPage /></ProtectedRoute>,
+        element: <ProtectedRoute><L><MyPage /></L></ProtectedRoute>,
       },
       {
         path: 'pets/register',
-        element: <ProtectedRoute><PetRegisterPage /></ProtectedRoute>,
+        element: <ProtectedRoute><L><PetRegisterPage /></L></ProtectedRoute>,
       },
 
       /* Admin pages */
       {
         path: 'admin',
-        element: <AdminRoute><AdminDashboardPage /></AdminRoute>,
+        element: <AdminRoute><L><AdminDashboardPage /></L></AdminRoute>,
       },
       {
         path: 'admin/users',
-        element: <AdminRoute><AdminUsersPage /></AdminRoute>,
+        element: <AdminRoute><L><AdminUsersPage /></L></AdminRoute>,
       },
       {
         path: 'admin/feeds',
-        element: <AdminRoute><AdminFeedsPage /></AdminRoute>,
+        element: <AdminRoute><L><AdminFeedsPage /></L></AdminRoute>,
       },
       {
         path: 'admin/places',
-        element: <AdminRoute><AdminPlacesPage /></AdminRoute>,
+        element: <AdminRoute><L><AdminPlacesPage /></L></AdminRoute>,
       },
 
       /* 404 */
-      { path: '*', element: <NotFoundPage /> },
+      { path: '*', element: <L><NotFoundPage /></L> },
     ],
   },
 ]);
