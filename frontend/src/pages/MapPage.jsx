@@ -225,6 +225,26 @@ export default function MapPage() {
   }, []);
 
   /* ---------------------------------------------------------------- */
+  /*  Auto-detect user location on mount                               */
+  /* ---------------------------------------------------------------- */
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const loc = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(loc);
+        setMapCenter(loc);
+        setMapZoom(14);
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  }, []);
+
+  /* ---------------------------------------------------------------- */
   /*  Data fetching                                                    */
   /* ---------------------------------------------------------------- */
   useEffect(() => {
