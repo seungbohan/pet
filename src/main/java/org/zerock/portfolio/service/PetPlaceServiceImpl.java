@@ -124,6 +124,7 @@ public class PetPlaceServiceImpl implements PetPlaceService {
                         .mapx(p.getMapx())
                         .mapy(p.getMapy())
                         .category(p.getCategory() != null ? p.getCategory().name() : "OTHER")
+                        .firstimage2(p.getFirstimage2())
                         .build())
                 .collect(Collectors.toList());
     }
