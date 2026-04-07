@@ -161,8 +161,18 @@ export default function NaverMap({
 
   // Update when places change
   useEffect(() => {
-    if (mapInstanceRef.current) {
+    const map = mapInstanceRef.current;
+    if (map) {
       updateVisibleMarkers();
+      // Also update bounds list when places load
+      if (onBoundsChange && window.naver) {
+        const bounds = map.getBounds();
+        const visible = placesRef.current.filter((p) => {
+          if (!p.mapx || !p.mapy) return false;
+          return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
+        });
+        onBoundsChange(visible);
+      }
     }
   }, [places, updateVisibleMarkers]);
 
