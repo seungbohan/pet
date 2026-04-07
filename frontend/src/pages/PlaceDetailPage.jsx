@@ -87,30 +87,40 @@ export default function PlaceDetailPage() {
         }}
       />
       {/* Image Gallery */}
-      {place.imageUrls?.length > 0 && (
-        <div className="rounded-2xl overflow-hidden mb-6">
-          <img
-            src={place.imageUrls[currentImg]}
-            alt={place.title}
-            className="w-full h-[350px] object-cover"
-          />
-          {place.imageUrls.length > 1 && (
-            <div className="flex gap-2 mt-2">
-              {place.imageUrls.map((url, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentImg(i)}
-                  className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${
-                    i === currentImg ? 'border-pet-orange' : 'border-transparent'
-                  }`}
-                >
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {(() => {
+        const allImages = [];
+        if (place.firstimage) allImages.push(place.firstimage);
+        if (place.firstimage2 && !allImages.includes(place.firstimage2)) allImages.push(place.firstimage2);
+        if (place.imageUrls?.length > 0) {
+          place.imageUrls.forEach((url) => { if (!allImages.includes(url)) allImages.push(url); });
+        }
+        if (allImages.length === 0) return null;
+        return (
+          <div className="rounded-2xl overflow-hidden mb-6">
+            <img
+              key={currentImg}
+              src={allImages[currentImg] || allImages[0]}
+              alt={place.title}
+              className="w-full h-[350px] object-cover"
+            />
+            {allImages.length > 1 && (
+              <div className="flex gap-2 mt-2">
+                {allImages.map((url, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentImg(i)}
+                    className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${
+                      i === currentImg ? 'border-pet-orange' : 'border-transparent'
+                    }`}
+                  >
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Place Info */}
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
