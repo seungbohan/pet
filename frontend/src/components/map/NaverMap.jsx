@@ -25,20 +25,33 @@ export default function NaverMap({
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
+  const clusterRef = useRef(null);
   const userMarkerRef = useRef(null);
   const placesRef = useRef(places);
 
   placesRef.current = places;
 
   useEffect(() => {
+    const loadClusterScript = (callback) => {
+      if (window.MarkerClustering) {
+        callback();
+        return;
+      }
+      const s = document.createElement('script');
+      s.src = 'https://navermaps.github.io/maps.js.ncp/docs/js/MarkerClustering.js';
+      s.async = true;
+      s.onload = callback;
+      document.head.appendChild(s);
+    };
+
     if (window.naver && window.naver.maps) {
-      initMap();
+      loadClusterScript(() => initMap());
       return;
     }
     const script = document.createElement('script');
     script.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ufwzhw6j2z&submodules=clustering';
     script.async = true;
-    script.onload = () => initMap();
+    script.onload = () => loadClusterScript(() => initMap());
     document.head.appendChild(script);
   }, []);
 
@@ -57,11 +70,6 @@ export default function NaverMap({
     // Notify parent that map is ready
     onMapReady?.(map);
 
-    // Update visible markers on map move/zoom
-    window.naver.maps.Event.addListener(map, 'idle', () => {
-      updateVisibleMarkers();
-    });
-
     updateVisibleMarkers();
   };
 
@@ -69,41 +77,73 @@ export default function NaverMap({
     const map = mapInstanceRef.current;
     if (!map || !window.naver) return;
 
-    const bounds = map.getBounds();
-    const currentZoom = map.getZoom();
-
-    // Clear old markers
+    // Clear old cluster and markers
+    if (clusterRef.current) {
+      clusterRef.current.setMap(null);
+      clusterRef.current = null;
+    }
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    // Filter places within current bounds
-    const visiblePlaces = placesRef.current.filter((p) => {
-      if (!p.mapx || !p.mapy) return false;
-      return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
-    });
+    const allMarkers = placesRef.current
+      .filter((p) => p.mapx && p.mapy)
+      .map((place) => {
+        const color = categoryMarkerColors[place.category] || '#FF8C42';
+        const marker = new window.naver.maps.Marker({
+          position: new window.naver.maps.LatLng(place.mapy, place.mapx),
+          title: place.title,
+          icon: {
+            content: `<div style="background:${color};color:white;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.2);border:2px solid white;">${place.title.length > 8 ? place.title.substring(0, 8) + '..' : place.title}</div>`,
+            anchor: new window.naver.maps.Point(15, 15),
+          },
+        });
 
-    // Limit markers based on zoom level
-    const maxMarkers = currentZoom >= 13 ? 200 : currentZoom >= 10 ? 100 : 50;
-    const toRender = visiblePlaces.slice(0, maxMarkers);
+        window.naver.maps.Event.addListener(marker, 'click', () => {
+          onMarkerClick?.(place.id);
+        });
 
-    toRender.forEach((place) => {
-      const color = categoryMarkerColors[place.category] || '#FF8C42';
-      const marker = new window.naver.maps.Marker({
-        position: new window.naver.maps.LatLng(place.mapy, place.mapx),
-        map: map,
-        title: place.title,
-        icon: {
-          content: `<div style="background:${color};color:white;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.2);border:2px solid white;">${place.title.length > 8 ? place.title.substring(0, 8) + '..' : place.title}</div>`,
-          anchor: new window.naver.maps.Point(15, 15),
-        },
+        return marker;
       });
 
-      window.naver.maps.Event.addListener(marker, 'click', () => {
-        onMarkerClick?.(place.id);
-      });
+    markersRef.current = allMarkers;
 
-      markersRef.current.push(marker);
+    // Cluster icon generator
+    const clusterIcon = (count) => ({
+      content: `<div style="
+        width:${count >= 100 ? 52 : count >= 10 ? 44 : 38}px;
+        height:${count >= 100 ? 52 : count >= 10 ? 44 : 38}px;
+        background:${count >= 100 ? '#DC2626' : count >= 10 ? '#F59E0B' : '#3B82F6'};
+        color:white;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:${count >= 100 ? 15 : 13}px;
+        font-weight:bold;
+        box-shadow:0 3px 10px rgba(0,0,0,0.3);
+        border:3px solid white;
+      ">${count}</div>`,
+      anchor: new window.naver.maps.Point(
+        (count >= 100 ? 52 : count >= 10 ? 44 : 38) / 2,
+        (count >= 100 ? 52 : count >= 10 ? 44 : 38) / 2
+      ),
     });
+
+    const cluster = new window.MarkerClustering({
+      map: map,
+      markers: allMarkers,
+      minClusterSize: 2,
+      maxZoom: 16,
+      gridSize: 120,
+      icons: [clusterIcon(1)],
+      indexGenerator: [1],
+      stylingFunction: (clusterMarker, count) => {
+        const icon = clusterIcon(count);
+        clusterMarker.setIcon(icon);
+      },
+    });
+
+    clusterRef.current = cluster;
   }, [onMarkerClick]);
 
   // Update when places change

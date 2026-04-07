@@ -148,8 +148,11 @@ export default function MyPage() {
               {profile?.profileImageUrl ? (
                 <img src={profile.profileImageUrl} alt="" className="w-full h-full rounded-xl object-cover" />
               ) : (
-                <div className="w-full h-full rounded-xl bg-gradient-to-br from-pet-peach to-pet-orange flex items-center justify-center text-white text-2xl font-bold">
-                  {profile?.name?.charAt(0) || '?'}
+                <div className="w-full h-full rounded-xl bg-pet-gray flex flex-col items-center justify-center">
+                  <svg className="w-7 h-7 text-pet-brown/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
+                  </svg>
+                  <span className="text-[8px] text-pet-brown/30 mt-0.5">이미지 없음</span>
                 </div>
               )}
             </div>

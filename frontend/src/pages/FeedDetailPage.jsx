@@ -97,7 +97,7 @@ export default function FeedDetailPage() {
   const isOwner = user?.email === feed.writerEmail;
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-24 pt-16">
       <SEOHead
         title={feed.title}
         description={feed.content?.substring(0, 155) || `${feed.title} - 위드펫 커뮤니티 피드`}

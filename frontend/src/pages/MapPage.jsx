@@ -634,7 +634,7 @@ export default function MapPage() {
 
   /** Search bar overlay (positioned on top of the map) */
   const renderSearchOverlay = () => (
-    <div className="absolute top-4 left-4 right-4 md:left-[356px] md:right-5 z-10 flex flex-col gap-2">
+    <div className="absolute top-4 left-4 right-4 md:left-[356px] md:right-[140px] z-10 flex flex-col gap-2">
       {/* Search bar */}
       <form
         onSubmit={handleSearch}
