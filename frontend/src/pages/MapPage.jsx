@@ -634,7 +634,7 @@ export default function MapPage() {
 
   /** Search bar overlay (positioned on top of the map) */
   const renderSearchOverlay = () => (
-    <div className="absolute top-4 left-4 right-4 md:left-[356px] md:right-[140px] z-10 flex flex-col gap-2">
+    <div className="absolute top-4 left-4 right-4 md:left-[356px] md:right-[180px] z-10 flex flex-col gap-2">
       {/* Search bar */}
       <form
         onSubmit={handleSearch}
@@ -787,7 +787,7 @@ export default function MapPage() {
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="font-bold text-sm text-pet-dark-brown truncate">{place.title}</h3>
-          <p className="text-xs text-pet-brown/60 truncate mt-0.5">{place.addr1}</p>
+          <p className="text-xs text-pet-brown truncate mt-0.5">{place.addr1}</p>
           <div className="flex items-center gap-2 mt-1">
             {place.category && (
               <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${categoryColors[place.category] || categoryColors.OTHER}`}>
@@ -919,7 +919,7 @@ export default function MapPage() {
                         </span>
                       )}
                       {place.addr1 && (
-                        <span className="text-[10px] text-pet-brown/40 truncate">
+                        <span className="text-[10px] text-pet-brown/70 truncate">
                           {/* Show city name only */}
                           {place.addr1.split(' ').slice(0, 2).join(' ')}
                         </span>
@@ -1290,7 +1290,7 @@ export default function MapPage() {
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="min-w-0 flex-1">
               <h2 className="text-lg font-bold text-pet-dark-brown leading-snug">{placeDetail.title}</h2>
-              <p className="text-xs text-pet-brown/60 mt-1">📍 {placeDetail.addr1}</p>
+              <p className="text-xs text-pet-brown mt-1">📍 {placeDetail.addr1}</p>
               {placeDetail.tel && (
                 <p className="text-xs text-pet-brown/60">📞 {placeDetail.tel}</p>
               )}

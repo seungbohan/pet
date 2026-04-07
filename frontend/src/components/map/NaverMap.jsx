@@ -138,6 +138,10 @@ export default function NaverMap({
         const icon = clusterIcon(count);
         clusterMarker.setIcon(icon);
       },
+      onClusterClick: (cluster) => {
+        const clusterBounds = cluster.getBounds();
+        map.fitBounds(clusterBounds, { top: 50, right: 50, bottom: 50, left: 50 });
+      },
     });
 
     clusterRef.current = cluster;
