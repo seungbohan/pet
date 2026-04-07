@@ -254,24 +254,12 @@ export default function MapPage() {
   /* ---------------------------------------------------------------- */
   useEffect(() => {
     getMapPlaces()
-      .then((res) => {
-        setPlaces(res.data);
-        // Set initial list if empty (fallback before bounds kicks in)
-        if (res.data.length > 0 && userLocation) {
-          const dist = (p) => Math.pow((p.mapy || 0) - userLocation.lat, 2) + Math.pow((p.mapx || 0) - userLocation.lng, 2);
-          const nearest = [...res.data].filter(p => p.mapx && p.mapy).sort((a, b) => dist(a) - dist(b)).slice(0, 30);
-          setListPlaces(nearest);
-        } else if (res.data.length > 0) {
-          setListPlaces(res.data.slice(0, 30));
-        }
-      })
+      .then((res) => setPlaces(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    // When filters are active, use API search; otherwise bounds-based list handles it
-    if (!category && !keyword && !areacode) return;
     const params = {
       page: 0,
       size: 50,
@@ -1657,14 +1645,9 @@ export default function MapPage() {
             places={filteredMapPlaces}
             selectedId={selectedId}
             onMarkerClick={handleMarkerClick}
-            onBoundsChange={(visiblePlaces, mapCenter) => {
+            onBoundsChange={(visiblePlaces) => {
               if (visiblePlaces.length > 0) {
                 setListPlaces(visiblePlaces);
-              } else if (mapCenter && places.length > 0) {
-                // No places in bounds — show nearest places sorted by distance
-                const dist = (p) => Math.pow(p.mapy - mapCenter.lat, 2) + Math.pow(p.mapx - mapCenter.lng, 2);
-                const nearest = [...places].filter(p => p.mapx && p.mapy).sort((a, b) => dist(a) - dist(b)).slice(0, 30);
-                setListPlaces(nearest);
               }
             }}
             userLocation={userLocation}

@@ -77,12 +77,11 @@ export default function NaverMap({
     window.naver.maps.Event.addListener(map, 'idle', () => {
       if (!onBoundsChangeRef.current) return;
       const bounds = map.getBounds();
-      const c = map.getCenter();
       const visible = placesRef.current.filter((p) => {
         if (!p.mapx || !p.mapy) return false;
         return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
       });
-      onBoundsChangeRef.current(visible, { lat: c.lat(), lng: c.lng() });
+      onBoundsChangeRef.current(visible);
     });
 
     updateVisibleMarkers();
@@ -170,12 +169,11 @@ export default function NaverMap({
       // Also update bounds list when places load
       if (onBoundsChangeRef.current && window.naver) {
         const bounds = map.getBounds();
-        const c = map.getCenter();
         const visible = placesRef.current.filter((p) => {
           if (!p.mapx || !p.mapy) return false;
           return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
         });
-        onBoundsChangeRef.current(visible, { lat: c.lat(), lng: c.lng() });
+        onBoundsChangeRef.current(visible);
       }
     }
   }, [places, updateVisibleMarkers]);
