@@ -272,7 +272,14 @@ export default function MapPage() {
   }, [places, userLocation]);
 
   useEffect(() => {
-    if (!category && !keyword && !areacode) return;
+    if (!category && !keyword && !areacode) {
+      // No filters — show distance-sorted list
+      if (places.length > 0 && userLocation) {
+        const dist = (p) => Math.pow((p.mapy || 0) - userLocation.lat, 2) + Math.pow((p.mapx || 0) - userLocation.lng, 2);
+        setListPlaces([...places].filter(p => p.mapx && p.mapy).sort((a, b) => dist(a) - dist(b)).slice(0, 50));
+      }
+      return;
+    }
     const params = {
       page: 0,
       size: 50,
@@ -390,6 +397,17 @@ export default function MapPage() {
       const res = await toggleFavorite(selectedId);
       setFavorited(res.data.favorited);
     } catch {}
+  };
+
+  const handleRefreshNearbyList = () => {
+    const map = mapInstanceRef.current;
+    if (!map || !window.naver || places.length === 0) return;
+    const c = map.getCenter();
+    const lat = c.lat();
+    const lng = c.lng();
+    const dist = (p) => Math.pow((p.mapy || 0) - lat, 2) + Math.pow((p.mapx || 0) - lng, 2);
+    const sorted = [...places].filter(p => p.mapx && p.mapy).sort((a, b) => dist(a) - dist(b)).slice(0, 50);
+    setListPlaces(sorted);
   };
 
   const handleReviewSubmit = async (e) => {
@@ -1609,6 +1627,15 @@ export default function MapPage() {
 
         {/* Place list */}
         <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+          <button
+            onClick={handleRefreshNearbyList}
+            className="w-full mb-2 py-2 px-3 bg-pet-cream hover:bg-pet-peach rounded-xl text-xs font-semibold text-pet-orange transition-colors flex items-center justify-center gap-1.5"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            현재 위치 장소 보기
+          </button>
           {listPlaces.length === 0 ? renderEmptyList() : listPlaces.map(renderPlaceCard)}
         </div>
       </div>
@@ -1658,11 +1685,6 @@ export default function MapPage() {
             places={filteredMapPlaces}
             selectedId={selectedId}
             onMarkerClick={handleMarkerClick}
-            onBoundsChange={(visiblePlaces) => {
-              if (visiblePlaces.length > 0) {
-                setListPlaces(visiblePlaces);
-              }
-            }}
             userLocation={userLocation}
             center={mapCenter}
             zoom={mapZoom}
@@ -1723,6 +1745,15 @@ export default function MapPage() {
           ) : (
             /* Place list */
             <div className="space-y-0.5 pb-4">
+              <button
+                onClick={handleRefreshNearbyList}
+                className="w-full mb-2 py-2 px-3 bg-pet-cream hover:bg-pet-peach rounded-xl text-xs font-semibold text-pet-orange transition-colors flex items-center justify-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                현재 위치 장소 보기
+              </button>
               <h3 className="text-xs font-bold text-pet-dark-brown mb-2 px-1">
                 주변 장소
                 {listPlaces.length > 0 && (

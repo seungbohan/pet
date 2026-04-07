@@ -17,7 +17,6 @@ export default function NaverMap({
   places = [],
   selectedId,
   onMarkerClick,
-  onBoundsChange,
   userLocation,
   center,
   zoom,
@@ -29,11 +28,7 @@ export default function NaverMap({
   const clusterRef = useRef(null);
   const userMarkerRef = useRef(null);
   const placesRef = useRef(places);
-  const onBoundsChangeRef = useRef(onBoundsChange);
-  const idleTimerRef = useRef(null);
-
   placesRef.current = places;
-  onBoundsChangeRef.current = onBoundsChange;
 
   useEffect(() => {
     const loadClusterScript = (callback) => {
@@ -59,17 +54,6 @@ export default function NaverMap({
     document.head.appendChild(script);
   }, []);
 
-  // Debounced bounds change notification
-  const notifyBoundsChange = useCallback((map) => {
-    if (!onBoundsChangeRef.current || !window.naver) return;
-    const bounds = map.getBounds();
-    const visible = placesRef.current.filter((p) => {
-      if (!p.mapx || !p.mapy) return false;
-      return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
-    });
-    onBoundsChangeRef.current(visible);
-  }, []);
-
   const initMap = () => {
     if (!mapRef.current || mapInstanceRef.current) return;
     const initCenter = center
@@ -83,12 +67,6 @@ export default function NaverMap({
     mapInstanceRef.current = map;
 
     onMapReady?.(map);
-
-    // Debounced idle handler
-    window.naver.maps.Event.addListener(map, 'idle', () => {
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-      idleTimerRef.current = setTimeout(() => notifyBoundsChange(map), 300);
-    });
 
     updateVisibleMarkers();
   };
@@ -163,10 +141,7 @@ export default function NaverMap({
     });
 
     clusterRef.current = cluster;
-
-    // Notify bounds after markers are set
-    notifyBoundsChange(map);
-  }, [onMarkerClick, notifyBoundsChange]);
+  }, [onMarkerClick]);
 
   // Update when places change
   useEffect(() => {
