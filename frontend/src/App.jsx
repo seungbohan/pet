@@ -1,10 +1,23 @@
+import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import BottomNav from './components/common/BottomNav';
 import TopNav from './components/common/TopNav';
+import useAuthStore from './store/authStore';
+import { getMyProfile } from './api/users';
 
 function App() {
   const location = useLocation();
   const isMapPage = location.pathname === '/' || location.pathname === '/map';
+  const { token, user, setUser, logout } = useAuthStore();
+
+  // Restore user from token on app start
+  useEffect(() => {
+    if (token && !user) {
+      getMyProfile()
+        .then((res) => setUser(res.data))
+        .catch(() => logout());
+    }
+  }, []);
 
   return (
     <div className="h-screen flex flex-col">
