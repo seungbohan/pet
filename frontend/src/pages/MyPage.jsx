@@ -8,6 +8,7 @@ import StarRating from '../components/common/StarRating';
 import Pagination from '../components/common/Pagination';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import useAuthStore from '../store/authStore';
+import { uploadImages, getImageUrl } from '../api/upload';
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -25,6 +26,8 @@ export default function MyPage() {
   const [editIntroduce, setEditIntroduce] = useState('');
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [showDeletePetModal, setShowDeletePetModal] = useState(null);
+  const [editProfileImage, setEditProfileImage] = useState('');
+  const [imageUploading, setImageUploading] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -42,6 +45,7 @@ export default function MyPage() {
       setProfile(res.data);
       setEditName(res.data.name);
       setEditIntroduce(res.data.introduce || '');
+      setEditProfileImage(res.data.profileImageUrl || '');
     } finally {
       setLoading(false);
     }
@@ -58,12 +62,28 @@ export default function MyPage() {
 
   const handleUpdateProfile = async () => {
     try {
-      await updateProfile({ name: editName, introduce: editIntroduce });
-      setProfile({ ...profile, name: editName, introduce: editIntroduce });
+      await updateProfile({ name: editName, introduce: editIntroduce, profileImageUrl: editProfileImage || null });
+      setProfile({ ...profile, name: editName, introduce: editIntroduce, profileImageUrl: editProfileImage || null });
       setEditing(false);
       setUser({ ...user, name: editName });
     } catch {
       alert('프로필 수정에 실패했습니다.');
+    }
+  };
+
+  const handleProfileImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageUploading(true);
+    try {
+      const res = await uploadImages([file]);
+      const uploaded = res.data[0];
+      const url = getImageUrl(uploaded.imageURL || uploaded.fileName);
+      setEditProfileImage(url);
+    } catch {
+      alert('이미지 업로드에 실패했습니다.');
+    } finally {
+      setImageUploading(false);
     }
   };
 
@@ -162,6 +182,34 @@ export default function MyPage() {
           <div className="pt-14">
             {editing ? (
               <div className="space-y-3 animate-scale-in">
+                {/* Profile image upload */}
+                <div>
+                  <label className="text-xs font-medium text-pet-brown/60 mb-1 block">프로필 이미지</label>
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-pet-gray flex-shrink-0">
+                      {editProfileImage ? (
+                        <img src={editProfileImage} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-pet-brown/30 text-xs">없음</div>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <label className="px-3 py-1.5 bg-pet-orange text-white rounded-lg text-xs font-semibold cursor-pointer hover:bg-pet-orange/90 transition-colors">
+                        {imageUploading ? '업로드 중...' : '사진 선택'}
+                        <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} disabled={imageUploading} />
+                      </label>
+                      {editProfileImage && (
+                        <button
+                          type="button"
+                          onClick={() => setEditProfileImage('')}
+                          className="px-3 py-1.5 bg-pet-gray text-pet-brown rounded-lg text-xs font-medium hover:bg-red-50 hover:text-red-500 transition-colors"
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
                 <div>
                   <label className="text-xs font-medium text-pet-brown/60 mb-1 block">이름</label>
                   <input
