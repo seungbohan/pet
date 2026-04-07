@@ -140,9 +140,6 @@ export default function NaverMap({
       },
     });
 
-    // 클러스터 클릭 시 확대 활성화
-    cluster.enableClickZoom();
-
     clusterRef.current = cluster;
   }, [onMarkerClick]);
 
