@@ -260,6 +260,8 @@ export default function MapPage() {
   }, []);
 
   useEffect(() => {
+    // When filters are active, use API search; otherwise bounds-based list handles it
+    if (!category && !keyword && !areacode) return;
     const params = {
       page: 0,
       size: 50,
