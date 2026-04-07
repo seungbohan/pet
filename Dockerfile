@@ -12,6 +12,7 @@ WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 # [SECURITY] 비루트 사용자로 실행
 RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN mkdir -p /app/upload/tmp && chown -R appuser:appuser /app/upload
 USER appuser
 EXPOSE 8080
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
