@@ -93,11 +93,14 @@ public class UploadController {
             try {
                 uploadFile.transferTo(savePath);
 
-                String thumbnailSaveName = uploadPath + File.separator + folderPath + File.separator + "s_" + uuid + "_" + fileName;
-
-                File thumbnailFile = new File(thumbnailSaveName);
-
-                Thumbnailator.createThumbnail(savePath.toFile(), thumbnailFile, 100, 100);
+                // Thumbnail generation (best effort)
+                try {
+                    String thumbnailSaveName = uploadPath + File.separator + folderPath + File.separator + "s_" + uuid + "_" + fileName;
+                    File thumbnailFile = new File(thumbnailSaveName);
+                    Thumbnailator.createThumbnail(savePath.toFile(), thumbnailFile, 100, 100);
+                } catch (Exception te) {
+                    log.warn("Thumbnail generation failed for file: {}, skipping", fileName);
+                }
 
                 list.add(new ImageDTO(fileName, uuid, folderPath));
             } catch (IOException e) {
