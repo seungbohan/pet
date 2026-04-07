@@ -634,55 +634,59 @@ export default function MapPage() {
     </div>
   );
 
-  /** Search bar overlay (positioned on top of the map) */
-  const renderSearchOverlay = () => (
-    <div className="absolute top-4 left-4 right-4 md:left-[356px] md:right-[30%] z-10 flex flex-col gap-2">
-      {/* Search bar */}
-      <form
-        onSubmit={handleSearch}
-        className="flex items-center gap-2 bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg px-4 py-2.5"
+  /** Search bar (used in sidebar on desktop, overlay on mobile) */
+  const renderSearchForm = () => (
+    <form
+      onSubmit={handleSearch}
+      className="flex items-center gap-2 bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg px-4 py-2.5"
+    >
+      <svg className="w-5 h-5 text-pet-brown/40 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input
+        type="text"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        placeholder="장소명 또는 주소로 검색..."
+        className="flex-1 bg-transparent text-sm text-pet-dark-brown placeholder:text-pet-brown/40 focus:outline-none"
+      />
+      <button
+        type="submit"
+        className="px-3 py-1.5 bg-pet-orange text-white text-xs font-bold rounded-xl hover:bg-pet-orange/90 transition-colors"
       >
-        <svg className="w-5 h-5 text-pet-brown/40 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="장소명 또는 주소로 검색..."
-          className="flex-1 bg-transparent text-sm text-pet-dark-brown placeholder:text-pet-brown/40 focus:outline-none"
-        />
+        검색
+      </button>
+    </form>
+  );
+
+  const renderCategoryPills = () => (
+    <div className="flex gap-1.5 items-center overflow-x-auto scrollbar-hide pb-1">
+      {/* Category pills */}
+      {categories.map((cat) => (
         <button
-          type="submit"
-          className="px-3 py-1.5 bg-pet-orange text-white text-xs font-bold rounded-xl hover:bg-pet-orange/90 transition-colors"
+          key={cat.key}
+          onClick={() => handleCategoryChange(cat.key)}
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shadow-sm ${
+            category === cat.key
+              ? 'bg-pet-orange text-white shadow-pet-orange/30'
+              : 'bg-white/90 backdrop-blur-lg text-pet-brown hover:bg-white'
+          }`}
         >
-          검색
+          <span>{cat.icon}</span>
+          <span>{cat.label}</span>
         </button>
-      </form>
+      ))}
+    </div>
+  );
 
-      {/* Category pills + region selector row */}
+  /** Mobile-only search overlay */
+  const renderMobileSearchOverlay = () => (
+    <div className="absolute top-4 left-4 right-4 z-10 flex flex-col gap-2 md:hidden">
+      {renderSearchForm()}
       <div className="flex gap-1.5 items-center overflow-x-auto scrollbar-hide pb-1">
-        {/* Region selector */}
         {renderRegionSelector()}
-
-        {/* Divider */}
         <div className="w-px h-5 bg-pet-brown/15 flex-shrink-0 mx-0.5" />
-
-        {/* Category pills */}
-        {categories.map((cat) => (
-          <button
-            key={cat.key}
-            onClick={() => handleCategoryChange(cat.key)}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shadow-sm ${
-              category === cat.key
-                ? 'bg-pet-orange text-white shadow-pet-orange/30'
-                : 'bg-white/90 backdrop-blur-lg text-pet-brown hover:bg-white'
-            }`}
-          >
-            <span>{cat.icon}</span>
-            <span>{cat.label}</span>
-          </button>
-        ))}
+        {renderCategoryPills()}
       </div>
     </div>
   );
@@ -1478,6 +1482,10 @@ export default function MapPage() {
               WithPet
             </span>
           </Link>
+          {/* Desktop search bar inside sidebar */}
+          <div className="mb-3">{renderSearchForm()}</div>
+          {/* Desktop category pills */}
+          <div className="mb-3">{renderCategoryPills()}</div>
           <h2 className="text-sm font-bold text-pet-dark-brown flex items-center gap-1.5">
             <svg className="w-4 h-4 text-pet-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -1538,8 +1546,8 @@ export default function MapPage() {
       {/* MAP AREA                                                         */}
       {/* ================================================================ */}
       <div className="flex-1 relative">
-        {/* Search + category overlay */}
-        {renderSearchOverlay()}
+        {/* Mobile-only search overlay */}
+        {renderMobileSearchOverlay()}
 
         {/* Desktop auth overlay */}
         {renderDesktopAuthOverlay()}
