@@ -41,6 +41,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-changeme_jwt_secret_at_least_32_chars}
       PET_API_KEY: ${PET_API_KEY}
       FRONTEND_URL: ${FRONTEND_URL:-https://withpet.shop}
+      NAVER_MAPS_CLIENT_ID: ufwzhw6j2z
+      NAVER_MAPS_CLIENT_SECRET: ${NAVER_MAPS_CLIENT_SECRET}
       JAVA_OPTS: -Xms128m -Xmx256m
     volumes:
       - /home/ec2-user/upload:/app/upload

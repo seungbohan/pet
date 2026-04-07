@@ -13,6 +13,7 @@ import org.zerock.portfolio.dto.response.UserResponse;
 import org.zerock.portfolio.entity.*;
 import org.zerock.portfolio.repository.*;
 import org.zerock.portfolio.service.FeedService;
+import org.zerock.portfolio.service.GeocodingService;
 import org.zerock.portfolio.service.PetPlaceService;
 import org.zerock.portfolio.service.UserService;
 
@@ -37,6 +38,7 @@ public class AdminController {
     private final UserService userService;
     private final PetPlaceService petPlaceService;
     private final UserPlaceRepository userPlaceRepository;
+    private final GeocodingService geocodingService;
 
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Long>> getStats() {
@@ -148,12 +150,24 @@ public class AdminController {
 
         // 승인 시 PetPlaceEntity로 변환하여 실제 지도에 추가
         if (status == PlaceStatus.APPROVED) {
+            double mapx = place.getMapx();
+            double mapy = place.getMapy();
+
+            // 좌표가 없으면 주소로 지오코딩
+            if (mapx == 0 && mapy == 0 && place.getAddr1() != null) {
+                double[] coords = geocodingService.geocode(place.getAddr1());
+                if (coords != null) {
+                    mapx = coords[0];
+                    mapy = coords[1];
+                }
+            }
+
             PetPlaceEntity petPlace = PetPlaceEntity.builder()
                     .title(place.getTitle())
                     .addr1(place.getAddr1())
                     .tel(place.getTel())
-                    .mapx(place.getMapx())
-                    .mapy(place.getMapy())
+                    .mapx(mapx)
+                    .mapy(mapy)
                     .category(place.getCategory() != null ? place.getCategory() : PlaceCategory.OTHER)
                     .firstimage(place.getImageUrl())
                     .build();

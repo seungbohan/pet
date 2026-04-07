@@ -59,7 +59,10 @@
       "Bash(curl -s \"https://withpet.shop/api/v1/places/map\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(len\\(d\\)\\)\")",
       "Bash(curl -s \"https://withpet.shop/api/v1/places/map\" -o /tmp/places.json)",
-      "Bash(curl -s --max-time 20 \"https://withpet.shop/api/v1/places/map\")"
+      "Bash(curl -s --max-time 20 \"https://withpet.shop/api/v1/places/map\")",
+      "Bash(curl -s \"https://withpet.shop/sitemap.xml\")",
+      "Bash(curl -s --max-time 30 \"https://withpet.shop/sitemap.xml\")",
+      "Bash(curl -sv \"https://withpet.shop/sitemap.xml\")"
     ]
   }
 }
