@@ -138,10 +138,14 @@ export default function NaverMap({
         const icon = clusterIcon(count);
         clusterMarker.setIcon(icon);
       },
-      onClusterClick: (cluster) => {
-        const clusterBounds = cluster.getBounds();
-        map.fitBounds(clusterBounds, { top: 50, right: 50, bottom: 50, left: 50 });
-      },
+    });
+
+    // 클러스터 클릭 시 확대
+    window.naver.maps.Event.addListener(cluster, 'clusterclick', (clusterObj) => {
+      const clusterCenter = clusterObj.getCenter();
+      const currentZoom = map.getZoom();
+      map.setCenter(clusterCenter);
+      map.setZoom(currentZoom + 3);
     });
 
     clusterRef.current = cluster;
