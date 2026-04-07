@@ -116,16 +116,14 @@ public class PetPlaceServiceImpl implements PetPlaceService {
     @Override
     public List<PetPlaceResponse> getMapList() {
         return petPlaceRepository.findAll().stream()
+                .filter(p -> p.getMapx() != 0 && p.getMapy() != 0)
                 .map(p -> PetPlaceResponse.builder()
                         .id(p.getId())
-                        .contentid(p.getContentid())
                         .title(p.getTitle())
                         .addr1(p.getAddr1())
-                        .tel(p.getTel())
                         .mapx(p.getMapx())
                         .mapy(p.getMapy())
                         .category(p.getCategory() != null ? p.getCategory().name() : "OTHER")
-                        .firstimage2(p.getFirstimage2())
                         .build())
                 .collect(Collectors.toList());
     }

@@ -30,6 +30,7 @@ export default function NaverMap({
   const userMarkerRef = useRef(null);
   const placesRef = useRef(places);
   const onBoundsChangeRef = useRef(onBoundsChange);
+  const idleTimerRef = useRef(null);
 
   placesRef.current = places;
   onBoundsChangeRef.current = onBoundsChange;
@@ -58,6 +59,17 @@ export default function NaverMap({
     document.head.appendChild(script);
   }, []);
 
+  // Debounced bounds change notification
+  const notifyBoundsChange = useCallback((map) => {
+    if (!onBoundsChangeRef.current || !window.naver) return;
+    const bounds = map.getBounds();
+    const visible = placesRef.current.filter((p) => {
+      if (!p.mapx || !p.mapy) return false;
+      return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
+    });
+    onBoundsChangeRef.current(visible);
+  }, []);
+
   const initMap = () => {
     if (!mapRef.current || mapInstanceRef.current) return;
     const initCenter = center
@@ -70,18 +82,12 @@ export default function NaverMap({
     });
     mapInstanceRef.current = map;
 
-    // Notify parent that map is ready
     onMapReady?.(map);
 
-    // Notify parent of visible places when map moves/zooms
+    // Debounced idle handler
     window.naver.maps.Event.addListener(map, 'idle', () => {
-      if (!onBoundsChangeRef.current) return;
-      const bounds = map.getBounds();
-      const visible = placesRef.current.filter((p) => {
-        if (!p.mapx || !p.mapy) return false;
-        return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
-      });
-      onBoundsChangeRef.current(visible);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => notifyBoundsChange(map), 300);
     });
 
     updateVisibleMarkers();
@@ -121,7 +127,6 @@ export default function NaverMap({
 
     markersRef.current = allMarkers;
 
-    // Cluster icon generator
     const clusterIcon = (count) => ({
       content: `<div style="
         width:${count >= 100 ? 52 : count >= 10 ? 44 : 38}px;
@@ -153,28 +158,20 @@ export default function NaverMap({
       icons: [clusterIcon(1)],
       indexGenerator: [1],
       stylingFunction: (clusterMarker, count) => {
-        const icon = clusterIcon(count);
-        clusterMarker.setIcon(icon);
+        clusterMarker.setIcon(clusterIcon(count));
       },
     });
 
     clusterRef.current = cluster;
-  }, [onMarkerClick]);
+
+    // Notify bounds after markers are set
+    notifyBoundsChange(map);
+  }, [onMarkerClick, notifyBoundsChange]);
 
   // Update when places change
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (map) {
+    if (mapInstanceRef.current) {
       updateVisibleMarkers();
-      // Also update bounds list when places load
-      if (onBoundsChangeRef.current && window.naver) {
-        const bounds = map.getBounds();
-        const visible = placesRef.current.filter((p) => {
-          if (!p.mapx || !p.mapy) return false;
-          return bounds.hasPoint(new window.naver.maps.LatLng(p.mapy, p.mapx));
-        });
-        onBoundsChangeRef.current(visible);
-      }
     }
   }, [places, updateVisibleMarkers]);
 
@@ -203,18 +200,14 @@ export default function NaverMap({
     }
   }, [center, zoom]);
 
-  // Manage user location marker (blue pulsing dot)
+  // Manage user location marker
   useEffect(() => {
     const map = mapInstanceRef.current;
-
-    // Remove old user marker
     if (userMarkerRef.current) {
       userMarkerRef.current.setMap(null);
       userMarkerRef.current = null;
     }
-
     if (!map || !userLocation || !window.naver) return;
-
     const marker = new window.naver.maps.Marker({
       position: new window.naver.maps.LatLng(userLocation.lat, userLocation.lng),
       map: map,
@@ -229,7 +222,6 @@ export default function NaverMap({
       },
       zIndex: 1000,
     });
-
     userMarkerRef.current = marker;
   }, [userLocation]);
 
