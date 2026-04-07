@@ -81,6 +81,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/places/*/reviews").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/tags/**").permitAll()
+                .requestMatchers("/api/v1/upload/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/upload/display").permitAll()
                 .requestMatchers("/upload/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/sitemap.xml").permitAll()
