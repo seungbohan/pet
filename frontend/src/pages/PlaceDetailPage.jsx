@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { getPlace } from '../api/places';
 import { getPlaceReviews, createPlaceReview } from '../api/reviews';
 import { toggleFavorite } from '../api/favorites';
+import { uploadImages, getImageUrl } from '../api/upload';
+import client from '../api/client';
 import StarRating from '../components/common/StarRating';
 import Pagination from '../components/common/Pagination';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -21,6 +23,7 @@ export default function PlaceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [favorited, setFavorited] = useState(false);
   const [currentImg, setCurrentImg] = useState(0);
+  const [imgUploading, setImgUploading] = useState(false);
 
   useEffect(() => {
     getPlace(id)
@@ -45,6 +48,25 @@ export default function PlaceDetailPage() {
       const res = await toggleFavorite(id);
       setFavorited(res.data.favorited);
     } catch {}
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImgUploading(true);
+    try {
+      const uploadRes = await uploadImages([file]);
+      const uploaded = uploadRes.data[0];
+      const url = getImageUrl(uploaded.imageURL || uploaded.fileName);
+      await client.post(`/places/${id}/images`, { imageUrl: url });
+      const placeRes = await getPlace(id);
+      setPlace(placeRes.data);
+      setCurrentImg(0);
+    } catch {
+      alert('이미지 업로드에 실패했습니다.');
+    } finally {
+      setImgUploading(false);
+    }
   };
 
   const handleReviewSubmit = async (e) => {
@@ -93,28 +115,47 @@ export default function PlaceDetailPage() {
         if (place.imageUrls?.length > 0) {
           place.imageUrls.forEach((url) => { if (!allImages.includes(url)) allImages.push(url); });
         }
-        if (allImages.length === 0) return null;
         return (
           <div className="rounded-2xl overflow-hidden mb-6">
-            <img
-              key={currentImg}
-              src={allImages[currentImg] || allImages[0]}
-              alt={place.title}
-              className="w-full h-[350px] object-cover"
-            />
-            {allImages.length > 1 && (
-              <div className="flex gap-2 mt-2">
-                {allImages.map((url, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentImg(i)}
-                    className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${
-                      i === currentImg ? 'border-pet-orange' : 'border-transparent'
-                    }`}
-                  >
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
+            {allImages.length > 0 ? (
+              <>
+                <img
+                  key={currentImg}
+                  src={allImages[currentImg] || allImages[0]}
+                  alt={place.title}
+                  className="w-full h-[350px] object-cover"
+                />
+                {allImages.length > 1 && (
+                  <div className="flex gap-2 mt-2">
+                    {allImages.map((url, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentImg(i)}
+                        className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${
+                          i === currentImg ? 'border-pet-orange' : 'border-transparent'
+                        }`}
+                      >
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="w-full h-[200px] bg-gradient-to-br from-pet-peach to-pet-cream flex items-center justify-center rounded-2xl">
+                <span className="text-5xl">🐾</span>
+              </div>
+            )}
+            {isAuthenticated && (
+              <div className="mt-3">
+                <label className="inline-flex items-center gap-2 px-4 py-2 bg-pet-orange text-white rounded-xl text-sm font-semibold cursor-pointer hover:bg-pet-orange/90 transition-colors">
+                  {imgUploading ? (
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> 업로드 중...</>
+                  ) : (
+                    <>📷 사진 추가</>
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={imgUploading} />
+                </label>
               </div>
             )}
           </div>

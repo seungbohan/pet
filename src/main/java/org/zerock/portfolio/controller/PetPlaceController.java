@@ -17,6 +17,10 @@ import org.zerock.portfolio.entity.PlaceCategory;
 import org.zerock.portfolio.entity.PlaceStatus;
 import org.zerock.portfolio.entity.UserEntity;
 import org.zerock.portfolio.entity.UserPlaceEntity;
+import org.zerock.portfolio.entity.PetPlaceEntity;
+import org.zerock.portfolio.entity.PetPlaceImgEntity;
+import org.zerock.portfolio.repository.PetPlaceImgRepository;
+import org.zerock.portfolio.repository.PetPlaceRepository;
 import org.zerock.portfolio.repository.UserPlaceRepository;
 import org.zerock.portfolio.repository.UserRepository;
 import org.zerock.portfolio.service.PetPlaceService;
@@ -34,6 +38,8 @@ public class PetPlaceController {
 
     private final PetPlaceService petPlaceService;
     private final PetPlaceSyncService petPlaceSyncService;
+    private final PetPlaceRepository petPlaceRepository;
+    private final PetPlaceImgRepository petPlaceImgRepository;
     private final UserPlaceRepository userPlaceRepository;
     private final UserRepository userRepository;
 
@@ -87,6 +93,27 @@ public class PetPlaceController {
             Authentication authentication) {
         boolean upvote = body.getOrDefault("upvote", true);
         return ResponseEntity.ok(petPlaceService.vote(id, upvote, authentication.getName()));
+    }
+
+    // 장소 이미지 추가 (회원만)
+    @PostMapping("/{id}/images")
+    public ResponseEntity<Map<String, String>> addPlaceImage(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        String imageUrl = body.get("imageUrl");
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        PetPlaceEntity place = petPlaceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("장소를 찾을 수 없습니다."));
+        PetPlaceImgEntity img = PetPlaceImgEntity.builder()
+                .originimgurl(imageUrl)
+                .imgname(authentication.getName())
+                .petPlace(place)
+                .build();
+        petPlaceImgRepository.save(img);
+        return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
     }
 
     // Popular places ranking (인기 장소 랭킹)
