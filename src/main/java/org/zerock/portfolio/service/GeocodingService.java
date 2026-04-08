@@ -33,7 +33,7 @@ public class GeocodingService {
 
         try {
             String url = UriComponentsBuilder
-                    .fromHttpUrl("https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode")
+                    .fromHttpUrl("https://maps.apigw.ntruss.com/map-geocode/v2/geocode")
                     .queryParam("query", address)
                     .build()
                     .toUriString();
