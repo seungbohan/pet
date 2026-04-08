@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getFeed, deleteFeed } from '../api/feed';
 import { getFeedReviews, createFeedReview, deleteReview } from '../api/reviews';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { DetailSkeleton } from '../components/common/Skeleton';
 import StarRating from '../components/common/StarRating';
 import Pagination from '../components/common/Pagination';
 import SEOHead from '../components/common/SEOHead';
 import useAuthStore from '../store/authStore';
+import useToastStore from '../store/toastStore';
 
 export default function FeedDetailPage() {
   const { id } = useParams();
@@ -24,6 +25,7 @@ export default function FeedDetailPage() {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showReviewDeleteConfirm, setShowReviewDeleteConfirm] = useState(null);
+  const addToast = useToastStore((s) => s.addToast);
 
   useEffect(() => {
     getFeed(id)
@@ -50,7 +52,7 @@ export default function FeedDetailPage() {
       await deleteFeed(id);
       navigate('/feeds');
     } catch {
-      alert('삭제에 실패했습니다.');
+      addToast('삭제에 실패했습니다.', 'error');
     }
     setShowDeleteConfirm(false);
   };
@@ -65,7 +67,7 @@ export default function FeedDetailPage() {
       setNewRating(5);
       loadReviews();
     } catch {
-      alert('리뷰 작성에 실패했습니다.');
+      addToast('리뷰 작성에 실패했습니다.', 'error');
     } finally {
       setReviewSubmitting(false);
     }
@@ -76,7 +78,7 @@ export default function FeedDetailPage() {
       await deleteReview(reviewId);
       loadReviews();
     } catch {
-      alert('삭제에 실패했습니다.');
+      addToast('삭제에 실패했습니다.', 'error');
     }
     setShowReviewDeleteConfirm(null);
   };
@@ -91,7 +93,7 @@ export default function FeedDetailPage() {
     setCurrentImg((prev) => (prev < feed.images.length - 1 ? prev + 1 : 0));
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (!feed) return null;
 
   const isOwner = user?.email === feed.writerEmail;

@@ -3,9 +3,6 @@ package org.zerock.portfolio.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -13,22 +10,11 @@ import org.zerock.portfolio.dto.request.UserPlaceRequest;
 import org.zerock.portfolio.dto.response.PageResponse;
 import org.zerock.portfolio.dto.response.PetPlaceResponse;
 import org.zerock.portfolio.dto.response.UserPlaceResponse;
-import org.zerock.portfolio.entity.PlaceCategory;
-import org.zerock.portfolio.entity.PlaceStatus;
-import org.zerock.portfolio.entity.UserEntity;
-import org.zerock.portfolio.entity.UserPlaceEntity;
-import org.zerock.portfolio.entity.PetPlaceEntity;
-import org.zerock.portfolio.entity.PetPlaceImgEntity;
-import org.zerock.portfolio.repository.PetPlaceImgRepository;
-import org.zerock.portfolio.repository.PetPlaceRepository;
-import org.zerock.portfolio.repository.UserPlaceRepository;
-import org.zerock.portfolio.repository.UserRepository;
 import org.zerock.portfolio.service.PetPlaceService;
 import org.zerock.portfolio.service.PetPlaceSyncService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/places")
@@ -38,10 +24,6 @@ public class PetPlaceController {
 
     private final PetPlaceService petPlaceService;
     private final PetPlaceSyncService petPlaceSyncService;
-    private final PetPlaceRepository petPlaceRepository;
-    private final PetPlaceImgRepository petPlaceImgRepository;
-    private final UserPlaceRepository userPlaceRepository;
-    private final UserRepository userRepository;
 
     // [SECURITY] 페이지 크기 상한 제한 (MEDIUM-3 수정)
     private static final int MAX_PAGE_SIZE = 50;
@@ -105,15 +87,7 @@ public class PetPlaceController {
         if (imageUrl == null || imageUrl.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        PetPlaceEntity place = petPlaceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("장소를 찾을 수 없습니다."));
-        PetPlaceImgEntity img = PetPlaceImgEntity.builder()
-                .originimgurl(imageUrl)
-                .imgname(authentication.getName())
-                .petPlace(place)
-                .build();
-        petPlaceImgRepository.save(img);
-        return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
+        return ResponseEntity.ok(petPlaceService.addImage(id, imageUrl, authentication.getName()));
     }
 
     // Popular places ranking (인기 장소 랭킹)
@@ -128,32 +102,9 @@ public class PetPlaceController {
     public ResponseEntity<Map<String, Long>> submitPlace(
             @Valid @RequestBody UserPlaceRequest request,
             Authentication authentication) {
-        UserEntity user = null;
-        if (authentication != null) {
-            user = userRepository.findByEmail(authentication.getName()).orElse(null);
-        }
-
-        PlaceCategory cat = PlaceCategory.OTHER;
-        if (request.getCategory() != null) {
-            try {
-                cat = PlaceCategory.valueOf(request.getCategory());
-            } catch (Exception ignored) {
-            }
-        }
-
-        UserPlaceEntity place = UserPlaceEntity.builder()
-                .user(user)
-                .title(request.getTitle())
-                .addr1(request.getAddr1())
-                .tel(request.getTel())
-                .mapx(request.getMapx())
-                .mapy(request.getMapy())
-                .category(cat)
-                .description(request.getDescription())
-                .imageUrl(resolveImageUrl(request))
-                .build();
-        userPlaceRepository.save(place);
-        return ResponseEntity.ok(Map.of("id", place.getId()));
+        String email = authentication != null ? authentication.getName() : null;
+        Long id = petPlaceService.submitUserPlace(request, email);
+        return ResponseEntity.ok(Map.of("id", id));
     }
 
     // 제보된 장소 목록 (대기중인 것들) - 공개
@@ -163,35 +114,7 @@ public class PetPlaceController {
             @RequestParam(defaultValue = "20") int size) {
         size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
         page = Math.max(page, 0);
-        Page<UserPlaceEntity> result = userPlaceRepository.findByStatus(
-                PlaceStatus.PENDING, PageRequest.of(page, size, Sort.by("id").descending()));
-
-        List<UserPlaceResponse> content = result.getContent().stream()
-                .map(e -> UserPlaceResponse.builder()
-                        .id(e.getId())
-                        .title(e.getTitle())
-                        .addr1(e.getAddr1())
-                        .tel(e.getTel())
-                        .mapx(e.getMapx())
-                        .mapy(e.getMapy())
-                        .category(e.getCategory() != null ? e.getCategory().name() : "OTHER")
-                        .description(e.getDescription())
-                        .imageUrl(e.getImageUrl())
-                        .status(e.getStatus().name())
-                        .submitterName(e.getUser() != null ? e.getUser().getName() : "")
-                        .regDate(e.getRegDate())
-                        .build())
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(PageResponse.<UserPlaceResponse>builder()
-                .content(content)
-                .page(page)
-                .size(size)
-                .totalElements(result.getTotalElements())
-                .totalPages(result.getTotalPages())
-                .first(result.isFirst())
-                .last(result.isLast())
-                .build());
+        return ResponseEntity.ok(petPlaceService.getSubmittedPlaces(page, size));
     }
 
     @PostMapping("/sync")
@@ -244,13 +167,6 @@ public class PetPlaceController {
             return ResponseEntity.internalServerError()
                     .body(Map.of("status", "error", "message", "이미지 동기화 중 오류가 발생했습니다."));
         }
-    }
-
-    private String resolveImageUrl(UserPlaceRequest request) {
-        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
-            return String.join(",", request.getImageUrls());
-        }
-        return request.getImageUrl();
     }
 
     @PostMapping("/sync/update")

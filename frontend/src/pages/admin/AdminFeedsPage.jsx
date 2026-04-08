@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getAdminFeeds, deleteAdminFeed } from '../../api/admin';
 import Pagination from '../../components/common/Pagination';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import useToastStore from '../../store/toastStore';
 
 export default function AdminFeedsPage() {
   const [feeds, setFeeds] = useState([]);
@@ -29,7 +30,7 @@ export default function AdminFeedsPage() {
       await deleteAdminFeed(deleteTarget);
       loadFeeds();
     } catch {
-      alert('삭제 실패');
+      useToastStore.getState().addToast('삭제에 실패했습니다.', 'error');
     }
     setDeleteTarget(null);
   };

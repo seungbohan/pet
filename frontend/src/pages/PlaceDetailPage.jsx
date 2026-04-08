@@ -7,9 +7,14 @@ import { uploadImages, getImageUrl } from '../api/upload';
 import client from '../api/client';
 import StarRating from '../components/common/StarRating';
 import Pagination from '../components/common/Pagination';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { DetailSkeleton } from '../components/common/Skeleton';
+import ConfirmModal from '../components/common/ConfirmModal';
 import SEOHead from '../components/common/SEOHead';
+import ReviewForm from '../components/reviews/ReviewForm';
+import ReviewList from '../components/reviews/ReviewList';
+import ImageGallery from '../components/reviews/ImageGallery';
 import useAuthStore from '../store/authStore';
+import useToastStore from '../store/toastStore';
 
 export default function PlaceDetailPage() {
   const { id } = useParams();
@@ -22,8 +27,9 @@ export default function PlaceDetailPage() {
   const [newRating, setNewRating] = useState(5);
   const [loading, setLoading] = useState(true);
   const [favorited, setFavorited] = useState(false);
-  const [currentImg, setCurrentImg] = useState(0);
   const [imgUploading, setImgUploading] = useState(false);
+  const [reviewDeleteTarget, setReviewDeleteTarget] = useState(null);
+  const addToast = useToastStore((s) => s.addToast);
 
   useEffect(() => {
     getPlace(id)
@@ -51,7 +57,6 @@ export default function PlaceDetailPage() {
   };
 
   const handleReviewDelete = async (reviewId) => {
-    if (!confirm('리뷰를 삭제하시겠습니까?')) return;
     try {
       await deleteReview(reviewId);
       const res = await getPlaceReviews(id, 0);
@@ -60,9 +65,11 @@ export default function PlaceDetailPage() {
       setReviewPage(0);
       const placeRes = await getPlace(id);
       setPlace(placeRes.data);
+      addToast('리뷰가 삭제되었습니다.', 'success');
     } catch {
-      alert('삭제에 실패했습니다.');
+      addToast('삭제에 실패했습니다.', 'error');
     }
+    setReviewDeleteTarget(null);
   };
 
   const handleImageUpload = async (e) => {
@@ -76,9 +83,8 @@ export default function PlaceDetailPage() {
       await client.post(`/places/${id}/images`, { imageUrl: url });
       const placeRes = await getPlace(id);
       setPlace(placeRes.data);
-      setCurrentImg(0);
     } catch {
-      alert('이미지 업로드에 실패했습니다.');
+      addToast('이미지 업로드에 실패했습니다.', 'error');
     } finally {
       setImgUploading(false);
     }
@@ -91,18 +97,26 @@ export default function PlaceDetailPage() {
       await createPlaceReview(id, { content: newReview, rating: newRating });
       setNewReview('');
       setNewRating(5);
-      // Reload reviews
       const res = await getPlaceReviews(id, 0);
       setReviews(res.data.content || []);
       setReviewTotalPages(res.data.totalPages || 0);
       setReviewPage(0);
     } catch {
-      alert('리뷰 작성에 실패했습니다.');
+      addToast('리뷰 작성에 실패했습니다.', 'error');
     }
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (!place) return null;
+
+  /* Build deduplicated image list */
+  const allImages = [];
+  if (place.firstimage) allImages.push(place.firstimage);
+  if (place.imageUrls?.length > 0) {
+    place.imageUrls.forEach((url) => {
+      if (!allImages.includes(url)) allImages.push(url);
+    });
+  }
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -134,59 +148,23 @@ export default function PlaceDetailPage() {
           },
         ]}
       />
+
       {/* Image Gallery */}
-      {(() => {
-        const allImages = [];
-        if (place.firstimage) allImages.push(place.firstimage);
-        if (place.imageUrls?.length > 0) {
-          place.imageUrls.forEach((url) => { if (!allImages.includes(url)) allImages.push(url); });
-        }
-        return (
-          <div className="rounded-2xl overflow-hidden mb-6">
-            {allImages.length > 0 ? (
-              <>
-                <img
-                  key={currentImg}
-                  src={allImages[currentImg] || allImages[0]}
-                  alt={place.title}
-                  className="w-full h-[350px] object-cover"
-                />
-                {allImages.length > 1 && (
-                  <div className="flex gap-2 mt-2">
-                    {allImages.map((url, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentImg(i)}
-                        className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${
-                          i === currentImg ? 'border-pet-orange' : 'border-transparent'
-                        }`}
-                      >
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="w-full h-[200px] bg-gradient-to-br from-pet-peach to-pet-cream flex items-center justify-center rounded-2xl">
-                <span className="text-5xl">🐾</span>
-              </div>
-            )}
-            {isAuthenticated && (
-              <div className="mt-3">
-                <label className="inline-flex items-center gap-2 px-4 py-2 bg-pet-orange text-white rounded-xl text-sm font-semibold cursor-pointer hover:bg-pet-orange/90 transition-colors">
-                  {imgUploading ? (
-                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> 업로드 중...</>
-                  ) : (
-                    <>📷 사진 추가</>
-                  )}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={imgUploading} />
-                </label>
-              </div>
-            )}
+      <div className="mb-6">
+        <ImageGallery images={allImages} alt={place.title} variant="thumbnails" />
+        {isAuthenticated && (
+          <div className="mt-3">
+            <label className="inline-flex items-center gap-2 px-4 py-2 bg-pet-orange text-white rounded-xl text-sm font-semibold cursor-pointer hover:bg-pet-orange/90 transition-colors">
+              {imgUploading ? (
+                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> 업로드 중...</>
+              ) : (
+                <>📷 사진 추가</>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={imgUploading} />
+            </label>
           </div>
-        );
-      })()}
+        )}
+      </div>
 
       {/* Place Info */}
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
@@ -228,68 +206,36 @@ export default function PlaceDetailPage() {
       <div className="bg-white rounded-2xl p-6 shadow-sm">
         <h2 className="text-lg font-bold text-pet-dark-brown mb-4">리뷰</h2>
 
-        {isAuthenticated ? (
-          <form onSubmit={handleReviewSubmit} className="mb-6 p-4 bg-pet-cream rounded-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm text-pet-brown">별점</span>
-              <StarRating rating={newRating} onChange={setNewRating} size="text-lg" />
-            </div>
-            <textarea
-              value={newReview}
-              onChange={(e) => setNewReview(e.target.value)}
-              placeholder="방문 후기를 남겨주세요..."
-              className="w-full p-3 rounded-xl border border-pet-gray bg-white text-sm resize-none h-20 focus:outline-none focus:border-pet-orange"
-            />
-            <button
-              type="submit"
-              className="mt-2 px-4 py-2 bg-pet-orange text-white rounded-xl text-sm font-medium hover:bg-pet-orange/90 transition-colors"
-            >
-              리뷰 작성
-            </button>
-          </form>
-        ) : (
-          <div className="mb-6 p-4 bg-pet-cream rounded-xl text-center">
-            <p className="text-sm text-pet-brown/70 mb-2">리뷰를 작성하려면 회원가입이 필요합니다.</p>
-            <a href="/login" className="inline-block px-4 py-2 bg-pet-orange text-white rounded-xl text-sm font-medium hover:bg-pet-orange/90 transition-colors">
-              로그인 / 회원가입
-            </a>
-          </div>
-        )}
+        <ReviewForm
+          onSubmit={handleReviewSubmit}
+          isAuthenticated={isAuthenticated}
+          allowGuest={false}
+          newReview={newReview}
+          setNewReview={setNewReview}
+          newRating={newRating}
+          setNewRating={setNewRating}
+          variant="full"
+        />
 
-        <div className="space-y-4">
-          {reviews.map((review) => (
-            <div key={review.id} className="p-4 border border-pet-gray rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="font-medium text-sm text-pet-brown">{review.writerName}</span>
-                <StarRating rating={review.rating} readOnly size="text-sm" />
-                <span className="text-xs text-pet-brown/40 ml-auto">
-                  {new Date(review.regDate).toLocaleDateString('ko-KR')}
-                </span>
-                {user?.email === review.writerEmail && (
-                  <button
-                    onClick={() => handleReviewDelete(review.id)}
-                    className="text-xs text-pet-brown/40 hover:text-red-500 transition-colors px-2 py-1 rounded-md hover:bg-red-50"
-                  >
-                    삭제
-                  </button>
-                )}
-              </div>
-              <p className="text-sm text-pet-brown/80">{review.content}</p>
-              {review.tags?.length > 0 && (
-                <div className="flex gap-1 mt-2">
-                  {review.tags.map((tag, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-pet-mint text-pet-dark-brown rounded-full text-xs">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <ReviewList
+          reviews={reviews}
+          currentUserEmail={user?.email}
+          onDelete={(reviewId) => setReviewDeleteTarget(reviewId)}
+          variant="full"
+        />
 
         <Pagination page={reviewPage} totalPages={reviewTotalPages} onPageChange={setReviewPage} />
       </div>
+
+      {/* Review Delete Confirmation */}
+      <ConfirmModal
+        open={!!reviewDeleteTarget}
+        title="리뷰 삭제"
+        message="리뷰를 삭제하시겠습니까?"
+        confirmText="삭제"
+        onConfirm={() => handleReviewDelete(reviewDeleteTarget)}
+        onCancel={() => setReviewDeleteTarget(null)}
+      />
     </div>
   );
 }

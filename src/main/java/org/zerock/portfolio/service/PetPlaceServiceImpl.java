@@ -8,13 +8,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.zerock.portfolio.dto.request.UserPlaceRequest;
 import org.zerock.portfolio.dto.response.PageResponse;
 import org.zerock.portfolio.dto.response.PetPlaceResponse;
+import org.zerock.portfolio.dto.response.UserPlaceResponse;
 import org.zerock.portfolio.entity.*;
 import org.zerock.portfolio.repository.FavoriteRepository;
 import org.zerock.portfolio.repository.PetPlaceImgRepository;
 import org.zerock.portfolio.repository.PetPlaceRepository;
 import org.zerock.portfolio.repository.PetPlaceReviewRepository;
+import org.zerock.portfolio.repository.UserPlaceRepository;
 import org.zerock.portfolio.repository.UserRepository;
 import org.zerock.portfolio.repository.VoteRepository;
 
@@ -32,6 +35,7 @@ public class PetPlaceServiceImpl implements PetPlaceService {
     private final PetPlaceReviewRepository petPlaceReviewRepository;
     private final FavoriteRepository favoriteRepository;
     private final UserRepository userRepository;
+    private final UserPlaceRepository userPlaceRepository;
     private final VoteRepository voteRepository;
 
     @Override
@@ -212,6 +216,93 @@ public class PetPlaceServiceImpl implements PetPlaceService {
                 .sorted((a, b) -> Long.compare(b.getUpvotes(), a.getUpvotes()))
                 .limit(limit)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public Map<String, String> addImage(Long placeId, String imageUrl, String userEmail) {
+        PetPlaceEntity place = petPlaceRepository.findById(placeId)
+                .orElseThrow(() -> new EntityNotFoundException("장소를 찾을 수 없습니다. id=" + placeId));
+        PetPlaceImgEntity img = PetPlaceImgEntity.builder()
+                .originimgurl(imageUrl)
+                .imgname(userEmail)
+                .petPlace(place)
+                .build();
+        petPlaceImgRepository.save(img);
+        return Map.of("imageUrl", imageUrl);
+    }
+
+    @Override
+    @Transactional
+    public Long submitUserPlace(UserPlaceRequest request, String userEmail) {
+        UserEntity user = null;
+        if (userEmail != null) {
+            user = userRepository.findByEmail(userEmail).orElse(null);
+        }
+
+        PlaceCategory cat = PlaceCategory.OTHER;
+        if (request.getCategory() != null) {
+            try {
+                cat = PlaceCategory.valueOf(request.getCategory());
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        String imageUrl = resolveImageUrl(request);
+
+        UserPlaceEntity place = UserPlaceEntity.builder()
+                .user(user)
+                .title(request.getTitle())
+                .addr1(request.getAddr1())
+                .tel(request.getTel())
+                .mapx(request.getMapx())
+                .mapy(request.getMapy())
+                .category(cat)
+                .description(request.getDescription())
+                .imageUrl(imageUrl)
+                .build();
+        userPlaceRepository.save(place);
+        return place.getId();
+    }
+
+    @Override
+    public PageResponse<UserPlaceResponse> getSubmittedPlaces(int page, int size) {
+        Page<UserPlaceEntity> result = userPlaceRepository.findByStatus(
+                PlaceStatus.PENDING, PageRequest.of(page, size, Sort.by("id").descending()));
+
+        List<UserPlaceResponse> content = result.getContent().stream()
+                .map(e -> UserPlaceResponse.builder()
+                        .id(e.getId())
+                        .title(e.getTitle())
+                        .addr1(e.getAddr1())
+                        .tel(e.getTel())
+                        .mapx(e.getMapx())
+                        .mapy(e.getMapy())
+                        .category(e.getCategory() != null ? e.getCategory().name() : "OTHER")
+                        .description(e.getDescription())
+                        .imageUrl(e.getImageUrl())
+                        .status(e.getStatus().name())
+                        .submitterName(e.getUser() != null ? e.getUser().getName() : "")
+                        .regDate(e.getRegDate())
+                        .build())
+                .collect(Collectors.toList());
+
+        return PageResponse.<UserPlaceResponse>builder()
+                .content(content)
+                .page(page)
+                .size(size)
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .first(result.isFirst())
+                .last(result.isLast())
+                .build();
+    }
+
+    private String resolveImageUrl(UserPlaceRequest request) {
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            return String.join(",", request.getImageUrls());
+        }
+        return request.getImageUrl();
     }
 
     private PlaceCategory parseCategory(String category) {

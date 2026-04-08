@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getUsers, deleteUser, changeUserRole } from '../../api/admin';
 import Pagination from '../../components/common/Pagination';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import useToastStore from '../../store/toastStore';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -29,13 +30,13 @@ export default function AdminUsersPage() {
       await deleteUser(deleteTarget);
       loadUsers();
     } catch {
-      alert('삭제 실패');
+      useToastStore.getState().addToast('삭제에 실패했습니다.', 'error');
     }
     setDeleteTarget(null);
   };
 
   const handleRoleChange = async (id, role) => {
-    try { await changeUserRole(id, role); loadUsers(); } catch { alert('권한 변경 실패'); }
+    try { await changeUserRole(id, role); loadUsers(); } catch { useToastStore.getState().addToast('권한 변경에 실패했습니다.', 'error'); }
   };
 
   if (loading) return <LoadingSpinner />;

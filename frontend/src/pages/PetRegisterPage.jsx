@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPet } from '../api/pets';
+import useToastStore from '../store/toastStore';
 
 const SPECIES_OPTIONS = [
   {
@@ -49,7 +50,7 @@ export default function PetRegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) { alert('이름을 입력해주세요.'); return; }
+    if (!form.name.trim()) { useToastStore.getState().addToast('이름을 입력해주세요.', 'warning'); return; }
     setLoading(true);
     try {
       await createPet({
@@ -59,7 +60,7 @@ export default function PetRegisterPage() {
       });
       navigate('/mypage');
     } catch {
-      alert('등록에 실패했습니다.');
+      useToastStore.getState().addToast('등록에 실패했습니다.', 'error');
     } finally {
       setLoading(false);
     }

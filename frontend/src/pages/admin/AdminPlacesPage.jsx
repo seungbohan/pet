@@ -4,6 +4,8 @@ import { getPlaces } from '../../api/places';
 import client from '../../api/client';
 import Pagination from '../../components/common/Pagination';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import useToastStore from '../../store/toastStore';
 
 export default function AdminPlacesPage() {
   const [tab, setTab] = useState('submissions'); // 'places' | 'submissions'
@@ -13,6 +15,8 @@ export default function AdminPlacesPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('PENDING');
+  const [confirmAction, setConfirmAction] = useState(null); // { id, status, message }
+  const addToast = useToastStore((s) => s.addToast);
 
   useEffect(() => { setPage(0); }, [tab, statusFilter]);
   useEffect(() => { tab === 'places' ? loadPlaces() : loadSubmissions(); }, [page, tab, statusFilter]);
@@ -37,15 +41,21 @@ export default function AdminPlacesPage() {
       .finally(() => setLoading(false));
   };
 
-  const handleStatusChange = async (id, status) => {
+  const handleStatusChange = (id, status) => {
     const msg = status === 'APPROVED' ? '승인하시겠습니까? 지도에 바로 반영됩니다.' : '거절하시겠습니까?';
-    if (!confirm(msg)) return;
+    setConfirmAction({ id, status, message: msg });
+  };
+
+  const executeStatusChange = async () => {
+    if (!confirmAction) return;
     try {
-      await client.put(`/admin/places/${id}/status`, { status });
+      await client.put(`/admin/places/${confirmAction.id}/status`, { status: confirmAction.status });
       loadSubmissions();
+      addToast(confirmAction.status === 'APPROVED' ? '승인되었습니다.' : '거절되었습니다.', 'success');
     } catch {
-      alert('처리에 실패했습니다.');
+      addToast('처리에 실패했습니다.', 'error');
     }
+    setConfirmAction(null);
   };
 
   if (loading) return <LoadingSpinner />;
@@ -201,6 +211,17 @@ export default function AdminPlacesPage() {
       )}
 
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+
+      {/* Status Change Confirmation */}
+      <ConfirmModal
+        open={!!confirmAction}
+        title="장소 상태 변경"
+        message={confirmAction?.message || ''}
+        confirmText={confirmAction?.status === 'APPROVED' ? '승인' : '거절'}
+        variant={confirmAction?.status === 'APPROVED' ? 'default' : 'danger'}
+        onConfirm={executeStatusChange}
+        onCancel={() => setConfirmAction(null)}
+      />
     </div>
   );
 }

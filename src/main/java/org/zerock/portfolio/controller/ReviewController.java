@@ -10,6 +10,7 @@ import org.zerock.portfolio.dto.response.PageResponse;
 import org.zerock.portfolio.dto.response.ReviewResponse;
 import org.zerock.portfolio.service.FeedReviewService;
 import org.zerock.portfolio.service.PetPlaceReviewService;
+import org.zerock.portfolio.service.ReviewService;
 
 import java.util.Map;
 
@@ -19,6 +20,7 @@ public class ReviewController {
 
     private final FeedReviewService feedReviewService;
     private final PetPlaceReviewService petPlaceReviewService;
+    private final ReviewService reviewService;
 
     // Feed Reviews
     @GetMapping("/api/v1/feeds/{feedId}/reviews")
@@ -55,17 +57,13 @@ public class ReviewController {
         return ResponseEntity.ok(Map.of("id", id));
     }
 
-    // Common
+    // Common - delegates to unified ReviewService which determines the review type first
     @PutMapping("/api/v1/reviews/{id}")
     public ResponseEntity<Void> updateReview(
             @PathVariable Long id,
             @Valid @RequestBody ReviewRequest request,
             Authentication authentication) {
-        try {
-            feedReviewService.modify(id, request, authentication.getName());
-        } catch (IllegalArgumentException e) {
-            petPlaceReviewService.modifyWithResponse(id, request, authentication.getName());
-        }
+        reviewService.modify(id, request, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
@@ -73,11 +71,7 @@ public class ReviewController {
     public ResponseEntity<Void> deleteReview(
             @PathVariable Long id,
             Authentication authentication) {
-        try {
-            feedReviewService.remove(id, authentication.getName());
-        } catch (IllegalArgumentException e) {
-            petPlaceReviewService.removeWithResponse(id, authentication.getName());
-        }
+        reviewService.remove(id, authentication.getName());
         return ResponseEntity.ok().build();
     }
 }

@@ -8,6 +8,7 @@ import StarRating from '../components/common/StarRating';
 import Pagination from '../components/common/Pagination';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import useAuthStore from '../store/authStore';
+import useToastStore from '../store/toastStore';
 import { uploadImages, getImageUrl } from '../api/upload';
 
 export default function MyPage() {
@@ -28,6 +29,7 @@ export default function MyPage() {
   const [showDeletePetModal, setShowDeletePetModal] = useState(null);
   const [editProfileImage, setEditProfileImage] = useState('');
   const [imageUploading, setImageUploading] = useState(false);
+  const addToast = useToastStore((s) => s.addToast);
 
   useEffect(() => {
     loadProfile();
@@ -67,7 +69,7 @@ export default function MyPage() {
       setEditing(false);
       setUser({ ...user, name: editName });
     } catch {
-      alert('프로필 수정에 실패했습니다.');
+      addToast('프로필 수정에 실패했습니다.', 'error');
     }
   };
 
@@ -78,11 +80,11 @@ export default function MyPage() {
     try {
       const res = await uploadImages([file]);
       const uploaded = res.data?.[0];
-      if (!uploaded) { alert('이미지 업로드에 실패했습니다.'); return; }
+      if (!uploaded) { addToast('이미지 업로드에 실패했습니다.', 'error'); return; }
       const url = getImageUrl(uploaded.imageURL || uploaded.fileName);
       setEditProfileImage(url);
     } catch {
-      alert('이미지 업로드에 실패했습니다.');
+      addToast('이미지 업로드에 실패했습니다.', 'error');
     } finally {
       setImageUploading(false);
     }
@@ -94,7 +96,7 @@ export default function MyPage() {
       logout();
       navigate('/');
     } catch {
-      alert('계정 삭제에 실패했습니다.');
+      addToast('계정 삭제에 실패했습니다.', 'error');
     }
     setShowDeleteAccountModal(false);
   };
@@ -104,7 +106,7 @@ export default function MyPage() {
       await deletePet(petId);
       loadPets();
     } catch {
-      alert('삭제에 실패했습니다.');
+      addToast('삭제에 실패했습니다.', 'error');
     }
     setShowDeletePetModal(null);
   };

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import BottomNav from './components/common/BottomNav';
 import TopNav from './components/common/TopNav';
+import ToastContainer from './components/common/Toast';
 import useAuthStore from './store/authStore';
 import { getMyProfile } from './api/users';
 
@@ -30,6 +31,9 @@ function App() {
 
       {/* Mobile bottom tab bar - always visible */}
       <BottomNav />
+
+      {/* Global toast notifications */}
+      <ToastContainer />
     </div>
   );
 }

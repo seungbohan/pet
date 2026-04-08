@@ -12,8 +12,8 @@ import org.zerock.portfolio.dto.response.PetPlaceResponse;
 import org.zerock.portfolio.dto.response.UserResponse;
 import org.zerock.portfolio.entity.*;
 import org.zerock.portfolio.repository.*;
+import org.zerock.portfolio.service.AdminPlaceService;
 import org.zerock.portfolio.service.FeedService;
-import org.zerock.portfolio.service.GeocodingService;
 import org.zerock.portfolio.service.PetPlaceService;
 import org.zerock.portfolio.service.UserService;
 
@@ -31,31 +31,15 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
-    private final FeedReviewRepository feedReviewRepository;
-    private final PetPlaceRepository petPlaceRepository;
-    private final PetPlaceReviewRepository petPlaceReviewRepository;
     private final FeedService feedService;
     private final UserService userService;
     private final PetPlaceService petPlaceService;
+    private final AdminPlaceService adminPlaceService;
     private final UserPlaceRepository userPlaceRepository;
-    private final PetPlaceImgRepository petPlaceImgRepository;
-    private final GeocodingService geocodingService;
 
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Long>> getStats() {
-        long totalUsers = userRepository.count();
-        long userCount = userRepository.countByRole(UserRole.USER);
-        long feedCount = feedRepository.count();
-        long reviewCount = feedReviewRepository.count() + petPlaceReviewRepository.count();
-        long placeCount = petPlaceRepository.count();
-
-        return ResponseEntity.ok(Map.of(
-                "totalUsers", totalUsers,
-                "userCount", userCount,
-                "feedCount", feedCount,
-                "reviewCount", reviewCount,
-                "placeCount", placeCount
-        ));
+        return ResponseEntity.ok(adminPlaceService.getStats());
     }
 
     @GetMapping("/users")
@@ -143,54 +127,8 @@ public class AdminController {
     public ResponseEntity<Void> updatePlaceStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> body) {
-        UserPlaceEntity place = userPlaceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("제보를 찾을 수 없습니다."));
         PlaceStatus status = PlaceStatus.valueOf(body.get("status"));
-        place.setStatus(status);
-        userPlaceRepository.save(place);
-
-        // 승인 시 PetPlaceEntity로 변환하여 실제 지도에 추가
-        if (status == PlaceStatus.APPROVED) {
-            double mapx = place.getMapx();
-            double mapy = place.getMapy();
-
-            // 좌표가 없으면 주소로 지오코딩
-            if (mapx == 0 && mapy == 0 && place.getAddr1() != null) {
-                double[] coords = geocodingService.geocode(place.getAddr1());
-                if (coords != null) {
-                    mapx = coords[0];
-                    mapy = coords[1];
-                }
-            }
-
-            // 콤마 구분된 이미지 URL 분리
-            String[] imageUrls = place.getImageUrl() != null
-                    ? place.getImageUrl().split(",") : new String[0];
-            String firstImage = imageUrls.length > 0 ? imageUrls[0].trim() : null;
-
-            PetPlaceEntity petPlace = PetPlaceEntity.builder()
-                    .title(place.getTitle())
-                    .addr1(place.getAddr1())
-                    .tel(place.getTel())
-                    .mapx(mapx)
-                    .mapy(mapy)
-                    .category(place.getCategory() != null ? place.getCategory() : PlaceCategory.OTHER)
-                    .firstimage(firstImage)
-                    .build();
-            petPlaceRepository.save(petPlace);
-
-            // 추가 이미지를 pet_place_img_entity에 저장
-            for (int i = 1; i < imageUrls.length; i++) {
-                String url = imageUrls[i].trim();
-                if (!url.isEmpty()) {
-                    PetPlaceImgEntity img = PetPlaceImgEntity.builder()
-                            .petPlace(petPlace)
-                            .originimgurl(url)
-                            .build();
-                    petPlaceImgRepository.save(img);
-                }
-            }
-        }
+        adminPlaceService.updatePlaceStatus(id, status);
         return ResponseEntity.ok().build();
     }
 

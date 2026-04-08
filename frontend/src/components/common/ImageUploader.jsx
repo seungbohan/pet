@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { uploadImages, removeFile, getImageUrl } from '../../api/upload';
+import useToastStore from '../../store/toastStore';
 
 export default function ImageUploader({ images = [], onChange }) {
   const [uploading, setUploading] = useState(false);
@@ -14,7 +15,7 @@ export default function ImageUploader({ images = [], onChange }) {
       const res = await uploadImages(files);
       onChange([...images, ...res.data]);
     } catch (err) {
-      alert('이미지 업로드에 실패했습니다.');
+      useToastStore.getState().addToast('이미지 업로드에 실패했습니다.', 'error');
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createFeed, updateFeed, getFeed } from '../api/feed';
 import ImageUploader from '../components/common/ImageUploader';
+import useToastStore from '../store/toastStore';
 
 const TITLE_MAX = 100;
 const CONTENT_MAX = 2000;
@@ -28,7 +29,7 @@ export default function FeedWritePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
-      alert('제목과 내용을 입력해주세요.');
+      useToastStore.getState().addToast('제목과 내용을 입력해주세요.', 'warning');
       return;
     }
 
@@ -43,7 +44,7 @@ export default function FeedWritePage() {
         navigate(`/feeds/${res.data.id}`);
       }
     } catch {
-      alert('저장에 실패했습니다.');
+      useToastStore.getState().addToast('저장에 실패했습니다.', 'error');
     } finally {
       setLoading(false);
     }
