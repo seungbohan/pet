@@ -29,6 +29,8 @@ public class UserPlaceEntity extends BaseEntity {
     private PlaceCategory category;
 
     private String description;
+
+    @Column(length = 2000)
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)

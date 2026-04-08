@@ -20,6 +20,7 @@ export default function PlaceDetailPage() {
   const [reviewTotalPages, setReviewTotalPages] = useState(0);
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(5);
+  const [guestName, setGuestName] = useState('');
   const [loading, setLoading] = useState(true);
   const [favorited, setFavorited] = useState(false);
   const [currentImg, setCurrentImg] = useState(0);
@@ -88,7 +89,7 @@ export default function PlaceDetailPage() {
     e.preventDefault();
     if (!newReview.trim()) return;
     try {
-      await createPlaceReview(id, { content: newReview, rating: newRating });
+      await createPlaceReview(id, { content: newReview, rating: newRating, guestName: !isAuthenticated ? (guestName || '비회원') : undefined });
       setNewReview('');
       setNewRating(5);
       // Reload reviews
@@ -228,8 +229,17 @@ export default function PlaceDetailPage() {
       <div className="bg-white rounded-2xl p-6 shadow-sm">
         <h2 className="text-lg font-bold text-pet-dark-brown mb-4">리뷰</h2>
 
-        {isAuthenticated && (
-          <form onSubmit={handleReviewSubmit} className="mb-6 p-4 bg-pet-cream rounded-xl">
+        <form onSubmit={handleReviewSubmit} className="mb-6 p-4 bg-pet-cream rounded-xl">
+            {!isAuthenticated && (
+              <input
+                type="text"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                placeholder="닉네임 (선택)"
+                maxLength={20}
+                className="w-full p-3 mb-2 rounded-xl border border-pet-gray bg-white text-sm focus:outline-none focus:border-pet-orange"
+              />
+            )}
             <div className="flex items-center gap-2 mb-2">
               <span className="text-sm text-pet-brown">별점</span>
               <StarRating rating={newRating} onChange={setNewRating} size="text-lg" />
@@ -247,7 +257,6 @@ export default function PlaceDetailPage() {
               리뷰 작성
             </button>
           </form>
-        )}
 
         <div className="space-y-4">
           {reviews.map((review) => (

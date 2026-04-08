@@ -38,6 +38,7 @@ public class AdminController {
     private final UserService userService;
     private final PetPlaceService petPlaceService;
     private final UserPlaceRepository userPlaceRepository;
+    private final PetPlaceImgRepository petPlaceImgRepository;
     private final GeocodingService geocodingService;
 
     @GetMapping("/stats")
@@ -162,6 +163,11 @@ public class AdminController {
                 }
             }
 
+            // 콤마 구분된 이미지 URL 분리
+            String[] imageUrls = place.getImageUrl() != null
+                    ? place.getImageUrl().split(",") : new String[0];
+            String firstImage = imageUrls.length > 0 ? imageUrls[0].trim() : null;
+
             PetPlaceEntity petPlace = PetPlaceEntity.builder()
                     .title(place.getTitle())
                     .addr1(place.getAddr1())
@@ -169,9 +175,21 @@ public class AdminController {
                     .mapx(mapx)
                     .mapy(mapy)
                     .category(place.getCategory() != null ? place.getCategory() : PlaceCategory.OTHER)
-                    .firstimage(place.getImageUrl())
+                    .firstimage(firstImage)
                     .build();
             petPlaceRepository.save(petPlace);
+
+            // 추가 이미지를 pet_place_img_entity에 저장
+            for (int i = 1; i < imageUrls.length; i++) {
+                String url = imageUrls[i].trim();
+                if (!url.isEmpty()) {
+                    PetPlaceImgEntity img = PetPlaceImgEntity.builder()
+                            .petPlace(petPlace)
+                            .originimgurl(url)
+                            .build();
+                    petPlaceImgRepository.save(img);
+                }
+            }
         }
         return ResponseEntity.ok().build();
     }

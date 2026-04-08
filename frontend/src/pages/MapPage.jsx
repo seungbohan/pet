@@ -563,7 +563,7 @@ export default function MapPage() {
         description: submitForm.description || undefined,
         latitude: submitForm.latitude ? parseFloat(submitForm.latitude) : undefined,
         longitude: submitForm.longitude ? parseFloat(submitForm.longitude) : undefined,
-        imageUrl: submitForm.imageUrls?.[0] || undefined,
+        imageUrls: submitForm.imageUrls?.length > 0 ? submitForm.imageUrls : undefined,
       });
       setSubmitSuccess(true);
       setSubmitForm({ title: '', addr1: '', tel: '', category: '', description: '', latitude: '', longitude: '', imageUrls: [] });

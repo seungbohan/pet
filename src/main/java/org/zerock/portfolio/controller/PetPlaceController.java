@@ -150,7 +150,7 @@ public class PetPlaceController {
                 .mapy(request.getMapy())
                 .category(cat)
                 .description(request.getDescription())
-                .imageUrl(request.getImageUrl())
+                .imageUrl(resolveImageUrl(request))
                 .build();
         userPlaceRepository.save(place);
         return ResponseEntity.ok(Map.of("id", place.getId()));
@@ -244,6 +244,13 @@ public class PetPlaceController {
             return ResponseEntity.internalServerError()
                     .body(Map.of("status", "error", "message", "이미지 동기화 중 오류가 발생했습니다."));
         }
+    }
+
+    private String resolveImageUrl(UserPlaceRequest request) {
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            return String.join(",", request.getImageUrls());
+        }
+        return request.getImageUrl();
     }
 
     @PostMapping("/sync/update")

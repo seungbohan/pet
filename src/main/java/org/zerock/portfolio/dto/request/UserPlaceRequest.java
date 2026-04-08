@@ -15,4 +15,5 @@ public class UserPlaceRequest {
     private String category;
     private String description;
     private String imageUrl;
+    private java.util.List<String> imageUrls;
 }
