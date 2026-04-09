@@ -42,8 +42,7 @@ public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
     @Query("select f, fi, count(distinct r) from FeedEntity f "
             + "left outer join ImageEntity fi on fi.feed = f "
             + "left outer join FeedReviewEntity r on r.feed = f "
-            + "where lower(f.title) like lower(concat('%', :keyword, '%')) "
-            + "or cast(f.content as string) like concat('%', :keyword, '%') "
+            + "where f.title like concat('%', :keyword, '%') "
             + "group by f")
     Page<Object[]> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }
