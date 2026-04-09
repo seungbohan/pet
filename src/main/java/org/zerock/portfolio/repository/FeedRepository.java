@@ -43,7 +43,7 @@ public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
             + "left outer join ImageEntity fi on fi.feed = f "
             + "left outer join FeedReviewEntity r on r.feed = f "
             + "where lower(f.title) like lower(concat('%', :keyword, '%')) "
-            + "or lower(f.content) like lower(concat('%', :keyword, '%')) "
+            + "or cast(f.content as string) like concat('%', :keyword, '%') "
             + "group by f")
     Page<Object[]> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }
