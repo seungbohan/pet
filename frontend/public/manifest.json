@@ -1,0 +1,25 @@
+{
+  "name": "위드펫 - 반려동물 동반 장소 찾기",
+  "short_name": "위드펫",
+  "description": "반려동물과 함께 갈 수 있는 카페, 식당, 공원, 숙소를 지도에서 쉽게 찾아보세요.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#863bff",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["lifestyle", "travel"],
+  "lang": "ko"
+}

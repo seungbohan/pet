@@ -17,6 +17,7 @@ export default function PlaceCard({ place, selected, onClick }) {
             src={place.imageUrls[0]}
             alt={place.title}
             className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+            loading="lazy"
           />
         ) : (
           <div className="w-16 h-16 rounded-lg bg-pet-gray flex items-center justify-center flex-shrink-0">

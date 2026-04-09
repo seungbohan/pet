@@ -12,4 +12,5 @@ public interface FeedService {
     PageResponse<FeedResponse> getList(int page, int size);
     PageResponse<FeedResponse> getPopularList(int page, int size);
     PageResponse<FeedResponse> getMyFeeds(String email, int page, int size);
+    PageResponse<FeedResponse> search(String keyword, int page, int size);
 }

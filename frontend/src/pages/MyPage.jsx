@@ -463,7 +463,7 @@ export default function MyPage() {
                     {/* Place Image or Placeholder */}
                     <div className="h-32 bg-gradient-to-br from-pet-mint/30 to-pet-sky/30 overflow-hidden">
                       {place.imageUrls?.[0] ? (
-                        <img src={place.imageUrls[0]} alt={place.title || '즐겨찾기 장소'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <img src={place.imageUrls[0]} alt={place.title || '즐겨찾기 장소'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <svg className="w-10 h-10 text-pet-brown/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">

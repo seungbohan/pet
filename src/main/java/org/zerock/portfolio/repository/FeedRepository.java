@@ -38,4 +38,12 @@ public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
     List<FeedEntity> findByUserId(Long id);
 
     Page<FeedEntity> findByUserId(Long userId, Pageable pageable);
+
+    @Query("select f, fi, count(distinct r) from FeedEntity f "
+            + "left outer join ImageEntity fi on fi.feed = f "
+            + "left outer join FeedReviewEntity r on r.feed = f "
+            + "where lower(f.title) like lower(concat('%', :keyword, '%')) "
+            + "or lower(f.content) like lower(concat('%', :keyword, '%')) "
+            + "group by f")
+    Page<Object[]> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }

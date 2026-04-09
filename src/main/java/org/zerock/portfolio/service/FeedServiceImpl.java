@@ -163,6 +163,14 @@ public class FeedServiceImpl implements FeedService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<FeedResponse> search(String keyword, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Object[]> result = feedRepository.searchByKeyword(keyword, pageable);
+        return toPageResponse(result, page, size);
+    }
+
     /**
      * Batch fetch images for a list of feeds in a single query to avoid the N+1 problem.
      */

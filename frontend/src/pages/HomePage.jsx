@@ -251,6 +251,7 @@ export default function HomePage() {
                       src={place.imageUrls[0]}
                       alt={place.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-pet-peach to-pet-cream flex items-center justify-center">

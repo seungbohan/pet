@@ -40,6 +40,16 @@ public class FeedController {
         return ResponseEntity.ok(feedService.getPopularList(page, size));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<PageResponse<FeedResponse>> search(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        size = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        page = Math.max(page, 0);
+        return ResponseEntity.ok(feedService.search(keyword, page, size));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<FeedResponse> read(@PathVariable Long id) {
         return ResponseEntity.ok(feedService.read(id));

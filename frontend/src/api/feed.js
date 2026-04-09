@@ -6,6 +6,9 @@ export const getFeeds = (page = 0, size = 12) =>
 export const getPopularFeeds = (page = 0, size = 12) =>
   client.get('/feeds/popular', { params: { page, size } });
 
+export const searchFeeds = (keyword, page = 0, size = 12) =>
+  client.get('/feeds/search', { params: { keyword, page, size } });
+
 export const getFeed = (id) =>
   client.get(`/feeds/${id}`);
 
