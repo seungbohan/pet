@@ -169,7 +169,7 @@ export default function MyPage() {
           <div className="absolute -top-10 left-5">
             <div className="w-20 h-20 rounded-2xl bg-white p-1 shadow-lg">
               {profile?.profileImageUrl ? (
-                <img src={profile.profileImageUrl} alt="" className="w-full h-full rounded-xl object-cover" />
+                <img src={profile.profileImageUrl} alt={`${profile.nickname || '사용자'} 프로필 사진`} className="w-full h-full rounded-xl object-cover" />
               ) : (
                 <div className="w-full h-full rounded-xl bg-pet-gray flex flex-col items-center justify-center">
                   <svg className="w-7 h-7 text-pet-brown/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -191,7 +191,7 @@ export default function MyPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-pet-gray flex-shrink-0">
                       {editProfileImage ? (
-                        <img src={editProfileImage} alt="" className="w-full h-full object-cover" />
+                        <img src={editProfileImage} alt="프로필 미리보기" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-pet-brown/30 text-xs">없음</div>
                       )}
@@ -349,7 +349,7 @@ export default function MyPage() {
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pet-peach to-pet-orange/60 flex items-center justify-center text-2xl shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
                           {pet.profileImageUrl ? (
-                            <img src={pet.profileImageUrl} alt="" className="w-full h-full rounded-xl object-cover" />
+                            <img src={pet.profileImageUrl} alt={`${pet.name || '반려동물'} 프로필`} className="w-full h-full rounded-xl object-cover" />
                           ) : pet.species === '고양이' ? (
                             <span>&#x1F431;</span>
                           ) : pet.species === '강아지' ? (
@@ -463,7 +463,7 @@ export default function MyPage() {
                     {/* Place Image or Placeholder */}
                     <div className="h-32 bg-gradient-to-br from-pet-mint/30 to-pet-sky/30 overflow-hidden">
                       {place.imageUrls?.[0] ? (
-                        <img src={place.imageUrls[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <img src={place.imageUrls[0]} alt={place.title || '즐겨찾기 장소'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <svg className="w-10 h-10 text-pet-brown/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">

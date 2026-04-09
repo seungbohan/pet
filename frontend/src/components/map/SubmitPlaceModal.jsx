@@ -238,7 +238,7 @@ export default function SubmitPlaceModal({ open, onClose, mapInstanceRef, mapCen
                   <div className="flex gap-2 flex-wrap mb-2">
                     {form.imageUrls.map((url, i) => (
                       <div key={i} className="relative">
-                        <img src={url} alt="" className="w-16 h-16 rounded-lg object-cover" />
+                        <img src={url} alt={`업로드 이미지 ${i + 1}`} className="w-16 h-16 rounded-lg object-cover" />
                         <button
                           type="button"
                           onClick={() => setForm((f) => ({ ...f, imageUrls: f.imageUrls.filter((_, idx) => idx !== i) }))}

@@ -39,7 +39,7 @@ export default function ImageGallery({ images = [], alt = '', variant = 'arrows'
                   i === currentImg ? 'border-pet-orange' : 'border-transparent'
                 }`}
               >
-                <img src={url} alt="" className="w-full h-full object-cover" />
+                <img src={url} alt={`${alt} 썸네일 ${i + 1}`} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>

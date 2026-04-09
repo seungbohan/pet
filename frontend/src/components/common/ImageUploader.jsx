@@ -37,7 +37,7 @@ export default function ImageUploader({ images = [], onChange }) {
           <div key={idx} className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-pet-gray">
             <img
               src={img.thumbnailURL || getImageUrl(img.fileName)}
-              alt=""
+              alt={`업로드 이미지 ${idx + 1}`}
               className="w-full h-full object-cover"
             />
             <button

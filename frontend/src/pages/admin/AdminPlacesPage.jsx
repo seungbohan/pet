@@ -121,7 +121,7 @@ export default function AdminPlacesPage() {
               <div key={s.id} className="bg-white rounded-2xl p-5 shadow-sm animate-slide-up">
                 <div className="flex gap-4">
                   {s.imageUrl && (
-                    <img src={s.imageUrl} alt="" className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
+                    <img src={s.imageUrl} alt={s.title || '제출 장소 이미지'} className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">

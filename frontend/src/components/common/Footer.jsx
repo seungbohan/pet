@@ -21,23 +21,7 @@ export default function Footer() {
             <p className="text-sm leading-relaxed text-white/60 max-w-xs">
               반려동물과 함께할 수 있는 최고의 장소를 발견하고, 소중한 경험을 커뮤니티와 나눠보세요.
             </p>
-            {/* Social icons (placeholder) */}
-            <div className="flex items-center gap-3 mt-5">
-              {['instagram', 'youtube', 'blog'].map((social) => (
-                <a
-                  key={social}
-                  href="#"
-                  aria-label={social}
-                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-pet-orange/80
-                             flex items-center justify-center text-sm
-                             transition-colors duration-300"
-                >
-                  {social === 'instagram' && '📷'}
-                  {social === 'youtube' && '🎬'}
-                  {social === 'blog' && '📝'}
-                </a>
-              ))}
-            </div>
+            {/* Social icons - 실제 계정 생성 후 URL 추가 */}
           </div>
 
           {/* Column 2 : Quick links */}
