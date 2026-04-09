@@ -43,7 +43,8 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-https://withpet.shop}
       NAVER_MAPS_CLIENT_ID: ufwzhw6j2z
       NAVER_MAPS_CLIENT_SECRET: ${NAVER_MAPS_CLIENT_SECRET}
-      JAVA_OPTS: -Xms128m -Xmx256m
+      JAVA_OPTS: -Xms64m -Xmx192m -XX:+UseSerialGC -XX:MaxMetaspaceSize=96m
+    mem_limit: 384m
     volumes:
       - /home/ec2-user/upload:/app/upload
     depends_on:
