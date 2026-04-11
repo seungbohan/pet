@@ -48,7 +48,7 @@ export default function NaverMap({
       return;
     }
     const script = document.createElement('script');
-    script.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ufwzhw6j2z&submodules=clustering';
+    script.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ufwzhw6j2z';
     script.async = true;
     script.onload = () => loadClusterScript(() => initMap());
     document.head.appendChild(script);
